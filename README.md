@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/HBRS-MAAS/ws18-project-commitment_issues.svg?branch=master)](https://travis-ci.org/HBRS-MAAS/ws18-project-commitment_issues)
 
-# MAAS Project - <Team Name>
+# MAAS Project - Commitment_Issues
 
 Add a brief description of your project. Make sure to keep this README updated, particularly on how to run your project from the **command line**.
 

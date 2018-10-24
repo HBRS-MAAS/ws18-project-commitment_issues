@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4630c54112f344a0b96ec62ef3ed8f4d)](https://app.codacy.com/app/Sushant-Chavan/ws18-project-commitment_issues?utm_source=github.com&utm_medium=referral&utm_content=HBRS-MAAS/ws18-project-commitment_issues&utm_campaign=Badge_Grade_Dashboard)
 [![Build Status](https://travis-ci.org/HBRS-MAAS/ws18-project-commitment_issues.svg?branch=master)](https://travis-ci.org/HBRS-MAAS/ws18-project-commitment_issues)
 
 # MAAS Project - Commitment_Issues

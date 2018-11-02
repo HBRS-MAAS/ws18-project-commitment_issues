@@ -119,14 +119,19 @@ public class CustomerAgent extends Agent {
 						orderProcessor = reply.getSender();
 						System.out.println("["+getAID().getLocalName()+"]: Order reception confirmed by "+ orderProcessor.getLocalName());
 					}
+					
+					step = 2;
 				}
-				step = 2;
+
 				break;
 					
 			}
 		}
 		
 		public boolean done() {
+			if (step == 2) {
+				addBehaviour(new shutdown());
+			}
 			return (step == 2);
 		}
 	}

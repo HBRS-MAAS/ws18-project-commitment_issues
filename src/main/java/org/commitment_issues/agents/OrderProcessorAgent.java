@@ -98,6 +98,7 @@ public class OrderProcessorAgent extends Agent {
 				
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent("order-received.");
+				reply.setContent("order-received");
 				
 				System.out.println("["+getAID().getLocalName()+"]: Order received: "+orderDetails);
 

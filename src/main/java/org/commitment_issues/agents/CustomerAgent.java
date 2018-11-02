@@ -6,7 +6,11 @@ import jade.content.onto.basic.Action;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.*;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
 import jade.domain.FIPANames;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.domain.JADEAgentManagement.ShutdownPlatform;
 import jade.lang.acl.ACLMessage;
@@ -58,9 +62,10 @@ public class CustomerAgent extends Agent {
     
 	private class OrderGenerator extends Behaviour {
 		private AID orderProcessor;
-		private int day;
-		private int hour;
+//		private int day;
+//		private int hour;
 		private AID[] orderProcessorAgents;
+		private int step = 0;
 		
 		private MessageTemplate mt;
 		
@@ -86,11 +91,43 @@ public class CustomerAgent extends Agent {
         }
 		
 		public void action() {
-			ACLMessage order = new ACLMessage(ACLMessage.INFORM);
+			switch(step) {
+			case 0:
+				discoverProcessors();
+				ACLMessage order = new ACLMessage(ACLMessage.INFORM);
+				
+				for (int i = 0; i < orderProcessorAgents.length; ++i) {
+					order.addReceiver(orderProcessorAgents[i]);
+				}
+				
+				String orderDetails = "<05.10> Bagels:5; Bread:10; Cookies:20";
+				order.setContent(orderDetails);
+				order.setConversationId("bakery-order");
+				order.setReplyWith("order"+System.currentTimeMillis());
+				myAgent.send(order);
+				
+				mt = MessageTemplate.and(MessageTemplate.MatchConversationId("bakery-order"),
+						MessageTemplate.MatchInReplyTo(order.getReplyWith()));
+				
+				step = 1;
+				break;
+				
+			case 1:
+				ACLMessage reply = myAgent.receive(mt);
+				if (reply != null) {
+					if (reply.getPerformative() == ACLMessage.INFORM) {
+						orderProcessor = reply.getSender();
+						System.out.println("["+getAID().getLocalName()+"]: Order reception confirmed by "+ orderProcessor.getLocalName());
+					}
+				}
+				step = 2;
+				break;
+					
+			}
 		}
 		
 		public boolean done() {
-			return true;
+			return (step == 2);
 		}
 	}
 

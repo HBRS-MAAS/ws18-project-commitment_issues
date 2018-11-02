@@ -1,0 +1,51 @@
+@startuml 3D Maze
+skinparam classAttributeIconSize 0
+
+class Customer <<Agent>>
+class Order  <<Agent>>
+class Truck  <<Agent>>
+class StreetNetwork  <<Agent>>
+class OrderProcessor  <<Agent>>
+class ProductionManager  <<Agent>>
+class KneadingAgent  <<Agent>>
+class PreparationAgent  <<Agent>>
+class BakingAgent  <<Agent>>
+class OrderTracker  <<Agent>>
+class PackingAgent  <<Agent>>
+class TransportAgent  <<Agent>>
+
+class ProductInfo <<Object>>
+class Box <<Object>>
+
+Customer -right-> OrderProcessor : OrderMessage
+OrderProcessor --> Customer : Status
+OrderProcessor -down-> Order : creates
+OrderProcessor -right-> ProductionManager : todaysOrders
+
+ProductionManager --> OrderProcessor : requestForPendingOrders
+ProductionManager --> KneadingAgent : assignKneadingTask
+ProductionManager --> Order : requestProductInfo
+ProductionManager--> PreparationAgent : assignPrepTask
+ProductionManager --> BakingAgent : assignBakingTask
+ProductionManager --> OrderTracker : moveOrder
+ProductionManager --> TransportAgent : getTimeToDelivery
+Order --> ProductionManager : orderInfo
+KneadingAgent --> ProductionManager : kneadingComplete/restingComplete
+PreparationAgent --> ProductionManager : preparationComplete
+BakingAgent --> ProductionManager : BakingComplete
+BakingAgent --> PackingAgent : itemsReadyToPack
+PackingAgent --> OrderTracker : itemsPacked
+OrderTracker --> TransportAgent : RequestOrderTransport
+OrderTracker --> Order : updateCompletedProducts/GetDeliveryAddress
+Order --> OrderTracker : DeliveryAddress
+Order --> OrderTracker : OrderFulfilled
+TransportAgent --> Truck : deliverOrders
+Truck --> Order : DeliveryStatus
+TransportAgent --> StreetNetwork : queryTimeToDelivery
+
+PackingAgent --> Box : creates
+Truck --> Box : move
+ProductionManager --> ProductInfo : creates and uses
+
+
+@enduml

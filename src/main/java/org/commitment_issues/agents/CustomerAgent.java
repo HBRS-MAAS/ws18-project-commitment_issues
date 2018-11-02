@@ -60,8 +60,30 @@ public class CustomerAgent extends Agent {
 		private AID orderProcessor;
 		private int day;
 		private int hour;
+		private AID[] orderProcessorAgents;
 		
 		private MessageTemplate mt;
+		
+		protected void discoverProcessors() {
+            // Update the list of order processor agents
+            DFAgentDescription template = new DFAgentDescription();
+            ServiceDescription sd = new ServiceDescription();
+            sd.setType("order-processor");
+            template.addServices(sd);
+            try {
+                DFAgentDescription[] result = DFService.search(myAgent, template);
+                orderProcessorAgents = new AID[result.length];
+                for (int i = 0; i < result.length; ++i) {
+                    orderProcessorAgents[i] = result[i].getName();
+                }
+            } catch (FIPAException fe) {
+                fe.printStackTrace();
+            }
+
+            // for (AID a : orderProcessorAgents) {
+            // System.out.println("Found order processor: " + a.getLocalName());
+            // }
+        }
 		
 		public void action() {
 			ACLMessage order = new ACLMessage(ACLMessage.INFORM);

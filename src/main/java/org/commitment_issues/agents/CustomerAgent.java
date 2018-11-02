@@ -3,12 +3,14 @@ package org.commitment_issues.agents;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.basic.Action;
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.*;
 import jade.domain.FIPANames;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.domain.JADEAgentManagement.ShutdownPlatform;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
 
 @SuppressWarnings("serial")
@@ -22,7 +24,10 @@ public class CustomerAgent extends Agent {
  		} catch (InterruptedException e) {
  			//e.printStackTrace();
  		}
-		addBehaviour(new shutdown());
+        
+        addBehaviour(new OrderGenerator());
+        
+//		addBehaviour(new shutdown());
 
 	}
 	
@@ -50,4 +55,21 @@ public class CustomerAgent extends Agent {
 
 			}
 		}
+    
+	private class OrderGenerator extends Behaviour {
+		private AID orderProcessor;
+		private int day;
+		private int hour;
+		
+		private MessageTemplate mt;
+		
+		public void action() {
+			ACLMessage order = new ACLMessage(ACLMessage.INFORM);
+		}
+		
+		public boolean done() {
+			return true;
+		}
+	}
+
 }

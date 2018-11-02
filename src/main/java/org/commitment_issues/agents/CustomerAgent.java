@@ -20,7 +20,6 @@ import jade.lang.acl.MessageTemplate;
 @SuppressWarnings("serial")
 public class CustomerAgent extends Agent {
 	protected void setup() {
-	// Printout a welcome message
 		System.out.println("Hello! Customer-agent "+getAID().getName()+" is ready.");
 
         try {
@@ -30,8 +29,6 @@ public class CustomerAgent extends Agent {
  		}
         
         addBehaviour(new OrderGenerator());
-        
-//		addBehaviour(new shutdown());
 
 	}
 	
@@ -84,10 +81,6 @@ public class CustomerAgent extends Agent {
             } catch (FIPAException fe) {
                 fe.printStackTrace();
             }
-
-            // for (AID a : orderProcessorAgents) {
-            // System.out.println("Found order processor: " + a.getLocalName());
-            // }
         }
 		
 		public void action() {
@@ -100,7 +93,7 @@ public class CustomerAgent extends Agent {
 					order.addReceiver(orderProcessorAgents[i]);
 				}
 				
-				String orderDetails = "<05.10> Bagels:5; Bread:10; Cookies:20";
+				String orderDetails = "<005.10> Bagels:5; Bread:10; Cookies:20";
 				order.setContent(orderDetails);
 				order.setConversationId("bakery-order");
 				order.setReplyWith("order"+System.currentTimeMillis());
@@ -123,6 +116,9 @@ public class CustomerAgent extends Agent {
 					step = 2;
 				}
 
+				break;
+				
+			default:
 				break;
 					
 			}

@@ -17,20 +17,11 @@ import jade.lang.acl.ACLMessage;
 @SuppressWarnings("serial")
 public class OrderProcessorAgent extends Agent {
 	protected void setup() {
-		// Printout a welcome message
 		System.out.println("Hello! OrderProcessor-agent "+getAID().getName()+" is ready.");
-
-		try {
-			Thread.sleep(3000);
-		} catch (InterruptedException e) {
-			//e.printStackTrace();
-		}
 		
 		registerInYellowPages();
 		
 		addBehaviour(new OrderServer());
-		
-//		addBehaviour(new shutdown());
 
 	}
 	
@@ -97,7 +88,6 @@ public class OrderProcessorAgent extends Agent {
 				ACLMessage reply = msg.createReply();
 				
 				reply.setPerformative(ACLMessage.INFORM);
-				reply.setContent("order-received.");
 				reply.setContent("order-received");
 				
 				System.out.println("["+getAID().getLocalName()+"]: Order received: "+orderDetails);

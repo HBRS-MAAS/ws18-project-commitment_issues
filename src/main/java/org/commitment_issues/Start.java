@@ -1,8 +1,7 @@
-package org.yourteamname;
+package org.commitment_issues;
 
 import java.util.List;
 import java.util.Vector;
-import org.yourteamname.agents.DummyAgent;
 
 public class Start {
     public static void main(String[] args) {

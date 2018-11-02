@@ -1,4 +1,4 @@
-package org.yourteamname.agents;
+package org.commitment_issues.agents;
 
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;

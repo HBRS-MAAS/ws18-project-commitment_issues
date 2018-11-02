@@ -2,7 +2,6 @@ package org.commitment_issues;
 
 import java.util.List;
 import java.util.Vector;
-import org.commitment_issues.agents.DummyAgent;
 
 public class Start {
     public static void main(String[] args) {

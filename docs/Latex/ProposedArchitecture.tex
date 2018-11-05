@@ -33,7 +33,7 @@
 
 \title{MAAS - Assignment-02\\
 Proposed Architecture for \\Flying Saucers Bakery Project}
-\author{Sushant Vijay Chavan\\Ahmed Faisal Abdelrahman\\Abanoub Abdelmalek}
+\author{Sushant Vijay Chavan\\Ahmed Faisal Abdelrahman\\Abanoub Abdelmalak}
 \date{\today}
 
 \begin{document}
@@ -56,28 +56,31 @@ The above figure \ref{Architecture diagram} outlines the overall architecture fo
 The below table  lists out the details of each of the component that are a part of the architecture diagram.
 \begin{table}[h!]
 \centering
-\begin{tabular}{|l|l|l|}
+\begin{tabular}{|c|c|c|c|c|}
 \hline
-\textbf{Component} & \textbf{Agent/Object} & \textbf{Static/Dynamic Creation} \\ \hline
-Customer           & Agent                 & Dynamic                          \\ \hline
-Order              & Agent                 & Dynamic                          \\ \hline
-Truck              & Agent                 & Static                           \\ \hline
-StreetNetwork      & Agent                 & Static                           \\ \hline
-OrderProcessor     & Agent                 & Static                           \\ \hline
-ProductionManager  & Agent                 & Static                           \\ \hline
-KneadingAgent      & Agent                 & Static                           \\ \hline
-PreparationAgent   & Agent                 & Static                           \\ \hline
-BakingAgent        & Agent                 & Static                           \\ \hline
-OrderTracker       & Agent                 & Static                           \\ \hline
-PackingAgent       & Agent                 & Static                           \\ \hline
-TransportAgent     & Agent                 & Static                           \\ \hline
-ProductInfo        & Object                & Static                                 \\ \hline
-Box                & Object                & Dynamic                          \\ \hline
+\textbf{Component}                                            & \textbf{\begin{tabular}[c]{@{}c@{}}Agent/\\ Object\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Static/\\ Dynamic\end{tabular}} & Stage                                                                      & Description                                                                                                                                                                       \\ \hline
+Customer                                                      & Agent                                                            & Dynamic                                                            & Ordering                                                                   & Places the order for a set of items                                                                                                                                               \\ \hline
+Order                                                         & Agent                                                            & Dynamic                                                            & \begin{tabular}[c]{@{}c@{}}Ordering/\\ Production/\\ Delivery\end{tabular} & \begin{tabular}[c]{@{}c@{}}Keeps track of a customer's request\\ for list of products at a given date\end{tabular}                                                                \\ \hline
+Truck                                                         & Agent                                                            & Static                                                             & Delivery                                                                   & Delivers packed boxes that fulfill orders                                                                                                                                         \\ \hline
+StreetNetwork                                                 & Agent                                                            & Static                                                             & Delivery                                                                   & \begin{tabular}[c]{@{}c@{}}Maintains a network of customer\\ and bakery locations\end{tabular}                                                                                    \\ \hline
+\begin{tabular}[c]{@{}c@{}}Order-\\ Processor\end{tabular}    & Agent                                                            & Static                                                             & Order                                                                      & \begin{tabular}[c]{@{}c@{}}Receives and maintains the orders\\ until they are picked up for production\end{tabular}                                                               \\ \hline
+\begin{tabular}[c]{@{}c@{}}Production-\\ Manager\end{tabular} & Agent                                                            & Static                                                             & Production                                                                 & \begin{tabular}[c]{@{}c@{}}Schedules and synchronizes the \\ activities of the rest of the agents\\ in the production stage\end{tabular}                                          \\ \hline
+\begin{tabular}[c]{@{}c@{}}Kneading-\\ Agent\end{tabular}     & Agent                                                            & Static                                                             & Production                                                                 & \begin{tabular}[c]{@{}c@{}}Responsible for kneading\\ the dough and its resting time\end{tabular}                                                                                 \\ \hline
+\begin{tabular}[c]{@{}c@{}}Preparation-\\ Agent\end{tabular}  & Agent                                                            & Static                                                             & Production                                                                 & \begin{tabular}[c]{@{}c@{}}Responsible for preparing \\ a given batch of items\end{tabular}                                                                                       \\ \hline
+BakingAgent                                                   & Agent                                                            & Static                                                             & Production                                                                 & \begin{tabular}[c]{@{}c@{}}Responsible for maintaining the ovens\\  including making time and time to cool the baked \\ products and time to cool the baked products\end{tabular} \\ \hline
+OrderTracker                                                  & Agent                                                            & Static                                                             & \begin{tabular}[c]{@{}c@{}}Production/\\ Delivery\end{tabular}             & \begin{tabular}[c]{@{}c@{}}Responsible for notifying the order \\ about their partial fulfillment\end{tabular}                                                                    \\ \hline
+PackingAgent                                                  & Agent                                                            & Static                                                             & Production                                                                 & \begin{tabular}[c]{@{}c@{}}Packs the baked items into boxes when \\ they are cooled down\end{tabular}                                                                             \\ \hline
+TransportAgent                                                & Agent                                                            & Static                                                             & Delivery                                                                   & \begin{tabular}[c]{@{}c@{}}Schedules the delivery of completed orders\\ by dividing them among truck agents\end{tabular}                                                          \\ \hline
+ProductInfo                                                   & Object                                                           & Static                                                             & -                                                                          & \begin{tabular}[c]{@{}c@{}}Contains the details of the products\\ (e.g. time to bake, number of items in box)\end{tabular}                                                        \\ \hline
+Box                                                           & Object                                                           & Dynamic                                                            & -                                                                          & \begin{tabular}[c]{@{}c@{}}Contains the type and quantity of \\ products packed in it\end{tabular}                                                                                \\ \hline
 \end{tabular}
 \label{Agent Definition}
 \caption{Agent Definitions}
 \end{table}
 
+\newpage
 \section{Aggregation of order data}
+
+The OrderProcessor maintains a database of all the orders that have been received from customers, indexed by delivery date. The ProductionManager requests the OrderProcessor for the orders that are due for the day. It sorts the orders according to their delivery time and picks them in that order for production. If some agents are still free (e.g. to bake or prepare more items), the ProductionManager also schedules products to be prepared from the next order in the queue and so on.
 
 \end{document}\grid

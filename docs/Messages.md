@@ -60,7 +60,7 @@
 
 # assignBakingTask
 ## The production manager requests the baking agent to bake the prepared items
-### "bake:product_id,amount;product_id,amount;product_id,amount"
+### "product_id:quantity;product_id:quantity;product_id:quantity"
 <br>
 
 # BakingComplete
@@ -75,7 +75,7 @@
 
 # itemsPacked
 ## The packing agent informs the Order tracker that some items have been packed
-### "packed:product_id,number_of_boxex;product_id,number_of_boxex;product_id,number_of_boxex;"
+### "product_id:number_of_boxes;product_id:number_of_boxes;product_id:number_of_boxes;"
 <br>
 
 # moveOrderAgent
@@ -85,7 +85,7 @@
 
 # updateCompletedProducts
 ## The order tracker informs the order agent that some of its products are ready for dispatch
-### "ready:product_id,amount;product_id,amount;product_id,amount"
+### "product_id:quantity;product_id:quantity;product_id:quantity"
 <br>
 
 # OrderFulfilled
@@ -100,7 +100,7 @@
 
 # DeliveryAddress
 ## The order informs the order tracker about the delivery address
-### "<x_customer,y_customer>"
+### "x_customer,y_customer"
 <br>
 
 # RequestOrderTransport

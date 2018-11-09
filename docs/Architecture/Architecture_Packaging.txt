@@ -1,0 +1,20 @@
+@startuml Architecture_Packaging
+skinparam classAttributeIconSize 0
+
+
+== Packaging ==
+CoolingRacks --> PackingScheduler : ProductsReadyToPack (INFORM)
+
+PackingScheduler --> DecoratorAgent : FreeToDecorate? (QUERY_IF)
+DecoratorAgent --> PackingScheduler : readyToDecorate (CONFIRM)
+PackingScheduler --> DecoratorAgent : ProductsToDecorate (INFORM)
+
+DecoratorAgent --> PackingAgent : FreeToPack? (QUERY_IF)
+PackingAgent --> DecoratorAgent : readyToPack (CONFIRM)
+DecoratorAgent --> PackingAgent : PackProducts (INFORM)
+
+PackingAgent --> LoadingBay : BoxesToDeliver (INFORM)
+
+
+
+@enduml

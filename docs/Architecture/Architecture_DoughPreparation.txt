@@ -1,0 +1,17 @@
+@startuml Architecture_DoughPreparation
+skinparam classAttributeIconSize 0
+
+== Dough Preparation ==
+Scheduler --> KneadingAgent : FreeToKnead? (QUERY_IF)
+KneadingAgent --> Scheduler : readyToKnead (CONFIRM)
+Scheduler --> KneadingAgent : ProductToKnead (INFORM)
+
+KneadingAgent --> ItemPrepAgent : FreeToPrepare? (QUERY_IF)
+ItemPrepAgent --> KneadingAgent : readyToPrep (CONFIRM)
+KneadingAgent --> ItemPrepAgent : ProductsToPrep (INFORM)
+
+ItemPrepAgent --> ProofingAgent : ProofProducts (INFORM)
+
+
+
+@enduml

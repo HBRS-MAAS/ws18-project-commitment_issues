@@ -1,62 +1,70 @@
-@startuml Bakery
+@startuml ArchitectureDiagram
 skinparam classAttributeIconSize 0
 
-Customer --> OrderProcessor : OrderMessage
-OrderProcessor --> Customer : Status
-OrderProcessor --> Order : Creates
+== Order Processing ==
+
+Customer --> OrderProcessor : RequestQuotations (CFP)
+OrderProcessor --> Customer : ReplyToCustomerRequest (PROPOSE / REFUSE)
+Customer --> OrderProcessor : PlaceOrder (ACCEPT_PROPOSAL)
+OrderProcessor --> Customer : ConfirmOrder (INFORM)
 
 == Start of Day ==
-Scheduler --> OrderProcessor : PendingOrders
-OrderProcessor --> Scheduler : TodaysOrder
-Scheduler --> Order : RequestProductInfo
-Order --> Scheduler : OrderInfo
-Scheduler --> StreetNetwork : GetTimeToDelivery
-StreetNetwork --> Scheduler : TimeToDelivery
+Scheduler --> OrderProcessor : PendingOrders (REQUEST)
+OrderProcessor --> Scheduler : TodaysOrder (INFORM)
+Scheduler --> Order : RequestProductInfo (REQUEST)
+Order --> Scheduler : OrderInfo (INFORM)
+Scheduler --> StreetNetwork : GetTimeToDelivery (REQUEST)
+StreetNetwork --> Scheduler : TimeToDelivery (INFORM)
 
 == Dough Preparation ==
-Scheduler --> KneadingAgent : FreeToKnead?
-KneadingAgent --> Scheduler : readyToKnead
-Scheduler --> KneadingAgent : ProductToKnead
+Scheduler --> KneadingAgent : FreeToKnead? (QUERY_IF)
+KneadingAgent --> Scheduler : readyToKnead (CONFIRM)
+Scheduler --> KneadingAgent : ProductToKnead (INFORM)
 
-KneadingAgent --> ItemPrepAgent : FreeToPrepare?
-ItemPrepAgent --> KneadingAgent : readyToPrep
-KneadingAgent --> ItemPrepAgent : ProductsToPrep
+KneadingAgent --> ItemPrepAgent : FreeToPrepare? (QUERY_IF)
+ItemPrepAgent --> KneadingAgent : readyToPrep (CONFIRM)
+KneadingAgent --> ItemPrepAgent : ProductsToPrep (INFORM)
 
-ItemPrepAgent --> ProofingAgent : ProofProducts
+ItemPrepAgent --> ProofingAgent : ProofProducts (INFORM)
 
 == Baking ==
-ProofingAgent --> BakingScheduler : ProductsReadyToBake
+ProofingAgent --> BakingScheduler : ProductsReadyToBake (INFORM)
 
-BakingScheduler --> BakingAgent : FreeToBake?
-BakingAgent --> BakingScheduler : NumberOfFreeTrays
-BakingScheduler --> BakingAgent : ProductsToBake
+BakingScheduler --> BakingAgent : FreeToBake? (QUERY_IF)
+BakingAgent --> BakingScheduler : NumberOfFreeTrays (INFORM)
+BakingScheduler --> BakingAgent : ProductsToBake (INFORM)
 
-BakingAgent --> CoolingRacks : CoolProducts
+BakingAgent --> CoolingRacks : CoolProducts (INFORM)
 
 
 == Packaging ==
-CoolingRacks --> PackingScheduler : ProductsReadyToPack
+CoolingRacks --> PackingScheduler : ProductsReadyToPack (INFORM)
 
-PackingScheduler --> DecoratorAgent : FreeToDecorate?
-DecoratorAgent --> PackingScheduler : readyToDecorate
-PackingScheduler --> DecoratorAgent : ProductsToDecorate
+PackingScheduler --> DecoratorAgent : FreeToDecorate? (QUERY_IF)
+DecoratorAgent --> PackingScheduler : readyToDecorate (CONFIRM)
+PackingScheduler --> DecoratorAgent : ProductsToDecorate (INFORM)
 
-DecoratorAgent --> PackingAgent : FreeToPack?
-PackingAgent --> DecoratorAgent : readyToPack
-DecoratorAgent --> PackingAgent : PackProducts
+DecoratorAgent --> PackingAgent : FreeToPack? (QUERY_IF)
+PackingAgent --> DecoratorAgent : readyToPack (CONFIRM)
+DecoratorAgent --> PackingAgent : PackProducts (INFORM)
 
-PackingAgent --> LoadingBay : BoxesToDeliver
+PackingAgent --> LoadingBay : BoxesToDeliver (INFORM)
 
 == Delivery ==
-LoadingBay --> OrderTracker : BoxesReadyToDeliver
+LoadingBay --> OrderTracker : BoxesReadyToDeliver (INFORM)
 
-OrderTracker --> Order : OrderProgress
-Order --> OrderTracker : OrderFulfilled
-OrderTracker --> TransportAgent : RequestOrderTransport
-TransportAgent --> Streetnetwork : queryTimeToDelivery
-Streetnetwork ---> TransportAgent : TimeToDelivery
-TransportAgent --> Truck : DeliverOrders
-Truck --> Mailbox : OrderSuccessfullyDelivered
+OrderTracker --> Order : OrderProgress (INFORM)
+Order --> OrderTracker : OrderFulfilled (CONFIRM)
+OrderTracker --> TransportAgent : RequestOrderTransport (REQUEST)
+TransportAgent --> StreetNetwork : queryTimeToDelivery (REQUEST)
+StreetNetwork ---> TransportAgent : TimeToDelivery (INFORM)
+
+TransportAgent --> Truck : RequestTimeToDelivery (CFP)
+Truck --> TransportAgent : ReplyToRequest (PROPOSE / REFUSE)
+TransportAgent --> Truck : AssignDelivery (ACCEPT_PROPOSAL)
+Truck --> TransportAgent : ConfirmAssignment (INFORM)
+
+Truck --> Mailbox : OrderSuccessfullyDelivered (INFORM)
 
 
 @enduml

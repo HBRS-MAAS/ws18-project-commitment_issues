@@ -1,0 +1,14 @@
+@startuml Architecture_Baking
+skinparam classAttributeIconSize 0
+
+== Baking ==
+ProofingAgent --> BakingScheduler : ProductsReadyToBake (INFORM)
+
+BakingScheduler --> BakingAgent : FreeToBake? (QUERY_IF)
+BakingAgent --> BakingScheduler : NumberOfFreeTrays (INFORM)
+BakingScheduler --> BakingAgent : ProductsToBake (INFORM)
+
+BakingAgent --> CoolingRacks : CoolProducts (INFORM)
+
+
+@enduml

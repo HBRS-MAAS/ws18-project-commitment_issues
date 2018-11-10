@@ -279,13 +279,12 @@ Every agent needs to have a set of behaviors to achieve its job. These are depic
 		\item \textit{Description} : Stores message sent by the trucks related to delivery status.
 	\end{itemize}
 	\end{itemize}
-
 \end{itemize}
 
 
 \newpage
 \section{Aggregation of order data}
 
-The OrderProcessor maintains a database of all the orders that have been received from customers, indexed by delivery date. The ProductionManager requests the OrderProcessor for the orders that are due for the day. It sorts the orders according to their delivery time and picks them in that order for production. If some agents are still free (e.g. to bake or prepare more items), the ProductionManager also schedules products to be prepared from the next order in the queue and so on.
+Since the proposed architectural skeleton requires the various stages in the production phase to be disjoint from each other, it was not possible to aggregate the orders efficiently. We instead propose that the orders be completed sequentially based on their time of delivery (early delivery orders will be picked first for preparation). In case two orders have the same delivery time and have an overlap between their desired products, we can merge the orders (produce identical items in both the orders together) to have some efficiency in the kneading and resting time of the dough. 
 
 \end{document}\grid

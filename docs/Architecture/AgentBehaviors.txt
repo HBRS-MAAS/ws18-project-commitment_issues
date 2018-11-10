@@ -1,6 +1,34 @@
 @startuml AgentBehaviors
 skinparam classAttributeIconSize 0
 
+package Common <<Rectangle>> {
+class Order <<Agent>>
+{
+__behaviors__
+ProductInfoServer : Cyclic
+}
+
+class StreetNetwork <<Agent>>
+{
+__behaviors__
+TimeToDeliveryServer : Cyclic
+}
+
+class Clock <<Agent>>
+{
+__behaviors__
+Timer : Ticker
+}
+
+class Visualization <<Agent>>
+{
+__behaviors__
+}
+
+}
+
+
+package OrderProcessing <<Rectangle>> {
 class Customer <<Agent>>
 {
 __behaviors__
@@ -12,14 +40,6 @@ class OrderProcessor <<Agent>>
 __behaviors__
 CustomerServer : Cyclic
 SchedulerServer : Cyclic
-
-}
-
-class Order <<Agent>>
-{
-__behaviors__
-ProductInfoServer : Cyclic
-
 }
 
 class Scheduler <<Agent>>
@@ -28,25 +48,19 @@ __behaviors__
 PendingOrderRequester : Cyclic
 ProductInfoRequester : GenericBehavior
 DeliveryTimeRequester : GenericBehavior
-
 KneadingRequester : GenericBehavior
 
 
 }
 
-class StreetNetwork <<Agent>>
-{
-__behaviors__
-TimeToDeliveryServer : Cyclic
-
 }
 
+package DoughPreparation <<Rectangle>> {
 class KneadingAgent <<Agent>>
 {
 __behaviors__
 KneadingServer : Cyclic
 ItemPrepRequester : Generic
-
 }
 
 class ItemPrepAgent <<Agent>>
@@ -54,22 +68,23 @@ class ItemPrepAgent <<Agent>>
 __behaviors__
 ItemPrepServer : Cyclic
 ProofingInformer : OneShot
-
 }
 
 class ProofingAgent <<Agent>>
 {
 __behaviors__
 ReadyToBakeInformer : OneShot
+}
 
 }
 
+
+package Baking <<Rectangle>> {
 class BakingScheduler <<Agent>>
 {
 __behaviors__
 ReadyToBakeServer : Cyclic
 BakingRequester : Generic
-
 }
 
 class BakingAgent <<Agent>>
@@ -77,7 +92,6 @@ class BakingAgent <<Agent>>
 __behaviors__
 BakingServer : Cyclic
 CoolProductsInformer : OneShot
-
 }
 
 class CoolingRacks <<Agent>>
@@ -85,15 +99,17 @@ class CoolingRacks <<Agent>>
 __behaviors__
 CoolProductsServer : Cyclic
 ReadyToPackInformer : OneShot
+}
 
 }
 
+
+package Packing <<Rectangle>> {
 class PackingScheduler <<Agent>>
 {
 __behaviors__
 ReadyToPackServer : Cyclic
 DecorationRequester : Generic
-
 }
 
 class DecoratorAgent <<Agent>>
@@ -101,7 +117,6 @@ class DecoratorAgent <<Agent>>
 __behaviors__
 DecorationServer : Cyclic
 PackingRequester : Generic
-
 }
 
 class PackingAgent <<Agent>>
@@ -109,7 +124,6 @@ class PackingAgent <<Agent>>
 __behaviors__
 PackingServer : Cyclic
 BoxToDeliverInformer : OneShot
-
 }
 
 class LoadingBay <<Agent>>
@@ -119,6 +133,10 @@ BoxToDeliverServer : Cyclic
 BoxToDeliverInformer : OneShot
 }
 
+}
+
+
+package Delivery <<Rectangle>> {
 class OrderTracker <<Agent>>
 {
 __behaviors__
@@ -132,7 +150,6 @@ class TransportAgent <<Agent>>
 __behaviors__
 OrderTransportServer : Cyclic
 DeliveryRequester : Generic
-
 }
 
 class Truck <<Agent>>
@@ -147,20 +164,7 @@ class Mailbox <<Agent>>
 {
 __behaviors__
 OrderDeliveredServer : Cyclic
-
 }
-
-class Clock <<Agent>>
-{
-__behaviors__
-Timer : Ticker
-
-}
-
-class Visualization <<Agent>>
-{
-__behaviors__
-
 
 }
 

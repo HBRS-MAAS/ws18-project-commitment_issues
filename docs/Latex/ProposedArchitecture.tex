@@ -31,7 +31,7 @@
     urlcolor=red           % color of external links
 }
 
-\title{MAAS - Assignment-02\\
+\title{MAAS - Assignment-03\\
 Proposed Architecture for \\Flying Saucers Bakery Project}
 \author{Sushant Vijay Chavan\\Ahmed Faisal Abdelrahman\\Abanoub Abdelmalak}
 \date{\today}
@@ -43,44 +43,248 @@ Proposed Architecture for \\Flying Saucers Bakery Project}
 \newpage
 
 \section{The Architecture}
+An overview of the architecture is provided in the fig \ref{architecture_overview}. The overall system is divided into 5 sequential stages and an additional set of common agents. Each stage can communicate with the next one in the line only via specific agent which act as interfaces between the stages. Due to the restriction imposed by the proposed stages, an efficient scheduling of the orders to process is not possible and therefore we choose to process the order sequentially based on their time of delivery and the availability of the resources to produce the items requested by the cutomers in their orders.
+
 \begin{figure}[h!]
 	\centering
-	\includegraphics[angle=90, scale=0.385]{../Bakery.png}
-	\caption{Architecture diagram}
-	\label{Architecture diagram}
+	\includegraphics[scale=0.5]{../Architecture/Architecture_Stages.png}
+	\caption{Architecture Overview}
+	\label{architecture_overview}
 \end{figure}
-The above figure \ref{Architecture diagram} outlines the overall architecture for the Flying Saucers Bakery project. The tags  above each of the components describe if the component is an object or an agent. The links between the components, represent the messages exchanged between the components. A detailed description of these messages can be looked up in the \textit{Messages.md} file.
 
+\pagebreak
+\subsection{Communication between agents}
+The agents belonging to each stage and the communication between them including the ACL messsage type are depicted in the figures mentioned in the description of the stages.
+
+\begin{itemize}
+	\item \textbf{Order Processing}: This stage deals with collecting orders from the customers, storing them until the day of delivery and scheduling the order for production on the day of delivery as shown in \ref{Architecture_OrderProcessing}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=0.4]{../Architecture/Architecture_OrderProcessing.png}
+	\caption{Order Processing}
+	\label{Architecture_OrderProcessing}
+\end{figure}	
+	
+	\item \textbf{Dough Preparation}: This stage deals with the Kneading of the dough, resting time and preparing the items for baking  as shown in \ref{Architecture_DoughPreparation}.
+	
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=0.5]{../Architecture/Architecture_DoughPreparation.png}
+	\caption{Dough Preparation}
+	\label{Architecture_DoughPreparation}
+\end{figure}	
+	
+	\item \textbf{Baking}: In this stage, the prepared items are filled on the trays, baked in the ovens, and cooled down  as shown in \ref{Architecture_Baking}..
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=0.5]{../Architecture/Architecture_Baking.png}
+	\caption{Baking}
+	\label{Architecture_Baking}
+\end{figure}	
+	
+	\item \textbf{Packing}: Here, the products are decorated and packaged into boxes for delivery  as shown in \ref{Architecture_Packaging}.
+	
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=0.35]{../Architecture/Architecture_Packaging.png}
+	\caption{Packing}
+	\label{Architecture_Packaging}
+\end{figure}	
+
+	\item \textbf{Transportation}: This stage collects the prepared orders and uses Trucks to deliver the orders from the bakery to the customers  as shown in \ref{Architecture_Delivery}.
+	
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=0.4]{../Architecture/Architecture_Delivery.png}
+	\caption{Delivery}
+	\label{Architecture_Delivery}
+\end{figure}	
+	
+	\item \textbf{Common Agents}: This stage consists of agents that communicate with almost all the agents in the other stages. Candidate agents for this stage are the clock and the visualization agent.
+\end{itemize}
+
+\subsection{Agent Behaviors}
+Every agent needs to have a set of behaviors to achieve its job. These are depicted in figure \ref{Agent_Behaviors}.
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=0.35]{../Architecture/AgentBehaviors.png}
+	\caption{Agent Behaviors}
+	\label{Agent_Behaviors}
+\end{figure}	
+
+\pagebreak
 \section{Agent Definitions}
 
-The below table  lists out the details of each of the component that are a part of the architecture diagram.
-\begin{table}[h!]
-\centering
-\begin{tabular}{|c|c|c|c|c|}
-\hline
-\textbf{Component}                                            & \textbf{\begin{tabular}[c]{@{}c@{}}Agent/\\ Object\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Static/\\ Dynamic\end{tabular}} & Stage                                                                      & Description                                                                                                                                                                       \\ \hline
-Customer                                                      & Agent                                                            & Dynamic                                                            & Ordering                                                                   & Places the order for a set of items                                                                                                                                               \\ \hline
-Order                                                         & Agent                                                            & Dynamic                                                            & \begin{tabular}[c]{@{}c@{}}Ordering/\\ Production/\\ Delivery\end{tabular} & \begin{tabular}[c]{@{}c@{}}Keeps track of a customer's request\\ for list of products at a given date\end{tabular}                                                                \\ \hline
-Truck                                                         & Agent                                                            & Static                                                             & Delivery                                                                   & Delivers packed boxes that fulfill orders                                                                                                                                         \\ \hline
-StreetNetwork                                                 & Agent                                                            & Static                                                             & Delivery                                                                   & \begin{tabular}[c]{@{}c@{}}Maintains a network of customer\\ and bakery locations\end{tabular}                                                                                    \\ \hline
-\begin{tabular}[c]{@{}c@{}}Order-\\ Processor\end{tabular}    & Agent                                                            & Static                                                             & Order                                                                      & \begin{tabular}[c]{@{}c@{}}Receives and maintains the orders\\ until they are picked up for production\end{tabular}                                                               \\ \hline
-\begin{tabular}[c]{@{}c@{}}Production-\\ Manager\end{tabular} & Agent                                                            & Static                                                             & Production                                                                 & \begin{tabular}[c]{@{}c@{}}Schedules and synchronizes the \\ activities of the rest of the agents\\ in the production stage\end{tabular}                                          \\ \hline
-\begin{tabular}[c]{@{}c@{}}Kneading-\\ Agent\end{tabular}     & Agent                                                            & Static                                                             & Production                                                                 & \begin{tabular}[c]{@{}c@{}}Responsible for kneading\\ the dough and its resting time\end{tabular}                                                                                 \\ \hline
-\begin{tabular}[c]{@{}c@{}}Preparation-\\ Agent\end{tabular}  & Agent                                                            & Static                                                             & Production                                                                 & \begin{tabular}[c]{@{}c@{}}Responsible for preparing \\ a given batch of items\end{tabular}                                                                                       \\ \hline
-BakingAgent                                                   & Agent                                                            & Static                                                             & Production                                                                 & \begin{tabular}[c]{@{}c@{}}Responsible for maintaining the ovens\\  including making time and time to cool the baked \\ products and time to cool the baked products\end{tabular} \\ \hline
-OrderTracker                                                  & Agent                                                            & Static                                                             & \begin{tabular}[c]{@{}c@{}}Production/\\ Delivery\end{tabular}             & \begin{tabular}[c]{@{}c@{}}Responsible for notifying the order \\ about their partial fulfillment\end{tabular}                                                                    \\ \hline
-PackingAgent                                                  & Agent                                                            & Static                                                             & Production                                                                 & \begin{tabular}[c]{@{}c@{}}Packs the baked items into boxes when \\ they are cooled down\end{tabular}                                                                             \\ \hline
-TransportAgent                                                & Agent                                                            & Static                                                             & Delivery                                                                   & \begin{tabular}[c]{@{}c@{}}Schedules the delivery of completed orders\\ by dividing them among truck agents\end{tabular}                                                          \\ \hline
-ProductInfo                                                   & Object                                                           & Static                                                             & -                                                                          & \begin{tabular}[c]{@{}c@{}}Contains the details of the products\\ (e.g. time to bake, number of items in box)\end{tabular}                                                        \\ \hline
-Box                                                           & Object                                                           & Dynamic                                                            & -                                                                          & \begin{tabular}[c]{@{}c@{}}Contains the type and quantity of \\ products packed in it\end{tabular}                                                                                \\ \hline
-\end{tabular}
-\label{Agent Definition}
-\caption{Agent Definitions}
-\end{table}
+\begin{itemize}
+	\item \textbf{Common}
+	\begin{itemize}
+	\item \textit{Component}: Clock
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Maintains the system time and informs every other agent about time updates
+	\end{itemize}
+	\item \textit{Component}: Visualization Agent
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Collects logging data from other agents and visualizes the overall system state
+	\end{itemize}
+	\item \textit{Component}: Order
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Dynamic
+		\item \textit{Description} : Maintains the list of items requested by the customer and updates it according to production status.
+	\end{itemize}
+	\item \textit{Component}: StreetNetwork
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Handles service requests for time to deliver between two nodes in the map.
+	\end{itemize}
+	\end{itemize}
+
+	\item \textbf{Order Processing}
+	\begin{itemize}
+	\item \textit{Component}:Customer
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Dynamic
+		\item \textit{Description} : Checks the quotations from every available bakery and places and order with one which has least quotation.
+	\end{itemize}
+	\item \textit{Component}: OrderProcessor
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Provides quotations and collects order from customers. Also provides a list of orders pending for preparation to scheduler.
+	\end{itemize}
+	\item \textit{Component}: Scheduler
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Schedules the orders for preparation based on their delivery time.
+	\end{itemize}
+	\item \textit{Component}: ProductInfo
+	\begin{itemize}
+		\item \textit{Agent/Object} : Object
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Contains all the details about a product (time to bake, etc.)
+	\end{itemize}
+	\end{itemize}
+
+	\item \textbf{Dough Preparation}
+	\begin{itemize}
+	\item \textit{Component}: KneadingAgent
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Handles the kneading and resting times for a product.
+	\end{itemize}
+	\item \textit{Component}: ItemPrepAgent
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Prepares the items to be baked. Takes varying amount of time based on item to be prepared.
+	\end{itemize}
+	\item \textit{Component}: Proofer
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Interface between the Dough preparation and Baking Stages.
+	\end{itemize}
+	\end{itemize}
+
+	\item \textbf{Baking}
+	\begin{itemize}
+	\item \textit{Component}: BakingScheduler
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Schedules the items to be backed based on the number of free ovens.
+	\end{itemize}
+	\item \textit{Component}: BakingAgent
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Bakes the items in the oven after filling them in the tray.
+	\end{itemize}
+	\item \textit{Component}: CoolingRacks
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Cools down the baked items and interfaces with the packing stage.
+	\end{itemize}
+	\end{itemize}
+
+	\item \textbf{Packing}
+	\begin{itemize}
+	\item \textit{Component}: PackingScheduler
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Schedules the cooled items for decoration.
+	\end{itemize}
+	\item \textit{Component}: DecoratorAgent
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Decorates the baked items.
+	\end{itemize}
+	\item \textit{Component}: PackingAgent
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Packs the decorated items into boxes.
+	\end{itemize}
+	\item \textit{Component}: LoadingBay
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Interface between the packing and delivery stages.
+	\end{itemize}
+	\item \textit{Component}: Box
+	\begin{itemize}
+		\item \textit{Agent/Object} : Object
+		\item \textit{Static/Dynamic} : Dynamic
+		\item \textit{Description} : Used to store items to be delivered.
+	\end{itemize}
+	\end{itemize}
+
+	\item \textbf{Delivery}
+	\begin{itemize}
+	\item \textit{Component}: OrderTracker
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Interface between the packing and delivery stages.
+	\end{itemize}
+	\item \textit{Component}: TransportAgent
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Requests the Truck agents to deliver the ready orders.
+	\end{itemize}
+	\item \textit{Component}: Truck
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Collects the ready orders and delivers them to the customers.
+	\end{itemize}
+	\item \textit{Component}: Mailbox
+	\begin{itemize}
+		\item \textit{Agent/Object} : Agent
+		\item \textit{Static/Dynamic} : Static
+		\item \textit{Description} : Stores message sent by the trucks related to delivery status.
+	\end{itemize}
+	\end{itemize}
+\end{itemize}
+
 
 \newpage
 \section{Aggregation of order data}
 
-The OrderProcessor maintains a database of all the orders that have been received from customers, indexed by delivery date. The ProductionManager requests the OrderProcessor for the orders that are due for the day. It sorts the orders according to their delivery time and picks them in that order for production. If some agents are still free (e.g. to bake or prepare more items), the ProductionManager also schedules products to be prepared from the next order in the queue and so on.
+Since the proposed architectural skeleton requires the various stages in the production phase to be disjoint from each other, it was not possible to aggregate the orders efficiently. We instead propose that the orders be completed sequentially based on their time of delivery (early delivery orders will be picked first for preparation). In case two orders have the same delivery time and have an overlap between their desired products, we can merge the orders (produce identical items in both the orders together) to have some efficiency in the kneading and resting time of the dough. 
 
 \end{document}\grid

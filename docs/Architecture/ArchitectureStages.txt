@@ -1,0 +1,22 @@
+@startuml Architecture_Stages
+skinparam classAttributeIconSize 0
+
+CommonAgents --> OrderProcessing : Updates
+OrderProcessing --> CommonAgents
+CommonAgents --> DoughPreparation : Updates
+DoughPreparation --> CommonAgents
+CommonAgents --> Baking : Updates
+Baking --> CommonAgents
+CommonAgents --> Packaging : Updates
+Packaging --> CommonAgents
+CommonAgents --> Delivery : Updates
+Delivery --> CommonAgents
+
+OrderProcessing --> DoughPreparation : via Scheduler
+DoughPreparation --> Baking : Proofer
+Baking --> Packaging : CoolingRacks
+Packaging --> Delivery : LoadingBay
+Delivery --> :Mailbox
+
+
+@enduml

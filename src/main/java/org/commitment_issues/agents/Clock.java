@@ -6,14 +6,10 @@ import jade.lang.acl.ACLMessage;
 import jade.core.Agent;
 import jade.core.behaviours.TickerBehaviour;
 
-import java.util.ArrayList;
-
-import jade.core.AID;
-
 
 
 public class Clock extends Agent {
-  static AMSAgentDescription [] agents = null;
+  private static AMSAgentDescription [] agents = null;
   public void setup() {
     System.out.println("Hello! Clock-agent "+getAID().getName()+" is ready each second is one hour.");
     

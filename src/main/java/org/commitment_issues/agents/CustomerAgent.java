@@ -1,5 +1,6 @@
 package org.commitment_issues.agents;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -99,7 +100,9 @@ public class CustomerAgent extends Agent {
 					order.addReceiver(orderProcessorAgents[i]);
 				}
 				
-				String clientFileContents = readFileAsString("/home/ahmed/Desktop/H-BRS/Semester 2/Multiagent and Agent Systems/ws18-project-commitment_issues/src/main/resources/config/sample/clients.json");
+				File fileRelative = new File("src/main/resources/config/sample/clients.json");
+				
+				String clientFileContents = readFileAsString(fileRelative.getAbsolutePath());
 				JSONArray clientDetailsJSONArray = new JSONArray(clientFileContents);
 				String orderDetails = "";
 				

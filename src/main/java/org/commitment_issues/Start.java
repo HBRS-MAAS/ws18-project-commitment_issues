@@ -29,7 +29,7 @@ public class Start {
     		agents.add(clientDetailsJSONArray.getJSONObject(i).getString("guid")+":org.commitment_issues.agents.CustomerAgent");
 		}
     	
-    	
+    	// Initializing bakery agents based on bakeries.json
     	File bakeriesFileRelative = new File("src/main/resources/config/sample/bakeries.json");
     	
     	String bakeriesFilePath = bakeriesFileRelative.getAbsolutePath();
@@ -51,13 +51,6 @@ public class Start {
         	agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-LoadingBayAgentAgent:org.commitment_issues.agents.LoadingBayAgent");
         	agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-MailboxAgent:org.commitment_issues.agents.MailboxAgent");
 		}
-
-//    	agents.add("SchedulerAgent1:org.commitment_issues.agents.SchedulerAgent");
-//    	agents.add("orderprocessor1:org.commitment_issues.agents.OrderProcessorAgent");
-//    	agents.add("ProoferAgent1:org.commitment_issues.agents.ProoferAgent");
-//    	agents.add("CoolingRacksAgent1:org.commitment_issues.agents.CoolingRacksAgent");
-//    	agents.add("LoadingBayAgentAgent1:org.commitment_issues.agents.LoadingBayAgent");
-//    	agents.add("MailboxAgent1:org.commitment_issues.agents.MailboxAgent");
 
     	List<String> cmd = new Vector<>();
     	cmd.add("-agents");

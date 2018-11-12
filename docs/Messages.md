@@ -1,85 +1,85 @@
-# OrderMessage
-## Customer requests a order processor of a bakery for some products to be delivered at specific time
-### "<ddd.hh\> product_name:price; product_name:price; product_name:price"
+# RequestQuotations (CFP)
+## Customer requests for quotations from all the available bakeries for their list of products and a specific delivery date
+### "<ddd.hh\> product_name:quantity; product_name:quantity; product_name:quantity"
 <br>
 
-# Status
-## The order processor acknowledges the receipt of the order form the customer
-###  "order_(received/declined)"
+# ReplyToCustomerRequest (PROPOSE/ REFUSE)
+## The bakeries propose a quotation or refuse to accept an order
+###  "Quotation" / "Rejected"
 <br>
 
-# requestForPendingOrders
-## The production manager requests todays orders from the order processor
-###  "todays_orders"
+# PlaceOrder (ACCEPT_PROPOSAL)
+## The Customer places the order with the bakery that provided the least quotation
+###  "<ddd.hh\> product_name:quantity; product_name:quantity; product_name:quantity"
 <br>
 
-# todaysOrders
-## The Order processor informs the production manager the list of orders due for today
-###  "order_id;order_id;order_id;order_id"
+# ConfirmOrder (INFORM)
+## The bakery informs the customer if the order was successfully placed.
+###  "Accepted:OrderID" / "Rejected"
 <br>
 
-# requestProductInfo
-## The production manager requests the order for the list of products
-### "product_list"
+# PendingOrders (REQUEST)
+## The Scheduler requests the OrderProcesor to provide a list of pending orders for the day.
+### "RequestForOrders"
 <br>
 
-# orderInfo
-## The order provides the list of all products to be fullfilled to the production manager
-### "product_id:quantity:due_time;product_id:quantity:due_time;product_id:quantity:due_time"
+# TodaysOrders (INFORM)
+## The OrderProcessor sends a list of order id's that are pending for today
+### "OrderID;OrderID;OrderID"
 <br>
 
-# getTimeToDelivery
-## The product manager requests the time to tranport an order
-###  "time_to_transport:order_id"
+# RequestProductInfo (REQUEST)
+## The scheduler requests the orders to provide a list of needed products
+###  "RequestForProductList"
 <br>
 
-# assignKneadingTask
-## The production manager informs the kneading agent about the quantity of dough to be kneaded
-### "knead:quantity"
+# OrderInfo (INFORM)
+## The Order provides a list of needed products to the Scheduler
+### "product_name:quantity; product_name:quantity; product_name:quantity"
 <br>
 
-# kneadingComplete
-## The kneading agent  is ready for kneading
-### "ready_to_knead;max_quantity"
+# GetTimeToDelivery (REQUEST)
+## The OrderProcessor requests the StreetNetwork for the time needed to deliver the finished products to the customer
+### "RequestTravelTime"
 <br>
 
-# restingComplete
-## The previously kneaded dough is ready for preparation
-### "ready_to_pick"
+# TimeToDelivery (INFORM)
+## The StreetNetwork informs the OrderProcessor about the tavel time from the bakery to the customer.
+### "hh"
 <br>
 
-# assignPrepTask
-## Request the item preparation agents to prepare the items
-### "item:quantity;item:quantity;item:quantity"
+# FreeToKnead? (QUERY_IF)
+## The Scheduler asks the Kneading agents if they are free to atke a kneading task
+### "RequestToKnead"
 <br>
 
-# preparationComplete
-## The preparation agent informs the production manager that it is ready to prepare new items
-### "ready_to_prepare"
+# ReadyToKnead (CONFIRM)
+## The Kneading agent confirms that it can take up a kneading task
+### "AcceptToKnead"
 <br>
 
-# assignBakingTask
-## The production manager requests the baking agent to bake the prepared items
-### "product_id:quantity;product_id:quantity;product_id:quantity"
+# ProductToKnead (INFORM)
+## The Scheduler informs the kneading agent about the product and its quantity to knead
+### "product_id:quantity"
 <br>
 
-# BakingComplete
-## The baking agent informs the production manager that baking is complete and oven is free
-### "baking_done:number_of_empty_slots"
+# FreeToPrepre? (QUERY_IF)
+## The kneading agent asks the ItemPrep agents if they are free to prepare the products whose dough is ready after the resting time
+### "RequestToPrepare"
 <br>
 
-# itemsReadyToPack
-## The baking agent informs the packaging agent that the items are cooled down and ready for packaging
-### "item_id:quantity;item_id:quantity;item_id:quantity"
+# ReadyToPrep (CONFIRM)
+## The ItemPrep agent confirms that it can accept a task to prepare the items
+### "AcceptToPrepare"
 <br>
 
-# itemsPacked
-## The packing agent informs the Order tracker that some items have been packed
-### "product_id:number_of_boxes;product_id:number_of_boxes;product_id:number_of_boxes;"
+# ProductToKnead (INFORM)
+## The Kneading agent informs the ItemPrep agent about the products that must be prepared
+### "product_id:quantity"
 <br>
 
-# moveOrderAgent
-## The production manager passes the responsibility of the order agent to the order tracker agent
+# ProofProducts (INFORM)
+## The ItemPrep agent informs that proofer agent that the items have been prepared and are ready for baking.
 ### "order_id;order_id;order_id"
 <br>
 

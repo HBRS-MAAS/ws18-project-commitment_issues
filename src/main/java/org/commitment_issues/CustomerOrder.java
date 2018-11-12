@@ -26,5 +26,9 @@ public class CustomerOrder {
 	public void setProductList(Hashtable<String, Integer> input) {
 		this.productList = input;
 	}
+	
+	public Hashtable<String, Integer> getProductList() {
+		return this.productList;
+	}
 
 }

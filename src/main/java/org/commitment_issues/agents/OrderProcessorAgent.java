@@ -99,7 +99,12 @@ public class OrderProcessorAgent extends Agent {
 				reply.setContent("order-received");
 				
 				System.out.println("["+getAID().getLocalName()+"]: Order received: "+orderDetails);
-
+				
+				String clientData = readFileAsString("/home/ahmed/Desktop/H-BRS/Semester 2/Multiagent and Agent Systems/ws18-project-commitment_issues/src/main/resources/config/sample/clients.json");
+				CustomerOrder clientOrder = parseOrder(clientData);
+				
+				System.out.println("\n\n"+clientOrder.getProductList().toString());
+				
 				myAgent.send(reply);
 			}
 			
@@ -109,7 +114,7 @@ public class OrderProcessorAgent extends Agent {
 		}
 	}
 	
-	protected void parseOrder(String clientData) {
+	protected CustomerOrder parseOrder(String clientData) {
 		JSONObject JSONClientData = new JSONObject(clientData.substring(1, clientData.length() - 1));
 		CustomerOrder orderDetails = new CustomerOrder();
 		
@@ -142,6 +147,8 @@ public class OrderProcessorAgent extends Agent {
 		productList.put("Bread", orderProducts.getInt("Bread"));
 		
 		orderDetails.setProductList(productList);
+		
+		return orderDetails;
 		
 	}
 	

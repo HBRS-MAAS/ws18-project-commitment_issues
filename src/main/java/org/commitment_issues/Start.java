@@ -1,12 +1,32 @@
 package org.commitment_issues;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Vector;
+
+import org.json.*;
 
 public class Start {
     public static void main(String[] args) {
     	List<String> agents = new Vector<>();
-    	agents.add("customer-001:org.commitment_issues.agents.CustomerAgent");
+    	
+    	// Initializing customer agents based on clients.json
+    	String filePath = "/home/ahmed/Desktop/H-BRS/Semester 2/Multiagent and Agent Systems/ws18-project-commitment_issues/src/main/resources/config/sample/clients.json";
+    	String clientFileData = "";
+    	try {
+			clientFileData = new String(Files.readAllBytes(Paths.get(filePath)));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	JSONArray clientDetailsJSONArray = new JSONArray(clientFileData);
+    	
+    	for (int i = 0 ; i < clientDetailsJSONArray.length(); i++) {
+    		agents.add(clientDetailsJSONArray.getJSONObject(i).getString("guid")+":org.commitment_issues.agents.CustomerAgent");
+		}
+
     	agents.add("SchedulerAgent1:org.commitment_issues.agents.SchedulerAgent");
     	agents.add("orderprocessor1:org.commitment_issues.agents.OrderProcessorAgent");
     	agents.add("ProoferAgent1:org.commitment_issues.agents.ProoferAgent");

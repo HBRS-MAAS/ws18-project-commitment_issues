@@ -17,11 +17,7 @@ public class CustomerOrder {
 	public int deliveryDay;
 	public int deliveryTime;
 	
-	Hashtable<String, Integer> productList = new Hashtable<String, Integer>();
-	
-	public CustomerOrder() {
-		// TODO Auto-generated constructor stub
-	}
+	public Hashtable<String, Integer> productList = new Hashtable<String, Integer>();
 	
 	public void setProductList(Hashtable<String, Integer> input) {
 		this.productList = input;

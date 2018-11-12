@@ -3,7 +3,9 @@ package org.commitment_issues.agents;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Hashtable;
 
+import org.commitment_issues.CustomerOrder;
 import org.json.*;
 
 import jade.content.lang.Codec;
@@ -109,27 +111,37 @@ public class OrderProcessorAgent extends Agent {
 	
 	protected void parseOrder(String clientData) {
 		JSONObject JSONClientData = new JSONObject(clientData.substring(1, clientData.length() - 1));
+		CustomerOrder orderDetails = new CustomerOrder();
 		
-		String customerName = JSONClientData.getString("name");
-		String customerId = JSONClientData.getString("guid");
-		int customerType = JSONClientData.getInt("type");
-		float customerLocationX = JSONClientData.getJSONObject("location").getFloat("x");
-		float customerLocationY = JSONClientData.getJSONObject("location").getFloat("y");
+		orderDetails.customerName = JSONClientData.getString("name");
+		orderDetails.customerId = JSONClientData.getString("guid");
+		orderDetails.customerType = JSONClientData.getInt("type");
+		orderDetails.customerLocationX = JSONClientData.getJSONObject("location").getFloat("x");
+		orderDetails.customerLocationY = JSONClientData.getJSONObject("location").getFloat("y");
 				
 		JSONArray orderJsonArray = JSONClientData.getJSONArray("orders");
 				
 		JSONObject order = orderJsonArray.getJSONObject(0);
-		String orderID = order.getString("guid");
+		orderDetails.orderID = order.getString("guid");
 		
 		JSONObject orderDate = order.getJSONObject("orderDate");
-		int orderDay = orderDate.getInt("day");
-		int orderTime = orderDate.getInt("hour");
+		orderDetails.orderDay = orderDate.getInt("day");
+		orderDetails.orderTime = orderDate.getInt("hour");
 		
 		JSONObject deliveryDate = order.getJSONObject("deliveryDate");
-		int deliveryDay = deliveryDate.getInt("day");
-		int deliveryTime = deliveryDate.getInt("hour");
+		orderDetails.deliveryDay = deliveryDate.getInt("day");
+		orderDetails.deliveryTime = deliveryDate.getInt("hour");
 		
 		JSONObject orderProducts = order.getJSONObject("products");
+		
+		Hashtable<String, Integer> productList = new Hashtable<String, Integer>();
+		productList.put("Bagels", orderProducts.getInt("Bagel"));
+		productList.put("Donuts", orderProducts.getInt("Donut"));
+		productList.put("Berliner", orderProducts.getInt("Berliner"));
+		productList.put("Muffins", orderProducts.getInt("Muffin"));
+		productList.put("Bread", orderProducts.getInt("Bread"));
+		
+		orderDetails.setProductList(productList);
 		
 	}
 	

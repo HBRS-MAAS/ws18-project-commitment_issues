@@ -23,7 +23,7 @@ public class ProoferAgent extends Agent {
 		registerInYellowPages();
 		
 //		addBehaviour(new ItemsPreparedServer());
-//		addBehaviour(new ReadyToBakeInformer());
+		addBehaviour(new ReadyToBakeInformer());
 
 	}
 	
@@ -71,6 +71,13 @@ public class ProoferAgent extends Agent {
 	private class ReadyToBakeInformer extends OneShotBehaviour {
 		public void action() {
 			// TODO
+			
+			// Send a dummy message
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			//msg.addReceiver();
+			msg.setContent("Bagels:quantity");
+			msg.setConversationId("proofer-inform");
+			myAgent.send(msg);
 		}
 	}
 	

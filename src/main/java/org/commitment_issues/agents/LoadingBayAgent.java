@@ -23,7 +23,7 @@ public class LoadingBayAgent extends Agent {
 		registerInYellowPages();
 		
 //		addBehaviour(new BoxToDeliverServer());
-//		addBehaviour(new BoxToDeliverInformer());
+		addBehaviour(new BoxToDeliverInformer());
 
 	}
 	
@@ -71,6 +71,13 @@ public class LoadingBayAgent extends Agent {
 	private class BoxToDeliverInformer extends OneShotBehaviour {
 		public void action() {
 			// TODO
+			
+			// Send a dummy message
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			//msg.addReceiver();
+			msg.setContent("Box1:Bagels,20");
+			msg.setConversationId("loadingBay-inform");
+			myAgent.send(msg);
 		}
 	}
 	

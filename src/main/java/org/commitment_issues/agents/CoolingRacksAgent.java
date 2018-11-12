@@ -23,7 +23,7 @@ public class CoolingRacksAgent extends Agent {
 		registerInYellowPages();
 		
 //		addBehaviour(new CoolProductsServer());
-//		addBehaviour(new ReadyToPackInformer());
+		addBehaviour(new ReadyToPackInformer());
 
 	}
 	
@@ -71,6 +71,13 @@ public class CoolingRacksAgent extends Agent {
 	private class ReadyToPackInformer extends OneShotBehaviour {
 		public void action() {
 			// TODO
+			
+			// Send a dummy message
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			//msg.addReceiver();
+			msg.setContent("Bagels:quantity");
+			msg.setConversationId("cooler-inform");
+			myAgent.send(msg);
 		}
 	}
 	

@@ -8,6 +8,7 @@ public class Start {
     	List<String> agents = new Vector<>();
     	agents.add("customer1:org.commitment_issues.agents.CustomerAgent");
     	agents.add("orderprocessor1:org.commitment_issues.agents.OrderProcessorAgent");
+    	agents.add("ProoferAgent1:org.commitment_issues.agents.ProoferAgent");
 
     	List<String> cmd = new Vector<>();
     	cmd.add("-agents");

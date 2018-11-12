@@ -40,7 +40,7 @@
 
 # GetTimeToDelivery (REQUEST)
 ## The OrderProcessor requests the StreetNetwork for the time needed to deliver the finished products to the customer
-### "RequestTravelTime"
+### "Bakery:<x_pos, y_pos>;Customer:<x_pos, y_pos>"
 <br>
 
 # TimeToDelivery (INFORM)
@@ -83,42 +83,124 @@
 ### "order_id;order_id;order_id"
 <br>
 
-# updateCompletedProducts
-## The order tracker informs the order agent that some of its products are ready for dispatch
+# ProductsReadyToBake (INFORM)
+## The Proofer agent informs the baking scheduler that a batch of items is ready to be baked
 ### "product_id:quantity;product_id:quantity;product_id:quantity"
 <br>
 
-# OrderFulfilled
-## The order agent informs the order tracker that the order is ready for delivery
-### "order_fulfilled"
+# FreeToPrepre? (QUERY_IF)
+## The BakingScheduler asks the baking agents if they have any free ovens to bake some products
+### "RequestToBake"
 <br>
 
-# GetDeliveryAddress
-## The Order tracker request the order agent for the delivery address
-### "delivery_address"
+# NumberOfFreeTrays (INFORM)
+## The baking agents inform the BakingSheduler if they have any free ovens.
+### "NumOfFreeOvens"
 <br>
 
-# DeliveryAddress
-## The order informs the order tracker about the delivery address
-### "x_customer,y_customer"
+# ProductsToBake (INFORM)
+## The BakingScheduler informs the baking agent to bake a batch of products
+### "product_id:quantity;product_id:quantity;product_id:quantity"
 <br>
 
-# RequestOrderTransport
-## The order tracker requests transporation of a complete order
-### "transport:order_id,<x_customer,y_customer>"
+# CoolProducts (INFORM)
+## The BakingAgent informs the clooing agent that a batch of products has been baked and must be cooled down
+### "product_id:quantity;product_id:quantity;product_id:quantity"
 <br>
 
-# queryTimeToDelivery
-## The Transport agent requests the Street Network agent for time to move a truck between the bakery and the customer
-### "x_start,y_start;x_end,y_end"
+# ProductsReadyToPack (INFORM)
+## The cooling agent informs the packing scheduler that some items have been cooled and are ready to be packed
+### "product_id:quantity;product_id:quantity;product_id:quantity"
 <br>
 
-# deliverOrders
-## The transport agent requests a truck to transport some orders
-### "order_id:x_customer,y_customer;order_id:x_customer,y_customer;order_id:x_customer,y_customer"
+# FreeToDecorate? (QUERY_IF)
+## The packing scheduler asks the decorator agents if they are free to start decoration of produced products
+### "RequestToDecorate"
 <br>
 
-# DeliveryStatus
-## The truck informs the order that the products were delivered to the customer. The order can then die.
-### "delivered_successfully"
+# ReadyToDecorate (CONFIRM)
+## The decorator agent informs the paking scheduler that it can pick up a task fr deocrating items.
+### "AcceptToDecorate"
 <br>
+
+# ProductsToDecorate (INFORM)
+## The PackingScheduler informs the DecoratorAgent about the list of products to be decorated
+### "product_id:quantity"
+<br>
+
+# FreeToPack? (QUERY_IF)
+## The DecoratorAgent asks the packing agents if they are free to start a new packing task
+### "RequestToPack"
+<br>
+
+# ReadyToPack (CONFIRM)
+## The packing agent informs the decorator agent that it can pick up a task fr packing items.
+### "AcceptToPack"
+<br>
+
+# PackProducts (INFORM)
+## The Decorator agent provides a list of items to be packed
+### "product_id:quantity"
+<br>
+
+# BoxesToDeliver (INFORM)
+## The PackingAgent informs the loadingBay agent that some items have been packed in boxes.
+### "BoxID:product_id,quantity;BoxID:product_id,quantity;BoxID:product_id,quantity"
+<br>
+
+# BoxesReadyToDeliver (INFORM)
+## The LoadingBay informs the OrderTracker that some items have been packed in boxes.
+### "BoxID:product_id,quantity;BoxID:product_id,quantity;BoxID:product_id,quantity"
+<br>
+
+# OrderProgress (INFORM)
+## The order tracker informs the orders about some products needed by them are ready to be dispatched
+### "product_id:quantity;product_id:quantity;product_id:quantity;"
+<br>
+
+# OrderFulfilled (CONFIRM)
+## If all the products needed by an order are ready, the order informs the OrderTracker that the order is now ready for dispatch
+### "AllItemsReady"
+<br>
+
+# RequestOrderTransport (REQUEST)
+## The OrderTracker informs the Transport agent that an order is ready to be delivered.
+### "OrderID;OrderID;OrderID;"
+<br>
+
+# RequestTimeForDelivery (CFP)
+## The TransportAgent seend out a message to all the trucks to request their best time to deliver a product from the bakery to a customer location.
+### "Bakery:<x_pos, y_pos>;Customer:<x_pos, y_pos>"
+<br>
+
+# queryTimeToDelivery (INFORM)
+## The Trucks check with the Street network about time to travel multiple different distances (E.g. current_pos to bakery and bakery to customer)
+### "Pos1:<x_pos, y_pos>;Pos2:<x_pos, y_pos>"
+<br>
+
+# TimeToDelivery (INFORM)
+## The StreetNetwork informs the Trucks about the tavel time from the bakery to the customer.
+### "hh"
+<br>
+
+# ReplyToRequest (PROPOSE / REFUSE)
+## The Trucks inform the Transport agent about their best times to deliver the orders
+### "product_id:quantity"
+<br>
+
+# AssignDelivery (ACCEPT_PROPOSAL)
+## The Delivery agent contracts the truck with the best time to delivery to deliver an order
+### "OrderID"
+<br>
+
+# ConfirmAssignment (INFORM)
+## The Trucks inform the trasport about if they accepted or rejected the contract.
+### "Acceptance:OrderID" / "Rejection:OrderID"
+<br>
+
+# OrderSuccessfullyDelivered (INFORM)
+## The trucks post a message into the mailbox after an order has been delivered
+### "Delivered:OrderID"
+<br>
+
+

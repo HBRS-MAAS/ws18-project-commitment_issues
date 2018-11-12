@@ -1,5 +1,10 @@
 package org.commitment_issues.agents;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.basic.Action;
@@ -15,6 +20,8 @@ import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.domain.JADEAgentManagement.ShutdownPlatform;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+
+import org.json.*;
 
 
 @SuppressWarnings("serial")
@@ -93,7 +100,19 @@ public class CustomerAgent extends Agent {
 					order.addReceiver(orderProcessorAgents[i]);
 				}
 				
-				String orderDetails = "<005.10> Bagels:5; Bread:10; Cookies:20";
+				File fileRelative = new File("src/main/resources/config/sample/clients.json");
+				
+				String clientFileContents = readFileAsString(fileRelative.getAbsolutePath());
+				JSONArray clientDetailsJSONArray = new JSONArray(clientFileContents);
+				String orderDetails = "";
+				
+				// Extract only the customer's own order from the provided clients data file
+				for (int i = 0 ; i < clientDetailsJSONArray.length(); i++) {
+					if (clientDetailsJSONArray.getJSONObject(i).getString("guid").equals(this.getAgent().getAID().getLocalName())) {
+						orderDetails = clientDetailsJSONArray.getJSONObject(i).toString();
+					}
+				}
+				
 				order.setContent(orderDetails);
 				order.setConversationId("bakery-order");
 				order.setReplyWith("order"+System.currentTimeMillis());
@@ -131,5 +150,16 @@ public class CustomerAgent extends Agent {
 			return (step == 2);
 		}
 	}
+	
+	public static String readFileAsString(String fileName) { 
+	    String data = ""; 
+	    try {
+			data = new String(Files.readAllBytes(Paths.get(fileName)));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	    return data; 
+	 }
 
 }

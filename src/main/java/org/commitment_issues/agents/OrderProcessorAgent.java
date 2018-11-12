@@ -1,5 +1,10 @@
 package org.commitment_issues.agents;
 
+import java.util.Hashtable;
+
+import org.commitment_issues.CustomerOrder;
+import org.json.*;
+
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.basic.Action;
@@ -90,8 +95,11 @@ public class OrderProcessorAgent extends Agent {
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent("order-received");
 				
-				System.out.println("["+getAID().getLocalName()+"]: Order received: "+orderDetails);
-
+				CustomerOrder clientOrder = parseOrder(orderDetails);
+				
+				String orderProductList = clientOrder.getProductList().toString();
+				System.out.println("\n["+getAID().getLocalName()+"]: Order received from customer "+clientOrder.customerId+": \n"+orderProductList+"\n\n");
+				
 				myAgent.send(reply);
 			}
 			
@@ -99,6 +107,55 @@ public class OrderProcessorAgent extends Agent {
 				block();
 			}
 		}
-	} 
+	}
+	
+	protected CustomerOrder parseOrder(String clientData) {
+		JSONObject JSONClientData = new JSONObject(clientData);
+		CustomerOrder orderDetails = new CustomerOrder();
+		
+		orderDetails.customerName = JSONClientData.getString("name");
+		orderDetails.customerId = JSONClientData.getString("guid");
+		orderDetails.customerType = JSONClientData.getInt("type");
+		orderDetails.customerLocationX = JSONClientData.getJSONObject("location").getFloat("x");
+		orderDetails.customerLocationY = JSONClientData.getJSONObject("location").getFloat("y");
+				
+		JSONArray orderJsonArray = JSONClientData.getJSONArray("orders");
+				
+		JSONObject order = orderJsonArray.getJSONObject(0);
+		orderDetails.orderID = order.getString("guid");
+		
+		JSONObject orderDate = order.getJSONObject("orderDate");
+		orderDetails.orderDay = orderDate.getInt("day");
+		orderDetails.orderTime = orderDate.getInt("hour");
+		
+		JSONObject deliveryDate = order.getJSONObject("deliveryDate");
+		orderDetails.deliveryDay = deliveryDate.getInt("day");
+		orderDetails.deliveryTime = deliveryDate.getInt("hour");
+		
+		JSONObject orderProducts = order.getJSONObject("products");
+		
+		Hashtable<String, Integer> productList = new Hashtable<String, Integer>();
+		productList.put("Bagels", orderProducts.getInt("Bagel"));
+		productList.put("Donuts", orderProducts.getInt("Donut"));
+		productList.put("Berliner", orderProducts.getInt("Berliner"));
+		productList.put("Muffins", orderProducts.getInt("Muffin"));
+		productList.put("Bread", orderProducts.getInt("Bread"));
+		
+		orderDetails.setProductList(productList);
+		
+		return orderDetails;
+		
+	}
+	
+//	public static String readFileAsString(String fileName) { 
+//	    String data = ""; 
+//	    try {
+//			data = new String(Files.readAllBytes(Paths.get(fileName)));
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} 
+//	    return data; 
+//	 }
 
 }

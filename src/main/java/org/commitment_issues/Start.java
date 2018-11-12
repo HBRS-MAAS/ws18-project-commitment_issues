@@ -6,7 +6,7 @@ import java.util.Vector;
 public class Start {
     public static void main(String[] args) {
     	List<String> agents = new Vector<>();
-    	agents.add("customer1:org.commitment_issues.agents.CustomerAgent");
+    	agents.add("customer-001:org.commitment_issues.agents.CustomerAgent");
     	agents.add("SchedulerAgent1:org.commitment_issues.agents.SchedulerAgent");
     	agents.add("orderprocessor1:org.commitment_issues.agents.OrderProcessorAgent");
     	agents.add("ProoferAgent1:org.commitment_issues.agents.ProoferAgent");

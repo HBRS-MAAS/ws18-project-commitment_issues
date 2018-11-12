@@ -287,5 +287,9 @@ Every agent needs to have a set of behaviors to achieve its job. These are depic
 \paragraph{}
 Since the proposed architectural skeleton requires the various stages in the production phase to be disjoint from each other, it was not possible to aggregate the orders efficiently. We instead propose that the orders be completed sequentially based on their time of delivery (early delivery orders will be picked first for preparation). In case two orders have the same delivery time and have an overlap between their desired products, we can merge the orders (produce identical items in both the orders together) to have some efficiency in the kneading and resting time of the dough. 
 
+\hfill\break
+\section{Description of the Clock Agent}
+\paragraph{}
+The clock agent is responsible for managing common time between all agents in the bakery scenario. It implements a ticker behavior which executes every second, incrementing time in the bakery scenario by one hour. At every update, it sends an ACL message whose performative is set to 'INFORM' to all agents, on a dedicated conversation ID, which informs them of the current day and time. This message is constructed according to the general format: $<$ddd:hh$>$.
 
 \end{document}\grid

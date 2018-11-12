@@ -98,12 +98,11 @@ public class OrderProcessorAgent extends Agent {
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent("order-received");
 				
-				System.out.println("["+getAID().getLocalName()+"]: Order received: "+orderDetails);
+//				String clientData = readFileAsString("/home/ahmed/Desktop/H-BRS/Semester 2/Multiagent and Agent Systems/ws18-project-commitment_issues/src/main/resources/config/sample/clients.json");
+				CustomerOrder clientOrder = parseOrder(orderDetails);
 				
-				String clientData = readFileAsString("/home/ahmed/Desktop/H-BRS/Semester 2/Multiagent and Agent Systems/ws18-project-commitment_issues/src/main/resources/config/sample/clients.json");
-				CustomerOrder clientOrder = parseOrder(clientData);
-				
-				System.out.println("\n\n"+clientOrder.getProductList().toString());
+				String orderProductList = clientOrder.getProductList().toString();
+				System.out.println("\n["+getAID().getLocalName()+"]: Order received from customer "+clientOrder.customerId+": \n"+orderProductList+"\n\n");
 				
 				myAgent.send(reply);
 			}
@@ -152,15 +151,15 @@ public class OrderProcessorAgent extends Agent {
 		
 	}
 	
-	public static String readFileAsString(String fileName) { 
-	    String data = ""; 
-	    try {
-			data = new String(Files.readAllBytes(Paths.get(fileName)));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-	    return data; 
-	 }
+//	public static String readFileAsString(String fileName) { 
+//	    String data = ""; 
+//	    try {
+//			data = new String(Files.readAllBytes(Paths.get(fileName)));
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} 
+//	    return data; 
+//	 }
 
 }

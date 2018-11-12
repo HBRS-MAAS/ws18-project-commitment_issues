@@ -1,5 +1,9 @@
 package org.commitment_issues.agents;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.basic.Action;
@@ -93,7 +97,8 @@ public class CustomerAgent extends Agent {
 					order.addReceiver(orderProcessorAgents[i]);
 				}
 				
-				String orderDetails = "<005.10> Bagels:5; Bread:10; Cookies:20";
+//				String orderDetails = "<005.10> Bagels:5; Bread:10; Cookies:20";
+				String orderDetails = readFileAsString("/home/ahmed/Desktop/H-BRS/Semester 2/Multiagent and Agent Systems/ws18-project-commitment_issues/src/main/resources/config/sample/clients.json");
 				order.setContent(orderDetails);
 				order.setConversationId("bakery-order");
 				order.setReplyWith("order"+System.currentTimeMillis());
@@ -131,5 +136,16 @@ public class CustomerAgent extends Agent {
 			return (step == 2);
 		}
 	}
+	
+	public static String readFileAsString(String fileName) { 
+	    String data = ""; 
+	    try {
+			data = new String(Files.readAllBytes(Paths.get(fileName)));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	    return data; 
+	 }
 
 }

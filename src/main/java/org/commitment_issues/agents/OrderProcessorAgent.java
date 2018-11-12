@@ -1,5 +1,11 @@
 package org.commitment_issues.agents;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import org.json.*;
+
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.basic.Action;
@@ -99,6 +105,43 @@ public class OrderProcessorAgent extends Agent {
 				block();
 			}
 		}
-	} 
+	}
+	
+	protected void parseOrder(String clientData) {
+		JSONObject JSONClientData = new JSONObject(clientData.substring(1, clientData.length() - 1));
+		
+		String customerName = JSONClientData.getString("name");
+		String customerId = JSONClientData.getString("guid");
+		int customerType = JSONClientData.getInt("type");
+		float customerLocationX = JSONClientData.getJSONObject("location").getFloat("x");
+		float customerLocationY = JSONClientData.getJSONObject("location").getFloat("y");
+				
+		JSONArray orderJsonArray = JSONClientData.getJSONArray("orders");
+				
+		JSONObject order = orderJsonArray.getJSONObject(0);
+		String orderID = order.getString("guid");
+		
+		JSONObject orderDate = order.getJSONObject("orderDate");
+		int orderDay = orderDate.getInt("day");
+		int orderTime = orderDate.getInt("hour");
+		
+		JSONObject deliveryDate = order.getJSONObject("deliveryDate");
+		int deliveryDay = deliveryDate.getInt("day");
+		int deliveryTime = deliveryDate.getInt("hour");
+		
+		JSONObject orderProducts = order.getJSONObject("products");
+		
+	}
+	
+	public static String readFileAsString(String fileName) { 
+	    String data = ""; 
+	    try {
+			data = new String(Files.readAllBytes(Paths.get(fileName)));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	    return data; 
+	 }
 
 }

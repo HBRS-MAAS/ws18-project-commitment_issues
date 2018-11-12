@@ -1,5 +1,6 @@
 package org.commitment_issues;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -13,10 +14,11 @@ public class Start {
     	List<String> agents = new Vector<>();
     	
     	// Initializing customer agents based on clients.json
-    	String filePath = "/home/ahmed/Desktop/H-BRS/Semester 2/Multiagent and Agent Systems/ws18-project-commitment_issues/src/main/resources/config/sample/clients.json";
+    	File clientFileRelative = new File("src/main/resources/config/sample/clients.json");
+    	String clientFilePath = clientFileRelative.getAbsolutePath();
     	String clientFileData = "";
     	try {
-			clientFileData = new String(Files.readAllBytes(Paths.get(filePath)));
+			clientFileData = new String(Files.readAllBytes(Paths.get(clientFilePath)));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -26,13 +28,36 @@ public class Start {
     	for (int i = 0 ; i < clientDetailsJSONArray.length(); i++) {
     		agents.add(clientDetailsJSONArray.getJSONObject(i).getString("guid")+":org.commitment_issues.agents.CustomerAgent");
 		}
+    	
+    	
+    	File bakeriesFileRelative = new File("src/main/resources/config/sample/bakeries.json");
+    	
+    	String bakeriesFilePath = bakeriesFileRelative.getAbsolutePath();
+    	String bakeriesFileData = "";
+    	
+    	try {
+			bakeriesFileData = new String(Files.readAllBytes(Paths.get(bakeriesFilePath)));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	JSONArray bakeriesDetailsJSONArray = new JSONArray(bakeriesFileData);
+    	
+    	for (int i = 0 ; i < bakeriesDetailsJSONArray.length(); i++) {
+    		agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-SchedulerAgent:org.commitment_issues.agents.SchedulerAgent");
+    		agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-orderprocessor:org.commitment_issues.agents.OrderProcessorAgent");
+        	agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-ProoferAgent:org.commitment_issues.agents.ProoferAgent");
+        	agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-CoolingRacksAgent:org.commitment_issues.agents.CoolingRacksAgent");
+        	agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-LoadingBayAgentAgent:org.commitment_issues.agents.LoadingBayAgent");
+        	agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-MailboxAgent:org.commitment_issues.agents.MailboxAgent");
+		}
 
-    	agents.add("SchedulerAgent1:org.commitment_issues.agents.SchedulerAgent");
-    	agents.add("orderprocessor1:org.commitment_issues.agents.OrderProcessorAgent");
-    	agents.add("ProoferAgent1:org.commitment_issues.agents.ProoferAgent");
-    	agents.add("CoolingRacksAgent1:org.commitment_issues.agents.CoolingRacksAgent");
-    	agents.add("LoadingBayAgentAgent1:org.commitment_issues.agents.LoadingBayAgent");
-    	agents.add("MailboxAgent1:org.commitment_issues.agents.MailboxAgent");
+//    	agents.add("SchedulerAgent1:org.commitment_issues.agents.SchedulerAgent");
+//    	agents.add("orderprocessor1:org.commitment_issues.agents.OrderProcessorAgent");
+//    	agents.add("ProoferAgent1:org.commitment_issues.agents.ProoferAgent");
+//    	agents.add("CoolingRacksAgent1:org.commitment_issues.agents.CoolingRacksAgent");
+//    	agents.add("LoadingBayAgentAgent1:org.commitment_issues.agents.LoadingBayAgent");
+//    	agents.add("MailboxAgent1:org.commitment_issues.agents.MailboxAgent");
 
     	List<String> cmd = new Vector<>();
     	cmd.add("-agents");

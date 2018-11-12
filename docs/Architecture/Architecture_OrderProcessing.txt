@@ -1,0 +1,20 @@
+@startuml Architecture_OrderProcessing
+skinparam classAttributeIconSize 0
+
+== Order Processing ==
+
+Customer --> OrderProcessor : RequestQuotations (CFP)
+OrderProcessor --> Customer : ReplyToCustomerRequest (PROPOSE / REFUSE)
+Customer --> OrderProcessor : PlaceOrder (ACCEPT_PROPOSAL)
+OrderProcessor --> Customer : ConfirmOrder (INFORM)
+
+== Start of Day ==
+Scheduler --> OrderProcessor : PendingOrders (REQUEST)
+OrderProcessor --> Scheduler : TodaysOrder (INFORM)
+Scheduler --> Order : RequestProductInfo (REQUEST)
+Order --> Scheduler : OrderInfo (INFORM)
+Scheduler --> StreetNetwork : GetTimeToDelivery (REQUEST)
+StreetNetwork --> Scheduler : TimeToDelivery (INFORM)
+
+
+@enduml

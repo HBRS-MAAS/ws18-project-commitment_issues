@@ -43,7 +43,7 @@ Proposed Architecture for \\Flying Saucers Bakery Project}
 \newpage
 
 \section{The Architecture}
-An overview of the architecture is provided in the fig \ref{architecture_overview}. The overall system is divided into 5 sequential stages and an additional set of common agents. Each stage can communicate with the next one in the line only via specific agent which act as interfaces between the stages. Due to the restriction imposed by the proposed stages, an efficient scheduling of the orders to process is not possible and therefore we choose to process the order sequentially based on their time of delivery and the availability of the resources to produce the items requested by the cutomers in their orders.
+An overview of the architecture is provided in the fig \ref{architecture_overview}. The overall system is divided into five sequential stages and an additional set of common agents. Each stage can communicate with the next one in the line only via a specific agent which acts as an interface between the stages. Due to the restriction imposed by the proposed stages, an efficient scheduling of the orders to be processed is not possible, and therefore we choose to process the orders sequentially based on their time of delivery and the availability of the resources to produce the items requested by the customers in their orders.
 
 \begin{figure}[h!]
 	\centering
@@ -57,7 +57,7 @@ An overview of the architecture is provided in the fig \ref{architecture_overvie
 The agents belonging to each stage and the communication between them including the ACL messsage type are depicted in the figures mentioned in the description of the stages.
 
 \begin{itemize}
-	\item \textbf{Order Processing}: This stage deals with collecting orders from the customers, storing them until the day of delivery and scheduling the order for production on the day of delivery as shown in \ref{Architecture_OrderProcessing}.
+	\item \textbf{Order Processing}: This stage deals with collecting orders from the customers, storing them until the day of delivery and scheduling the order for production on the day of delivery as shown in figure \ref{Architecture_OrderProcessing}.
 
 \begin{figure}[h!]
 	\centering
@@ -66,7 +66,7 @@ The agents belonging to each stage and the communication between them including 
 	\label{Architecture_OrderProcessing}
 \end{figure}	
 	
-	\item \textbf{Dough Preparation}: This stage deals with the Kneading of the dough, resting time and preparing the items for baking  as shown in \ref{Architecture_DoughPreparation}.
+	\item \textbf{Dough Preparation}: This stage deals with the kneading of the dough, resting time and preparing the items for baking  as shown in figure \ref{Architecture_DoughPreparation}.
 	
 \begin{figure}[h!]
 	\centering
@@ -75,7 +75,7 @@ The agents belonging to each stage and the communication between them including 
 	\label{Architecture_DoughPreparation}
 \end{figure}	
 	
-	\item \textbf{Baking}: In this stage, the prepared items are filled on the trays, baked in the ovens, and cooled down  as shown in \ref{Architecture_Baking}..
+	\item \textbf{Baking}: In this stage, the prepared items are filled on the trays, baked in the ovens, and cooled down  as shown in figure \ref{Architecture_Baking}.
 
 \begin{figure}[h!]
 	\centering
@@ -93,7 +93,7 @@ The agents belonging to each stage and the communication between them including 
 	\label{Architecture_Packaging}
 \end{figure}	
 
-	\item \textbf{Transportation}: This stage collects the prepared orders and uses Trucks to deliver the orders from the bakery to the customers  as shown in \ref{Architecture_Delivery}.
+	\item \textbf{Transportation}: This stage collects the prepared orders and uses trucks to deliver the orders from the bakery to the customers  as shown in \ref{Architecture_Delivery}.
 	
 \begin{figure}[h!]
 	\centering
@@ -283,8 +283,9 @@ Every agent needs to have a set of behaviors to achieve its job. These are depic
 
 
 \newpage
-\section{Aggregation of order data}
-
+\section{Aggregation of Order Data}
+\paragraph{}
 Since the proposed architectural skeleton requires the various stages in the production phase to be disjoint from each other, it was not possible to aggregate the orders efficiently. We instead propose that the orders be completed sequentially based on their time of delivery (early delivery orders will be picked first for preparation). In case two orders have the same delivery time and have an overlap between their desired products, we can merge the orders (produce identical items in both the orders together) to have some efficiency in the kneading and resting time of the dough. 
+
 
 \end{document}\grid

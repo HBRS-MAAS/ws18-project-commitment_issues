@@ -98,7 +98,6 @@ public class OrderProcessorAgent extends Agent {
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent("order-received");
 				
-//				String clientData = readFileAsString("/home/ahmed/Desktop/H-BRS/Semester 2/Multiagent and Agent Systems/ws18-project-commitment_issues/src/main/resources/config/sample/clients.json");
 				CustomerOrder clientOrder = parseOrder(orderDetails);
 				
 				String orderProductList = clientOrder.getProductList().toString();
@@ -114,7 +113,7 @@ public class OrderProcessorAgent extends Agent {
 	}
 	
 	protected CustomerOrder parseOrder(String clientData) {
-		JSONObject JSONClientData = new JSONObject(clientData.substring(1, clientData.length() - 1));
+		JSONObject JSONClientData = new JSONObject(clientData);
 		CustomerOrder orderDetails = new CustomerOrder();
 		
 		orderDetails.customerName = JSONClientData.getString("name");

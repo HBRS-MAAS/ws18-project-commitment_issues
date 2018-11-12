@@ -20,6 +20,8 @@ import jade.domain.JADEAgentManagement.ShutdownPlatform;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
+import org.json.*;
+
 
 @SuppressWarnings("serial")
 public class CustomerAgent extends Agent {
@@ -97,8 +99,17 @@ public class CustomerAgent extends Agent {
 					order.addReceiver(orderProcessorAgents[i]);
 				}
 				
-//				String orderDetails = "<005.10> Bagels:5; Bread:10; Cookies:20";
-				String orderDetails = readFileAsString("/home/ahmed/Desktop/H-BRS/Semester 2/Multiagent and Agent Systems/ws18-project-commitment_issues/src/main/resources/config/sample/clients.json");
+				String clientFileContents = readFileAsString("/home/ahmed/Desktop/H-BRS/Semester 2/Multiagent and Agent Systems/ws18-project-commitment_issues/src/main/resources/config/sample/clients.json");
+				JSONArray clientDetailsJSONArray = new JSONArray(clientFileContents);
+				String orderDetails = "";
+				
+				// Extract only the customer's own order from the provided clients data file
+				for (int i = 0 ; i < clientDetailsJSONArray.length(); i++) {
+					if (clientDetailsJSONArray.getJSONObject(i).getString("guid").equals(this.getAgent().getAID().getLocalName())) {
+						orderDetails = clientDetailsJSONArray.getJSONObject(i).toString();
+					}
+				}
+				
 				order.setContent(orderDetails);
 				order.setConversationId("bakery-order");
 				order.setReplyWith("order"+System.currentTimeMillis());

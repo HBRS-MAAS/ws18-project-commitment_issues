@@ -1,7 +1,9 @@
 //package org.commitment_issues.deliveryAgents;
 package org.commitment_issues.delivery_agents;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.commitment_issues.CustomerOrder;
 import org.json.*;
@@ -21,6 +23,8 @@ import jade.lang.acl.ACLMessage;
 
 @SuppressWarnings("serial")
 public class StreetNetworkAgent extends Agent {
+	public List<Vertex> nodes = new ArrayList<Vertex>();
+	public List<Edge> edges = new ArrayList<Edge>();
 
 	protected void setup() {
 		System.out.println("Hello! StreetNetwork-agent "+getAID().getName()+" is ready.");
@@ -67,9 +71,34 @@ public class StreetNetworkAgent extends Agent {
 		JSONArray nodesJSONArray = JSONSNData.getJSONArray("nodes");
 		JSONArray linksJSONArray = JSONSNData.getJSONArray("links");
 		
+		int numNodes = nodesJSONArray.length();
+		int numLinks = linksJSONArray.length();
 		
+		for (int i = 0; i < numNodes; i++) {
+			JSONObject nodeInfo = nodesJSONArray.getJSONObject(i);
+//			String nodeName = nodeInfo.getString("name");
+			String nodeID = nodeInfo.getString("guid");
+            Vertex location = new Vertex(nodeID, nodeID);
+            nodes.add(location);
+        }
+		
+		for (int i = 0; i < numLinks; i++) {
+			JSONObject linkInfo = linksJSONArray.getJSONObject(i);
+			String sourceNodeID = linkInfo.getString("source");
+			String targetNodeID = linkInfo.getString("target");
+			Vertex sourceVertex = new Vertex(sourceNodeID, sourceNodeID);
+			Vertex targetVertex = new Vertex(targetNodeID, targetNodeID);
+			
+			addLink(linkInfo.getString("guid"), nodes.indexOf(sourceVertex), nodes.indexOf(targetVertex), linkInfo.getFloat("dist"));
+		}
 				
 	}
+	
+	protected void addLink(String laneId, int sourceLocNo, int destLocNo,
+            float distance) {
+        Edge lane = new Edge(laneId,nodes.get(sourceLocNo), nodes.get(destLocNo), distance );
+        edges.add(lane);
+    }
 
 
 }

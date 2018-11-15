@@ -72,7 +72,7 @@ public class StreetNetworkAgent extends Agent {
 	protected void parseStreetNetworkData(String streetNetworkData) {
 		JSONObject JSONSNData = new JSONObject(streetNetworkData);
 		
-		boolean directed = JSONSNData.getBoolean("directed");
+//		boolean directed = JSONSNData.getBoolean("directed");
 		
 //		JSONArray nodesJSONArray = JSONSNData.getJSONArray("nodes");
 //		JSONArray linksJSONArray = JSONSNData.getJSONArray("links");
@@ -174,6 +174,34 @@ public class StreetNetworkAgent extends Agent {
 		}
 		
 		return nodeID;
+	}
+	
+	protected double getPathTime(LinkedList<Vertex> fullPath) {
+		double time = 0.0;
+		double speedFactor = 1.0;
+		double totalDistance = 0.0;
+		
+		for (int i = 0; i < fullPath.size()-1; i++) {
+			String graphSourceID = fullPath.get(i).getId();
+			String graphTargetID = fullPath.get(i+1).getId();
+			
+			for (int j = 0; j < linksJSONArray.length(); j++) {
+				String edgeSourceID = linksJSONArray.getJSONObject(j).getString("source");
+				String edgeTargetID = linksJSONArray.getJSONObject(j).getString("target");
+				
+				if (edgeSourceID.equals(graphSourceID) && edgeTargetID.equals(graphTargetID)) {
+					totalDistance = totalDistance + linksJSONArray.getJSONObject(j).getDouble("dist");
+					
+				}
+			}
+			
+//			totalDistance = totalDistance + edgeDistance; 
+			
+		}
+		
+		time = totalDistance / speedFactor;
+		
+		return time;
 	}
 
 

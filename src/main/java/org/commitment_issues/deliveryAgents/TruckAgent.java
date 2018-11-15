@@ -104,6 +104,7 @@ public class TruckAgent extends Agent {
 		public float[] newCustomerLocation_;
 		public float[] currCustomerLocation_;
 		public float[] truckLocation_;
+		private int numOfBoxes_;
 		private float timeQuote_ = 0;
 		private boolean responseReceivedFromStreetNW_ = false;		
 		
@@ -112,9 +113,19 @@ public class TruckAgent extends Agent {
 		}
 		
 		protected void decodeRequestMessage() {
-			//TODO
-			bakeryLocation_ = null;
-			newCustomerLocation_ = null;
+			String jsonMessage = requestMsg_.getContent();
+			JSONObject jsonObj = new JSONObject(jsonMessage);
+			
+			orderID_ = jsonObj.getString("OrderID");
+			numOfBoxes_ = jsonObj.getInt("NumOfBoxes");
+			
+			bakeryLocation_ = new float[2];
+			bakeryLocation_[0] = jsonObj.getJSONObject("Source").getFloat("X");
+			bakeryLocation_[1] = jsonObj.getJSONObject("Source").getFloat("Y");
+			
+			newCustomerLocation_ = new float[2];
+			newCustomerLocation_[0] = jsonObj.getJSONObject("Destination").getFloat("X");
+			newCustomerLocation_[1] = jsonObj.getJSONObject("Destination").getFloat("Y");
 		}
 		
 		protected void handleTimeQueryResponse(String queryID, float time) {

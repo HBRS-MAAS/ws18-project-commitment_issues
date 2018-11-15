@@ -21,7 +21,6 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.lang.acl.ACLMessage;
-import testJavaProj.Vertex;
 
 @SuppressWarnings("serial")
 public class StreetNetworkAgent extends Agent {
@@ -130,11 +129,11 @@ public class StreetNetworkAgent extends Agent {
 			String targetID = findNodeFromLocation(nextInfo.getDouble("X"), nextInfo.getDouble("Y"));
 			
 			for (int j = 0; j < nodes.size(); j++) {
-				if (nodes.get(i).equals(sourceID)) {
-					sourceNode = nodes.get(i)
+				if (nodes.get(j).getId().equals(sourceID)) {
+					sourceNode = nodes.get(j);
 				}
-				if (nodes.get(i).equals(targetID)) {
-					targetNode = nodes.get(i)
+				if (nodes.get(j).getId().equals(targetID)) {
+					targetNode = nodes.get(j);
 				}
 			}
 			

@@ -23,6 +23,9 @@ import jade.lang.acl.ACLMessage;
 
 @SuppressWarnings("serial")
 public class StreetNetworkAgent extends Agent {
+	JSONArray nodesJSONArray = new JSONArray();
+	JSONArray linksJSONArray = new JSONArray();
+			
 	public List<Vertex> nodes = new ArrayList<Vertex>();
 	public List<Edge> edges = new ArrayList<Edge>();
 	public Graph graph;
@@ -70,8 +73,10 @@ public class StreetNetworkAgent extends Agent {
 		
 		boolean directed = JSONSNData.getBoolean("directed");
 		
-		JSONArray nodesJSONArray = JSONSNData.getJSONArray("nodes");
-		JSONArray linksJSONArray = JSONSNData.getJSONArray("links");
+//		JSONArray nodesJSONArray = JSONSNData.getJSONArray("nodes");
+//		JSONArray linksJSONArray = JSONSNData.getJSONArray("links");
+		nodesJSONArray = JSONSNData.getJSONArray("nodes");
+		linksJSONArray = JSONSNData.getJSONArray("links");
 		
 		int numNodes = nodesJSONArray.length();
 		int numLinks = linksJSONArray.length();
@@ -94,8 +99,8 @@ public class StreetNetworkAgent extends Agent {
 			addLink(linkInfo.getString("guid"), nodes.indexOf(sourceVertex), nodes.indexOf(targetVertex), linkInfo.getFloat("dist"));
 		}
 		
-		graph = new Graph(nodes, edges);
-        dijkstra = new DijkstraAlgorithm(graph);
+//		graph = new Graph(nodes, edges);
+//        dijkstra = new DijkstraAlgorithm(graph);
 				
 	}
 	
@@ -104,6 +109,31 @@ public class StreetNetworkAgent extends Agent {
         Edge lane = new Edge(laneId,nodes.get(sourceLocNo), nodes.get(destLocNo), distance );
         edges.add(lane);
     }
+
+	protected String findNodeFromLocation(double x, double y) {
+//		double roundedX = Math.round(x*100.0) / 100.0;
+//		double roundedY = Math.round(y*100.0) / 100.0;
+		String roundedX = Double.toString(Math.round(x*100.0) / 100.0);
+		String roundedY = Double.toString(Math.round(y*100.0) / 100.0);
+//		Vertex node = null;
+		String nodeID = null;
+		
+		int numNodes = nodesJSONArray.length();
+		for (int i = 0; i < numNodes; i++) {
+			JSONObject nodeInfo = nodesJSONArray.getJSONObject(i);
+			
+//			double roundedNodeX = Math.round(nodeInfo.getJSONObject("location").getDouble("x")*100.0) / 100.0;
+//			double roundedNodeY = Math.round(nodeInfo.getJSONObject("location").getDouble("y")*100.0) / 100.0;
+			String roundedNodeX = Double.toString(Math.round(nodeInfo.getJSONObject("location").getDouble("x")*100.0) / 100.0);
+			String roundedNodeY = Double.toString(Math.round(nodeInfo.getJSONObject("location").getDouble("y")*100.0) / 100.0);
+			
+			if (roundedX.equals(roundedNodeX) && roundedY.equals(roundedNodeY)) {
+				nodeID = nodeInfo.getString("guid");
+			}
+		}
+		
+		return nodeID;
+	}
 
 
 }

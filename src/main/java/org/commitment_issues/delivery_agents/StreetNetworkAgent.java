@@ -25,6 +25,8 @@ import jade.lang.acl.ACLMessage;
 public class StreetNetworkAgent extends Agent {
 	public List<Vertex> nodes = new ArrayList<Vertex>();
 	public List<Edge> edges = new ArrayList<Edge>();
+	public Graph graph;
+    public DijkstraAlgorithm dijkstra;
 
 	protected void setup() {
 		System.out.println("Hello! StreetNetwork-agent "+getAID().getName()+" is ready.");
@@ -91,6 +93,9 @@ public class StreetNetworkAgent extends Agent {
 			
 			addLink(linkInfo.getString("guid"), nodes.indexOf(sourceVertex), nodes.indexOf(targetVertex), linkInfo.getFloat("dist"));
 		}
+		
+		graph = new Graph(nodes, edges);
+        dijkstra = new DijkstraAlgorithm(graph);
 				
 	}
 	

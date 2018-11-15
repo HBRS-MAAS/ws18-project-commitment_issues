@@ -3,6 +3,7 @@ package org.commitment_issues.delivery_agents;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.commitment_issues.CustomerOrder;
@@ -20,6 +21,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.lang.acl.ACLMessage;
+import testJavaProj.Vertex;
 
 @SuppressWarnings("serial")
 public class StreetNetworkAgent extends Agent {
@@ -109,6 +111,46 @@ public class StreetNetworkAgent extends Agent {
         Edge lane = new Edge(laneId,nodes.get(sourceLocNo), nodes.get(destLocNo), distance );
         edges.add(lane);
     }
+	
+	
+	protected LinkedList<Vertex> getShortestPath(String truckMessageData) {
+		Vertex sourceNode = null;
+		Vertex targetNode = null;
+		LinkedList<Vertex> fullPath = null;
+//		JSONObject JSONTruckMessage = new JSONObject(truckMessageData);
+//		JSONObject sourceData = JSONTruckMessage.getJSONObject("Source");
+//		JSONObject destinationData = JSONTruckMessage.getJSONObject("Destination");
+		
+		JSONArray JSONTruckMessage = new JSONArray(truckMessageData);
+		
+		for (int i = 0; i < JSONTruckMessage.length()-1; i++) {
+			JSONObject sourceInfo = JSONTruckMessage.getJSONObject(i);
+			JSONObject nextInfo = JSONTruckMessage.getJSONObject(i+1);
+			String sourceID = findNodeFromLocation(sourceInfo.getDouble("X"), sourceInfo.getDouble("Y"));
+			String targetID = findNodeFromLocation(nextInfo.getDouble("X"), nextInfo.getDouble("Y"));
+			
+			for (int j = 0; j < nodes.size(); j++) {
+				if (nodes.get(i).equals(sourceID)) {
+					sourceNode = nodes.get(i)
+				}
+				if (nodes.get(i).equals(targetID)) {
+					targetNode = nodes.get(i)
+				}
+			}
+			
+			dijkstra.execute(sourceNode);
+	        LinkedList<Vertex> path = dijkstra.getPath(targetNode);
+	        
+	        for (int k = 0; k < path.size(); k++) {
+	        	fullPath.add(path.get(k));
+	        }
+	        
+		}
+		
+		return fullPath;		
+		
+    }
+	
 
 	protected String findNodeFromLocation(double x, double y) {
 //		double roundedX = Math.round(x*100.0) / 100.0;

@@ -1,5 +1,8 @@
 package org.commitment_issues.deliveryAgents;
 
+import java.util.Hashtable;
+
+import org.commitment_issues.CustomerOrder;
 import org.json.*;
 
 import jade.content.lang.Codec;
@@ -13,7 +16,6 @@ import jade.domain.FIPANames;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
-import jade.domain.JADEAgentManagement.ShutdownPlatform;
 import jade.lang.acl.ACLMessage;
 
 @SuppressWarnings("serial")
@@ -31,8 +33,8 @@ public class StreetNetworkAgent extends Agent {
         dfd.setName(getAID());
 
         ServiceDescription sd = new ServiceDescription();
-        sd.setType("order-processor");
-        sd.setName("order-processing");
+        sd.setType("street-network");
+        sd.setName("street-network");
         dfd.addServices(sd);
 
         try {
@@ -56,7 +58,17 @@ public class StreetNetworkAgent extends Agent {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 	
-	
+	protected void parseStreetNetworkData(String streetNetworkData) {
+		JSONObject JSONSNData = new JSONObject(streetNetworkData);
+		
+		boolean directed = JSONSNData.getBoolean("directed");
+		
+		JSONArray nodesJSONArray = JSONSNData.getJSONArray("nodes");
+		JSONArray linksJSONArray = JSONSNData.getJSONArray("links");
+		
+		
+				
+	}
 
 
 }

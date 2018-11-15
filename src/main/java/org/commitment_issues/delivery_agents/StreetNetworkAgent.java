@@ -21,6 +21,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
 public class StreetNetworkAgent extends Agent {
@@ -68,6 +69,34 @@ public class StreetNetworkAgent extends Agent {
 		deregisterFromYellowPages();
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
+	
+	private class TimeToDeliveryServer extends CyclicBehaviour {
+		private MessageTemplate mt;
+
+		public void action() {
+			
+			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("TimeQuery"),
+					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
+			msg = myAgent.receive(mt);
+			
+			if (msg != null) {
+				String truckMessageContent = msg.getContent();
+				ACLMessage reply = msg.createReply();
+				
+				double time = getPathTime(getShortestPath(truckMessageContent));
+
+
+				reply.setPerformative(ACLMessage.INFORM);
+				reply.setContent(String.valueOf(time));
+				myAgent.send(reply);
+			}
+
+			else {
+				block();
+			}
+		}
+	} 
 	
 	protected void parseStreetNetworkData(String streetNetworkData) {
 		JSONObject JSONSNData = new JSONObject(streetNetworkData);

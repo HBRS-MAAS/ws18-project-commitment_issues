@@ -96,7 +96,36 @@ public class StreetNetworkAgent extends Agent {
 				block();
 			}
 		}
-	} 
+	}
+	
+	
+	private class PathServer extends CyclicBehaviour {
+		private MessageTemplate mt;
+
+		public void action() {
+			
+			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
+					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
+			msg = myAgent.receive(mt);
+			
+			if (msg != null) {
+				String truckMessageContent = msg.getContent();
+				ACLMessage reply = msg.createReply();
+				
+				String JSONPath = getJSONPath(getShortestPath(truckMessageContent));
+
+
+				reply.setPerformative(ACLMessage.INFORM);
+				reply.setContent(String.valueOf(JSONPath));
+				myAgent.send(reply);
+			}
+
+			else {
+				block();
+			}
+		}
+	}
 	
 	protected void parseStreetNetworkData(String streetNetworkData) {
 		JSONObject JSONSNData = new JSONObject(streetNetworkData);

@@ -6,6 +6,7 @@ import jade.content.onto.basic.Action;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -20,14 +21,21 @@ import org.json.*;
 
 @SuppressWarnings("serial")
 public class TruckAgent extends Agent {
+	protected float[] currentLocation_;
+	protected float[] customerLocation_;
+	protected int numOfBoxes_;
+	
+	public TruckAgent() {
+		currentLocation_ = null; //TODO
+		customerLocation_ = null;
+		numOfBoxes_ = 0;
+	}
+	
 	protected void setup() {
 		System.out.println("Hello! TruckAgent "+ getAID().getName() +" is ready.");
 		
 		registerInYellowPages();
-		
-//		addBehaviour(new BoxToDeliverServer());
-//		addBehaviour(new BoxToDeliverInformer());
-
+		addBehaviour(new TimeQuotationServer());
 	}
 	
 	 protected void registerInYellowPages() {
@@ -37,8 +45,8 @@ public class TruckAgent extends Agent {
 	        dfd.setName(getAID());
 
 	        ServiceDescription sd = new ServiceDescription();
-	        sd.setType("Transport-orders");
-	        sd.setName("Transport-orders");
+	        sd.setType("transport-orders");
+	        sd.setName("transport-orders");
 	        dfd.addServices(sd);
 
 	        try {
@@ -63,9 +71,99 @@ public class TruckAgent extends Agent {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 	
-	protected void handleTimeQueryResponse(int queryID, float time) {
+	protected boolean isTruckIdle() {
+		boolean isIdle = true;
 		//TODO
+		
+		return isIdle;
 	}
+	
+	protected float[] getTruckLocation() {
+		return currentLocation_;
+	}
+	
+	protected float[] getCustomerLocation() {
+		return customerLocation_;
+	}
+	
+	@SuppressWarnings("unused")
+	private enum TimeQuotationStates {
+		WAIT_FOR_QUOTATION_REQUEST,
+		QUOTATION_REQUESTED,
+		REQUEST_TIME_TO_CUSTOMER,
+		WAIT_FOR_TIME_FROM_STREET_NETWORK,
+		SEND_QUOTATION
+	}
+	
+	@SuppressWarnings("unused")
+    private class TimeQuotationServer extends CyclicBehaviour {
+		private TimeQuotationStates state_ = TimeQuotationStates.WAIT_FOR_QUOTATION_REQUEST;
+		private ACLMessage requestMsg_ = null;
+		private String orderID_ = null;
+		public float[] bakeryLocation_;
+		public float[] newCustomerLocation_;
+		public float[] currCustomerLocation_;
+		public float[] truckLocation_;
+		private float timeQuote_ = 0;
+		private boolean responseReceivedFromStreetNW_ = false;		
+		
+		public float[] getCurrCustomerLoc() {
+			return ((TruckAgent)myAgent).getCustomerLocation();
+		}
+		
+		protected void decodeRequestMessage() {
+			//TODO
+			bakeryLocation_ = null;
+			newCustomerLocation_ = null;
+		}
+		
+		protected void handleTimeQueryResponse(String queryID, float time) {
+			timeQuote_ = time;
+			responseReceivedFromStreetNW_ = true;
+		}
+		
+        public void action() {
+        	switch (state_) {
+        	case WAIT_FOR_QUOTATION_REQUEST:
+        		MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+        		requestMsg_ = myAgent.receive(mt);
+                if (requestMsg_ != null) {
+                	state_ = TimeQuotationStates.QUOTATION_REQUESTED;
+                }
+                else {
+                	block();
+                }
+        		break;
+        	case QUOTATION_REQUESTED:
+        		decodeRequestMessage();
+        		truckLocation_ = ((TruckAgent)myAgent).getTruckLocation();
+        		currCustomerLocation_ = ((TruckAgent)myAgent).getCustomerLocation();
+        		state_ = TimeQuotationStates.REQUEST_TIME_TO_CUSTOMER;
+        		break;
+        	case REQUEST_TIME_TO_CUSTOMER:
+        		myAgent.addBehaviour(new QueryTime(this));
+        		state_ = TimeQuotationStates.WAIT_FOR_TIME_FROM_STREET_NETWORK;
+        		break;
+        	case WAIT_FOR_TIME_FROM_STREET_NETWORK:
+        		if (responseReceivedFromStreetNW_) {
+        			state_ = TimeQuotationStates.SEND_QUOTATION;
+        		}
+        		else {
+        			block();
+        		}
+        		break;
+        	case SEND_QUOTATION:
+        		ACLMessage reply = requestMsg_.createReply();
+                reply.setPerformative(ACLMessage.PROPOSE);
+                reply.setContent(Float.toString(timeQuote_));
+                myAgent.send(reply);
+                state_ = TimeQuotationStates.WAIT_FOR_QUOTATION_REQUEST;
+        		break;
+			default:
+				break;
+        	}
+        }
+    } // End of inner class OfferRequestsServer
 	
 	private enum TimeQueryStates{
 		FIND_STREET_NETWORK_AGENTS,
@@ -80,14 +178,12 @@ public class TruckAgent extends Agent {
 		private AID streetNwAgent_;
 		private TimeQueryStates state_ = TimeQueryStates.FIND_STREET_NETWORK_AGENTS;
 		private MessageTemplate mt_;
-		private float[] source_;
-		private float[] destination_;
-		private int queryID_;
+		private String queryID_;
+		private TimeQuotationServer requester_;
 		
-		public QueryTime(int queryID, float[] source, float[] destination) {
-			queryID_ = queryID;
-			source_ = source;
-			destination_ = destination;
+		public QueryTime(TimeQuotationServer requester) {
+			requester_ = requester;
+			queryID_ = Long.toString(System.currentTimeMillis());
 		}
 		
 		protected void discoverProcessors() {
@@ -114,22 +210,35 @@ public class TruckAgent extends Agent {
         }
 		
 		private String getRequestContent() {
-			String jsonString = new JSONObject()
-	                  .put("Source", new JSONObject()
-	                		  .put("X", source_[0])
-	                		  .put("Y", source_[1]))
-	                  .put("Destination", new JSONObject()
-	                		  .put("X", destination_[0])
-	                		  .put("Y", destination_[1])).toString();
-			return jsonString;
-		}
-		
-		private String getConversationID() {
-			return "TimeQuery-" + Integer.toString(queryID_);
+			JSONArray jsonArray = new JSONArray();
+			
+			// Add source node location
+			jsonArray.put(new JSONObject()
+					.put("X", requester_.truckLocation_[0])
+          		  	.put("Y", requester_.truckLocation_[1]));
+			
+			// If truck is not idle add the location of current customer
+			if (requester_.currCustomerLocation_ != null) {
+				jsonArray.put(new JSONObject()
+						.put("X", requester_.currCustomerLocation_[0])
+	          		  	.put("Y", requester_.currCustomerLocation_[1]));
+			}
+			
+			// Add location of bakery
+			jsonArray.put(new JSONObject()
+					.put("X", requester_.bakeryLocation_[0])
+          		  	.put("Y", requester_.bakeryLocation_[1]));
+			
+			// Add location of new customer
+			jsonArray.put(new JSONObject()
+					.put("X", requester_.newCustomerLocation_[0])
+			        .put("Y", requester_.newCustomerLocation_[1]));
+			
+			return jsonArray.toString();
 		}
 		
 		private void reportTimeBetweenNodes(float time) {
-			((TruckAgent) myAgent).handleTimeQueryResponse(queryID_, time);
+			requester_.handleTimeQueryResponse(queryID_, time);
 		}
 		
 		public void action() {
@@ -139,7 +248,7 @@ public class TruckAgent extends Agent {
 				break;
 			case REQUEST_STREET_NETWORK:
 				// Send the request to the street network
-				String conversationID = getConversationID();
+				String conversationID = "TimeQuery-" + queryID_;
 				String content = getRequestContent();
                 ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
                 request.addReceiver(streetNwAgent_);

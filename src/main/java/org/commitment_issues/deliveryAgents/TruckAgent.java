@@ -87,11 +87,16 @@ public class TruckAgent extends Agent {
 		return currOrder_.customerLocation_;
 	}
 	
-	protected AID discoverStreetNetworkAgents() {
+	protected void startNewOrder(String orderID, JSONArray boxes) {
+		nextOrder_ = null;
+		//TODO
+	}
+	
+	protected AID discoverAgent(String serviceType) {
         // Find the street network agent
         DFAgentDescription template = new DFAgentDescription();
         ServiceDescription sd = new ServiceDescription();
-        sd.setType("street-network");
+        sd.setType(serviceType);
         template.addServices(sd);
         
         AID streetNwAgent = null;
@@ -104,7 +109,7 @@ public class TruckAgent extends Agent {
             else
             {
             	streetNwAgent = null;
-            	System.out.println("No agent with Service type (street-network) found!");
+            	System.out.println("No agent with Service type (" + serviceType + ") found!");
             }
         } catch (FIPAException fe) {
             fe.printStackTrace();
@@ -119,6 +124,10 @@ public class TruckAgent extends Agent {
 		public float[] bakeryLocation_;
 		public float[] customerLocation_;
 		public int numOfBoxes_;
+		public String customerName_ = "No Customer Name Provided";
+		public String bakeryName_ = "No Bakery Name Provided";
+		public int deliveryDate_;
+		public int deliveryTime_;
 		
 		public OrderDetails(String jsonMessage) {
 			JSONObject jsonObj = new JSONObject(jsonMessage);
@@ -297,7 +306,7 @@ public class TruckAgent extends Agent {
 		public void action() {
 			switch(state_) {
 			case FIND_STREET_NETWORK_AGENTS:
-				streetNwAgent_ = discoverStreetNetworkAgents();
+				streetNwAgent_ = discoverAgent("street-network");
 				if (streetNwAgent_ != null) {
 					state_ = StreetNetworkQueryStates.REQUEST_STREET_NETWORK;
 				}
@@ -393,7 +402,7 @@ public class TruckAgent extends Agent {
 		public void action() {
 			switch(state_) {
 			case FIND_STREET_NETWORK_AGENTS:
-				streetNwAgent_ = discoverStreetNetworkAgents();
+				streetNwAgent_ = discoverAgent("street-network");
 				if (streetNwAgent_ != null) {
 					state_ = StreetNetworkQueryStates.REQUEST_STREET_NETWORK;
 				}
@@ -438,6 +447,38 @@ public class TruckAgent extends Agent {
 		public boolean done() {
 			return state_ == StreetNetworkQueryStates.QUERY_COMPLETE ||
 					state_ == StreetNetworkQueryStates.QUERY_FAILED;
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private class PostDeliveryCompletionMessage extends OneShotBehaviour {
+		private OrderDetails orderInfo_;
+		
+		public PostDeliveryCompletionMessage(OrderDetails order) {
+			orderInfo_ = order;
+		}
+		
+		private String generateJsonMessage() {			
+			JSONObject jsonObj = new JSONObject();						
+			jsonObj.put("DeliveryStatus", new JSONObject()
+						.put("OrderDeliveredTo", orderInfo_.customerName_)
+          		  		.put("OrderDeliveredBy", myAgent.getAID().getLocalName())
+          		  		.put("DayOfDelivery", orderInfo_.deliveryDate_)
+          		  		.put("TimeOfDelivery", orderInfo_.deliveryTime_)
+          		  		.put("NumOfBoxes", orderInfo_.numOfBoxes_)
+          		  		.put("ProducedBy", orderInfo_.bakeryName_));
+			
+			return jsonObj.toString();
+		}
+		
+		
+		public void action() {
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			msg.addReceiver(discoverAgent("mailbox"));
+			msg.setContent(generateJsonMessage());
+			msg.setConversationId("DeliveryConfirmation");
+			msg.setPostTimeStamp(System.currentTimeMillis());
+			myAgent.send(msg);
 		}
 	}
 	

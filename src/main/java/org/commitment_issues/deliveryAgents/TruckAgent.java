@@ -451,6 +451,74 @@ public class TruckAgent extends Agent {
 	}
 	
 	@SuppressWarnings("unused")
+	private class RequestBoxes extends Behaviour {
+		private String orderID_;
+		private int state_ = 0;
+		private MessageTemplate mt_;
+		
+		public RequestBoxes(String orderID) {
+			orderID_ = orderID;
+		}
+		
+		private String generateJsonMessage() {			
+			JSONObject jsonObj = new JSONObject();						
+			jsonObj.put("OrderID", orderID_);
+			
+			return jsonObj.toString();
+		}
+		
+		private void parseJSONReply(String reply) {
+			JSONObject obj = new JSONObject(reply);
+			String orderID = obj.getString("OrderID");
+			JSONArray boxList = obj.getJSONArray("Boxes");
+			
+			startNewOrder(orderID, boxList);
+		}
+		
+		public void action() {
+			switch(state_) {
+			case 0:
+				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+				String convID = "ReadyForPickup" + orderID_;
+				msg.addReceiver(discoverAgent("transport-agent")); // TODO fix this services name
+				msg.setContent(generateJsonMessage());
+				msg.setConversationId(convID);
+				msg.setPostTimeStamp(System.currentTimeMillis());
+				myAgent.send(msg);
+                // Prepare the template to get replies
+                mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(convID),
+                        MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
+                
+                state_ = 1;
+				break;
+			case 1:
+				// Receive response
+                ACLMessage reply = myAgent.receive(mt_);
+                if (reply != null) {
+                    // Reply received
+                    if (reply.getPerformative() == ACLMessage.INFORM) {
+                        parseJSONReply(reply.getContent());
+                        state_ = 2;
+                    }
+                    else {
+                    	System.out.println("TruckAgent: Receiving Boxes from TruckAgent Failed!!");
+                    	state_ = 3;
+                    }
+                } else {
+                    block();
+                }
+				break;
+			default:
+				break;
+			}
+		}
+		
+		public boolean done() {
+			return state_ == 2 || state_ == 3;
+		}
+	}
+
+	@SuppressWarnings("unused")
 	private class PostDeliveryCompletionMessage extends OneShotBehaviour {
 		private OrderDetails orderInfo_;
 		

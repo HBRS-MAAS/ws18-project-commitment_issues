@@ -55,24 +55,19 @@ public class MailboxAgent extends Agent {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 	
-	protected void parseTruckConfirmationMessage(String truckMessage) {
-		String orderDeliveredTo;
-		String orderDeliveredBy;
-		int dayOfDelivery;
-		int timeOfDelivery;
-		int numOfBoxes;
-		String producedBy;
+	protected DeliveryStatus parseTruckConfirmationMessage(String truckMessage) {		
+		DeliveryStatus status = new DeliveryStatus();
 		
 		JSONObject truckMessageData = new JSONObject(truckMessage);
 		JSONObject deliveryStatus = truckMessageData.getJSONObject("DeliveryStatus");
 		
-		orderDeliveredTo = deliveryStatus.getString("OrderDeliveredTo");
-		orderDeliveredBy = deliveryStatus.getString("OrderDeliveredBy");
-		dayOfDelivery = deliveryStatus.getInt("DayOfDelivery");
-		timeOfDelivery = deliveryStatus.getInt("TimeOfDelivery");
-		numOfBoxes = deliveryStatus.getInt("NumOfBoxes");
+		status.orderDeliveredTo = deliveryStatus.getString("OrderDeliveredTo");
+		status.orderDeliveredBy = deliveryStatus.getString("OrderDeliveredBy");
+		status.dayOfDelivery = deliveryStatus.getInt("DayOfDelivery");
+		status.timeOfDelivery = deliveryStatus.getInt("TimeOfDelivery");
+		status.numOfBoxes = deliveryStatus.getInt("NumOfBoxes");
+		status.producedBy = deliveryStatus.getString("ProducedBy");
 		
-		producedBy = deliveryStatus.getString("ProducedBy");
-		
+		return status;		
 	}
 }

@@ -30,8 +30,8 @@ public class MailboxAgent extends Agent {
         dfd.setName(getAID());
 
         ServiceDescription sd = new ServiceDescription();
-        sd.setType("street-network");
-        sd.setName("street-network");
+        sd.setType("mailbox");
+        sd.setName("mailbox");
         dfd.addServices(sd);
 
         try {
@@ -53,5 +53,26 @@ public class MailboxAgent extends Agent {
 	protected void takeDown() {
 		deregisterFromYellowPages();
 		System.out.println(getAID().getLocalName() + ": Terminating.");
+	}
+	
+	protected void parseTruckConfirmationMessage(String truckMessage) {
+		String orderDeliveredTo;
+		String orderDeliveredBy;
+		int dayOfDelivery;
+		int timeOfDelivery;
+		int numOfBoxes;
+		String producedBy;
+		
+		JSONObject truckMessageData = new JSONObject(truckMessage);
+		JSONObject deliveryStatus = truckMessageData.getJSONObject("DeliveryStatus");
+		
+		orderDeliveredTo = deliveryStatus.getString("OrderDeliveredTo");
+		orderDeliveredBy = deliveryStatus.getString("OrderDeliveredBy");
+		dayOfDelivery = deliveryStatus.getInt("DayOfDelivery");
+		timeOfDelivery = deliveryStatus.getInt("TimeOfDelivery");
+		numOfBoxes = deliveryStatus.getInt("NumOfBoxes");
+		
+		producedBy = deliveryStatus.getString("ProducedBy");
+		
 	}
 }

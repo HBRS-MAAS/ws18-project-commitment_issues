@@ -9,6 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/*
+ * This class implements the Dijkstra algorithm for finding the shortest path
+ * between two nodes in a directed graph.
+ * 
+ * Courtesy of Lars Vogel (c) 2009, 2016 vogella GmbH. Version 1.2, 29.09.2016
+ * Source: http://www.vogella.com/tutorials/JavaAlgorithmsDijkstra/article.html
+ */
+
 public class DijkstraAlgorithm {
 
     private final List<Vertex> nodes;
@@ -16,7 +24,6 @@ public class DijkstraAlgorithm {
     private Set<Vertex> settledNodes;
     private Set<Vertex> unSettledNodes;
     private Map<Vertex, Vertex> predecessors;
-//    private Map<Vertex, Integer> distance;
     private Map<Vertex, Float> distance;
 
     public DijkstraAlgorithm(Graph graph) {
@@ -28,11 +35,9 @@ public class DijkstraAlgorithm {
     public void execute(Vertex source) {
         settledNodes = new HashSet<Vertex>();
         unSettledNodes = new HashSet<Vertex>();
-//        distance = new HashMap<Vertex, Integer>();
 
         distance = new HashMap<Vertex, Float>();
         predecessors = new HashMap<Vertex, Vertex>();
-//        distance.put(source, 0);
         distance.put(source, (float) 0.0);
         unSettledNodes.add(source);
         while (unSettledNodes.size() > 0) {
@@ -56,16 +61,6 @@ public class DijkstraAlgorithm {
         }
 
     }
-
-//    private int getDistance(Vertex node, Vertex target) {
-//        for (Edge edge : edges) {
-//            if (edge.getSource().equals(node)
-//                    && edge.getDestination().equals(target)) {
-//                return edge.getWeight();
-//            }
-//        }
-//        throw new RuntimeException("Should not happen");
-//    }
     
     private float getDistance(Vertex node, Vertex target) {
         for (Edge edge : edges) {
@@ -105,15 +100,6 @@ public class DijkstraAlgorithm {
     private boolean isSettled(Vertex vertex) {
         return settledNodes.contains(vertex);
     }
-
-//    private int getShortestDistance(Vertex destination) {
-//        Integer d = distance.get(destination);
-//        if (d == null) {
-//            return Integer.MAX_VALUE;
-//        } else {
-//            return d;
-//        }
-//    }
     
     private float getShortestDistance(Vertex destination) {
         Float d = distance.get(destination);

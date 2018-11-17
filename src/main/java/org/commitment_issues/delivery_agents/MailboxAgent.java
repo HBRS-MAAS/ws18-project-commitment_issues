@@ -55,6 +55,34 @@ public class MailboxAgent extends Agent {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 	
+	private class truckDeliveryCompletionProcessor extends CyclicBehaviour {
+		private MessageTemplate mt;
+
+		public void action() {
+			
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("DeliveryConfirmation"),
+					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
+			msg = myAgent.receive(mt);
+			
+			if (msg != null) {
+				String truckMessageContent = msg.getContent();
+				DeliveryStatus confirmedStatus = parseTruckConfirmationMessage(truckMessageContent);
+
+//				ACLMessage reply = msg.createReply();
+//				...
+//
+//				reply.setPerformative(ACLMessage.INFORM);
+//				reply.setContent(String.valueOf(time));
+//				myAgent.send(reply);
+			}
+
+			else {
+				block();
+			}
+		}
+	}
+	
 	protected DeliveryStatus parseTruckConfirmationMessage(String truckMessage) {		
 		DeliveryStatus status = new DeliveryStatus();
 		

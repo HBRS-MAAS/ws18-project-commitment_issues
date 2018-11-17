@@ -19,11 +19,12 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 import java.util.ArrayList;
+import org.yourteamname.agents.*;
 
 import org.json.*;
 
 @SuppressWarnings("serial")
-public class TruckAgent extends Agent {
+public class TruckAgent extends BaseAgent {
 	protected float[] currTruckLocation_;
 	protected int numOfBoxes_;
 	protected OrderDetails currOrder_;
@@ -36,51 +37,22 @@ public class TruckAgent extends Agent {
 	}
 	
 	protected void setup() {
+		super.setup();
 		System.out.println("Hello! TruckAgent "+ getAID().getName() +" is ready.");
 		
-		registerInYellowPages();
+		register("transport-orders", "transport-orders");
 		addBehaviour(new TimeQuotationServer());
 		addBehaviour(new TruckScheduleServer());
 	}
-	
-	 protected void registerInYellowPages() {
-	        // Register the Truck services service in the yellow pages
-
-	        DFAgentDescription dfd = new DFAgentDescription();
-	        dfd.setName(getAID());
-
-	        ServiceDescription sd = new ServiceDescription();
-	        sd.setType("transport-orders");
-	        sd.setName("transport-orders");
-	        dfd.addServices(sd);
-
-	        try {
-	            DFService.register(this, dfd);
-	        } catch (FIPAException fe) {
-	            fe.printStackTrace();
-	        }
-	    }
-
-	    protected void deregisterFromYellowPages() {
-	        // Deregister from the yellow pages
-	        try {
-	            DFService.deregister(this);
-	        } catch (FIPAException fe) {
-	            fe.printStackTrace();
-	        }
-	    }
 
 	protected void takeDown() {
-		deregisterFromYellowPages();
+		deRegister();
 		
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 	
 	protected boolean isTruckIdle() {
-		boolean isIdle = true;
-		//TODO
-		
-		return isIdle;
+		return currOrder_ == null;
 	}
 	
 	protected float[] getCustomerLocation() {
@@ -93,7 +65,7 @@ public class TruckAgent extends Agent {
 	}
 	
 	protected AID discoverAgent(String serviceType) {
-        // Find the street network agent
+        // Find the an agent for given service type
         DFAgentDescription template = new DFAgentDescription();
         ServiceDescription sd = new ServiceDescription();
         sd.setType(serviceType);
@@ -109,7 +81,7 @@ public class TruckAgent extends Agent {
             else
             {
             	streetNwAgent = null;
-            	System.out.println("No agent with Service type (" + serviceType + ") found!");
+            	System.out.println(getAID().getLocalName() +  ": No agent with Service type (" + serviceType + ") found!");
             }
         } catch (FIPAException fe) {
             fe.printStackTrace();
@@ -181,7 +153,7 @@ public class TruckAgent extends Agent {
         	switch (state_) {
         	case WAIT_FOR_QUOTATION_REQUEST:
         		MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-        		requestMsg_ = myAgent.receive(mt);
+        		requestMsg_ = baseAgent.receive(mt);
                 if (requestMsg_ != null) {
                 	state_ = TimeQuotationStates.QUOTATION_REQUESTED;
                 }
@@ -199,7 +171,7 @@ public class TruckAgent extends Agent {
         		}
         		break;
         	case REQUEST_TIME_TO_CUSTOMER:
-        		myAgent.addBehaviour(new QueryTime(this));
+        		baseAgent.addBehaviour(new QueryTime(this));
         		state_ = TimeQuotationStates.WAIT_FOR_TIME_FROM_STREET_NETWORK;
         		break;
         	case WAIT_FOR_TIME_FROM_STREET_NETWORK:
@@ -215,14 +187,14 @@ public class TruckAgent extends Agent {
         		ACLMessage reply = requestMsg_.createReply();
                 reply.setPerformative(ACLMessage.PROPOSE);
                 reply.setContent(Float.toString(timeQuote_));
-                myAgent.send(reply);
+                baseAgent.send(reply);
                 resetClassMembers();
         		break;
         	case SEND_REFUSAL:
         		ACLMessage reject = requestMsg_.createReply();
         		reject.setPerformative(ACLMessage.REFUSE);
         		reject.setContent("Busy");
-                myAgent.send(reject);
+                baseAgent.send(reject);
                 resetClassMembers();
         		break;
 			default:
@@ -235,7 +207,7 @@ public class TruckAgent extends Agent {
 	private class TruckScheduleServer extends CyclicBehaviour {
 		public void action() {
             MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.ACCEPT_PROPOSAL);
-            ACLMessage msg = myAgent.receive(mt);
+            ACLMessage msg = baseAgent.receive(mt);
             if (msg != null) {
                 // ACCEPT_PROPOSAL Message received. Process it
                 ACLMessage reply = msg.createReply();
@@ -249,7 +221,7 @@ public class TruckAgent extends Agent {
                 	reply.setPerformative(ACLMessage.FAILURE);
                     reply.setContent("Busy");
                 }
-                myAgent.send(reply);
+                baseAgent.send(reply);
             } else {
                 block();
             }
@@ -319,7 +291,7 @@ public class TruckAgent extends Agent {
                 request.setContent(getRequestContent());
                 request.setConversationId(conversationID);
                 request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
-                myAgent.send(request);
+                baseAgent.send(request);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
                         MessageTemplate.MatchInReplyTo(request.getReplyWith()));
@@ -327,7 +299,7 @@ public class TruckAgent extends Agent {
 				break;
 			case WAIT_FOR_RESPONSE:
 				// Receive response from StreetNetworkAgent
-                ACLMessage reply = myAgent.receive(mt_);
+                ACLMessage reply = baseAgent.receive(mt_);
                 if (reply != null) {
                     // Reply received
                     if (reply.getPerformative() == ACLMessage.INFORM) {
@@ -336,7 +308,7 @@ public class TruckAgent extends Agent {
                         state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
                     }
                     else {
-                    	System.out.println("TruckAgent: Querying time from street network failed!!");
+                    	System.out.println(baseAgent.getAID().getLocalName() + ": Querying time from street network failed!!");
                     	state_ = StreetNetworkQueryStates.QUERY_FAILED;
                     }
                 } else {
@@ -415,7 +387,7 @@ public class TruckAgent extends Agent {
                 request.setContent(getRequestContent());
                 request.setConversationId(conversationID);
                 request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
-                myAgent.send(request);
+                baseAgent.send(request);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
                         MessageTemplate.MatchInReplyTo(request.getReplyWith()));
@@ -423,7 +395,7 @@ public class TruckAgent extends Agent {
 				break;
 			case WAIT_FOR_RESPONSE:
 				// Receive response from StreetNetworkAgent
-                ACLMessage reply = myAgent.receive(mt_);
+                ACLMessage reply = baseAgent.receive(mt_);
                 if (reply != null) {
                     // Reply received
                     if (reply.getPerformative() == ACLMessage.INFORM) {
@@ -432,7 +404,7 @@ public class TruckAgent extends Agent {
                         state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
                     }
                     else {
-                    	System.out.println("TruckAgent: Querying path from street network failed!!");
+                    	System.out.println(baseAgent.getAID().getLocalName() + ": Querying path from street network failed!!");
                     	state_ = StreetNetworkQueryStates.QUERY_FAILED;
                     }
                 } else {
@@ -484,7 +456,7 @@ public class TruckAgent extends Agent {
 				msg.setContent(generateJsonMessage());
 				msg.setConversationId(convID);
 				msg.setPostTimeStamp(System.currentTimeMillis());
-				myAgent.send(msg);
+				baseAgent.send(msg);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(convID),
                         MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
@@ -493,7 +465,7 @@ public class TruckAgent extends Agent {
 				break;
 			case 1:
 				// Receive response
-                ACLMessage reply = myAgent.receive(mt_);
+                ACLMessage reply = baseAgent.receive(mt_);
                 if (reply != null) {
                     // Reply received
                     if (reply.getPerformative() == ACLMessage.INFORM) {
@@ -501,7 +473,7 @@ public class TruckAgent extends Agent {
                         state_ = 2;
                     }
                     else {
-                    	System.out.println("TruckAgent: Receiving Boxes from TruckAgent Failed!!");
+                    	System.out.println(baseAgent.getAID().getLocalName() + ": Receiving Boxes from TruckAgent Failed!!");
                     	state_ = 3;
                     }
                 } else {
@@ -530,7 +502,7 @@ public class TruckAgent extends Agent {
 			JSONObject jsonObj = new JSONObject();						
 			jsonObj.put("DeliveryStatus", new JSONObject()
 						.put("OrderDeliveredTo", orderInfo_.customerName_)
-          		  		.put("OrderDeliveredBy", myAgent.getAID().getLocalName())
+          		  		.put("OrderDeliveredBy", baseAgent.getAID().getLocalName())
           		  		.put("DayOfDelivery", orderInfo_.deliveryDate_)
           		  		.put("TimeOfDelivery", orderInfo_.deliveryTime_)
           		  		.put("NumOfBoxes", orderInfo_.numOfBoxes_)
@@ -546,7 +518,7 @@ public class TruckAgent extends Agent {
 			msg.setContent(generateJsonMessage());
 			msg.setConversationId("DeliveryConfirmation");
 			msg.setPostTimeStamp(System.currentTimeMillis());
-			myAgent.send(msg);
+			baseAgent.send(msg);
 		}
 	}
 	
@@ -556,14 +528,14 @@ public class TruckAgent extends Agent {
 		public void action() {
 			ACLMessage shutdownMessage = new ACLMessage(ACLMessage.REQUEST);
 			Codec codec = new SLCodec();
-			myAgent.getContentManager().registerLanguage(codec);
-			myAgent.getContentManager().registerOntology(JADEManagementOntology.getInstance());
-			shutdownMessage.addReceiver(myAgent.getAMS());
+			baseAgent.getContentManager().registerLanguage(codec);
+			baseAgent.getContentManager().registerOntology(JADEManagementOntology.getInstance());
+			shutdownMessage.addReceiver(baseAgent.getAMS());
 			shutdownMessage.setLanguage(FIPANames.ContentLanguage.FIPA_SL);
 			shutdownMessage.setOntology(JADEManagementOntology.getInstance().getName());
 			try {
-				myAgent.getContentManager().fillContent(shutdownMessage,new Action(myAgent.getAID(), new ShutdownPlatform()));
-				myAgent.send(shutdownMessage);
+				baseAgent.getContentManager().fillContent(shutdownMessage,new Action(baseAgent.getAID(), new ShutdownPlatform()));
+				baseAgent.send(shutdownMessage);
 			}
 			catch (Exception e) {
 				//LOGGER.error(e);

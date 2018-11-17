@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.json.*;
 
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.*;
 import jade.domain.DFService;
@@ -80,6 +81,42 @@ public class MailboxAgent extends Agent {
 			else {
 				block();
 			}
+		}
+	}
+	
+	private class informAllAgentsAboutOrderConfirmation extends OneShotBehaviour {
+		private AID[] receiverAgents;
+		
+		protected void findReceivers() {
+            DFAgentDescription template = new DFAgentDescription();
+            ServiceDescription sd = new ServiceDescription();
+            // SERVICE TYPE FOR RECEIVING ORDER CONFIRMATIONS:
+            sd.setType("order-confirmation");
+            template.addServices(sd);
+            try {
+                DFAgentDescription[] result = DFService.search(myAgent, template);
+                receiverAgents = new AID[result.length];
+                for (int i = 0; i < result.length; ++i) {
+                	receiverAgents[i] = result[i].getName();
+                }
+            } catch (FIPAException fe) {
+                fe.printStackTrace();
+            }
+        }
+		
+		public void action() {
+			ACLMessage orderConfirmation = new ACLMessage(ACLMessage.INFORM);
+			
+			for (int i = 0; i < receiverAgents.length; ++i) {
+				orderConfirmation.addReceiver(receiverAgents[i]);
+			}
+			
+			String orderConfirmationDetails = "";
+			
+			orderConfirmation.setContent(orderConfirmationDetails);
+			orderConfirmation.setConversationId("order-confirmation");
+			orderConfirmation.setReplyWith("Order Confirmation"+System.currentTimeMillis());
+			myAgent.send(orderConfirmation);
 		}
 	}
 	

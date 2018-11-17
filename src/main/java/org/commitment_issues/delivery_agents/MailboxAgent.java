@@ -24,6 +24,8 @@ public class MailboxAgent extends Agent {
 		
 		registerInYellowPages();
 		
+		addBehaviour(new truckDeliveryCompletionProcessor());
+		
 	}
 	
 	protected void registerInYellowPages() {
@@ -58,33 +60,6 @@ public class MailboxAgent extends Agent {
 	
 	private class truckDeliveryCompletionProcessor extends CyclicBehaviour {
 		private MessageTemplate mt;
-
-		public void action() {
-			
-			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("DeliveryConfirmation"),
-					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
-			msg = myAgent.receive(mt);
-			
-			if (msg != null) {
-				String truckMessageContent = msg.getContent();
-				DeliveryStatus confirmedStatus = parseTruckConfirmationMessage(truckMessageContent);
-
-//				ACLMessage reply = msg.createReply();
-//				...
-//
-//				reply.setPerformative(ACLMessage.INFORM);
-//				reply.setContent(String.valueOf(time));
-//				myAgent.send(reply);
-			}
-
-			else {
-				block();
-			}
-		}
-	}
-	
-	private class informAllAgentsAboutOrderConfirmation extends OneShotBehaviour {
 		private AID[] receiverAgents;
 		
 		protected void findReceivers() {
@@ -103,20 +78,41 @@ public class MailboxAgent extends Agent {
                 fe.printStackTrace();
             }
         }
-		
+
 		public void action() {
-			ACLMessage orderConfirmation = new ACLMessage(ACLMessage.INFORM);
 			
-			for (int i = 0; i < receiverAgents.length; ++i) {
-				orderConfirmation.addReceiver(receiverAgents[i]);
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("DeliveryConfirmation"),
+					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
+			msg = myAgent.receive(mt);
+			
+			if (msg != null) {
+				String truckMessageContent = msg.getContent();
+//				DeliveryStatus confirmedStatus = parseTruckConfirmationMessage(truckMessageContent);
+
+//				ACLMessage reply = msg.createReply();
+//				...
+//
+//				reply.setPerformative(ACLMessage.INFORM);
+//				reply.setContent(String.valueOf(time));
+//				myAgent.send(reply);
+				
+				findReceivers();
+				ACLMessage orderConfirmation = new ACLMessage(ACLMessage.INFORM);
+				
+				for (int i = 0; i < receiverAgents.length; ++i) {
+					orderConfirmation.addReceiver(receiverAgents[i]);
+				}
+				
+				orderConfirmation.setContent(truckMessageContent);
+				orderConfirmation.setConversationId("order-confirmation");
+				orderConfirmation.setReplyWith("Order Confirmation"+System.currentTimeMillis());
+				myAgent.send(orderConfirmation);
 			}
-			
-			String orderConfirmationDetails = "";
-			
-			orderConfirmation.setContent(orderConfirmationDetails);
-			orderConfirmation.setConversationId("order-confirmation");
-			orderConfirmation.setReplyWith("Order Confirmation"+System.currentTimeMillis());
-			myAgent.send(orderConfirmation);
+
+			else {
+				block();
+			}
 		}
 	}
 	

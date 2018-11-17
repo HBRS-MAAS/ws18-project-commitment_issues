@@ -8,6 +8,9 @@ import com.fxgraph.cells.Model;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.fxgraph.cells.*;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -16,9 +19,10 @@ import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.lang.acl.ACLMessage;
 
 @SuppressWarnings("serial")
-public class Visualization extends Agent {
+public class GraphVisualizationAgent extends Agent {
   Main m = new Main();
   Graph graph = new Graph();
   Model model = graph.getModel();
@@ -27,6 +31,7 @@ public class Visualization extends Agent {
   public void setup() {
     System.out.println("Hello! Visualization-agent "+getAID().getName()+" is ready each second is one hour.");
     yellowPageRegister();
+    
     addBehaviour(new GraphBuilder());
     addBehaviour(new JFXStart());
     
@@ -66,16 +71,39 @@ public class Visualization extends Agent {
     
   }
   private class GraphBuilder extends CyclicBehaviour{
-
+    CellType shape;
     @Override
     public void action() {
-      
-      
+      ACLMessage recieve = myAgent.receive();
+      if (recieve != null && recieve.getConversationId().equals("initial-state")) {
+        JSONObject wholeMsg = new JSONObject(recieve);
+        JSONArray nodes = wholeMsg.getJSONArray("Nodes");
+        JSONArray edges = wholeMsg.getJSONArray("Edges");
+        for (int i = 0; i < nodes.length(); i++) {
+          JSONObject node = nodes.getJSONObject(i);
+          int type = node.getInt("Type");
+          // i for bakeries and 0 for customers
+          JSONObject location = node.getJSONObject("Location");
+          float nodeX = location.getFloat("X")*(float)10.0;
+          float nodeY = location.getFloat("Y")*(float)10.0;
+          String nodeID = node.getString("NodeID");
+          if (type == 0) {
+            shape = CellType.RECTANGLE;
+          }
+          else{
+            shape = CellType.TRIANGLE;
+          }
+          graph.beginUpdate();
+          model.addCell(nodeID, shape);
+          graph.endUpdate();
+          model.getAllCells().get(i).relocate(nodeX, nodeY);
+        }
+      m.setGraph(graph);
+      }
+      else {
+        block();
+      }
 
-      
-      
-      
-      
     }
     
   }

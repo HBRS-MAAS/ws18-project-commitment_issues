@@ -98,7 +98,7 @@ public class Model {
         }
     }
 
-    private void addCell( Cell cell) {
+    public void addCell( Cell cell) {
 
         addedCells.add(cell);
 

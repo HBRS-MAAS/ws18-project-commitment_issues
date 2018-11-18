@@ -27,9 +27,11 @@ public class GraphVisualizationAgent extends BaseAgent {
   Main m = new Main();
   Graph graph = new Graph();
   Model model = graph.getModel();
-  ArrayList <String> trucksID = new ArrayList<String>();
-
+  ArrayList <String> trucksID = new ArrayList<String>();// list of trucks ids for easy tracking
+  ArrayList <Cell> textNodes = new ArrayList<Cell>(); // list of all text nodes to track them easily
+  
   public void setup() {
+    
     System.out.println("Hello! Visualization-agent "+getAID().getName()+" is ready each second is one hour.");
     yellowPageRegister();
     
@@ -92,8 +94,8 @@ public class GraphVisualizationAgent extends BaseAgent {
           int type = node.getInt("Type");
           // i for bakeries and 0 for customers
           JSONObject location = node.getJSONObject("Location");
-          float nodeX = location.getFloat("X")*(float)10.0;
-          float nodeY = location.getFloat("Y")*(float)10.0;
+          float nodeX = location.getFloat("X")*(float)100.0;
+          float nodeY = location.getFloat("Y")*(float)100.0;
           
           String nodeID = node.getString("NodeID");
           
@@ -148,26 +150,58 @@ public class GraphVisualizationAgent extends BaseAgent {
         JSONObject truck = new JSONObject(content);
         String truckID = truck.getString("TruckID");
         String orderID = truck.getString("OrderID");
-        float truckXLoc = truck.getFloat("X");
-        float truckYLoc = truck.getFloat("Y");
+        float truckXLoc = truck.getFloat("X")*(float)100.0;
+        float truckYLoc = truck.getFloat("Y")*(float)100.0;
         float estimatedTime = truck.getFloat("EstimatedTime");
         
         if (trucksID.contains(truckID)) {
           // If it is already there in the graph then search for it by id and relocate it
+          int orderIDindex = 0;
+          int currTimeIndex = 0;
+          int truckIndex = 0;
+          int counter = 0;
           for (int i = 0; i < model.getAllCells().size(); i++) {
-            if (model.getAllCells().get(i).getCellId().equals(truckID)) {
-              model.getAllCells().get(i).relocate(truckXLoc, truckYLoc);
+            if (counter == 3) {
               break;
             }
+            if (model.getAllCells().get(i).getCellId().equals(truckID)) {
+              truckIndex = i;
+            }
+            
+            if (model.getAllCells().get(i).getCellId().equals(truckID+"Estimated Time: ")) {
+              currTimeIndex = i;
+            }
+            
+            if (model.getAllCells().get(i).getCellId().equals(truckID+"order: ")) {
+              orderIDindex = i;
+            }
           }
+          model.getAllCells().get(truckIndex).relocate(truckXLoc, truckYLoc);
+          model.getAllCells().get(orderIDindex).relocate(truckXLoc-(float)50, truckYLoc);
+          model.getAllCells().get(currTimeIndex).relocate(truckXLoc-(float)75, truckYLoc);
+          
         }
         else {
+          TextCell currOrderID = new TextCell(truckID+"order: ", truckID, "order: "+ orderID);
+          TextCell currTime = new TextCell(truckID+"Estimated Time: ", truckID, "Estimated Time: "+Float.toString(estimatedTime));
+          textNodes.add(currOrderID);
+          textNodes.add(currTime);
           graph.beginUpdate();
           model.addCell(truckID, shape);
           graph.endUpdate();
           
           model.getAllCells().get(model.getAllCells().size()-1)
           .relocate(truckXLoc, truckYLoc);
+          graph.beginUpdate();
+          model.addCell(currOrderID);
+          graph.endUpdate();
+          model.getAllCells().get(model.getAllCells().size()-1)
+          .relocate(truckXLoc, truckYLoc-(float)50);
+          graph.beginUpdate();
+          model.addCell(currOrderID);
+          graph.endUpdate();
+          model.getAllCells().get(model.getAllCells().size()-1)
+          .relocate(truckXLoc, truckYLoc-(float)75);
         }
         
       

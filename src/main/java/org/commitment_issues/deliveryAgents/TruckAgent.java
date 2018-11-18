@@ -4,7 +4,6 @@ import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.basic.Action;
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
@@ -29,11 +28,17 @@ public class TruckAgent extends BaseAgent {
 	protected int numOfBoxes_;
 	protected OrderDetails currOrder_;
 	protected OrderDetails nextOrder_;
+	protected ArrayList<float[]> currPath_;
+	protected float deliveryStartTime_;
 	
 	public TruckAgent() {
 		currOrder_ = null;
 		nextOrder_ = null;
 		numOfBoxes_ = 0;
+		
+		//TODO:
+		// currTruckLocation_ =
+		
 	}
 	
 	protected void setup() {
@@ -63,6 +68,18 @@ public class TruckAgent extends BaseAgent {
 		nextOrder_ = null;
 		//TODO
 	}
+	
+	protected void setNewPath(ArrayList<float[]> path) {
+		currPath_ = path;
+		deliveryStartTime_ = getCurrentHour();
+		currTruckLocation_ = new float[2];
+		currTruckLocation_[0] = currPath_.get(0)[0];
+		currTruckLocation_[1] = currPath_.get(0)[1];
+	}
+	
+	protected void visualiseStreetNetwork(ACLMessage msg) {
+		//TODO
+    }
 	
 	protected AID discoverAgent(String serviceType) {
         // Find the an agent for given service type
@@ -117,7 +134,6 @@ public class TruckAgent extends BaseAgent {
 		}
 	}
 	
-	@SuppressWarnings("unused")
 	private enum TimeQuotationStates {
 		WAIT_FOR_QUOTATION_REQUEST,
 		QUOTATION_REQUESTED,
@@ -127,8 +143,7 @@ public class TruckAgent extends BaseAgent {
 		SEND_REFUSAL
 	}
 	
-	@SuppressWarnings("unused")
-    private class TimeQuotationServer extends CyclicBehaviour {
+	private class TimeQuotationServer extends CyclicBehaviour {
 
 		private TimeQuotationStates state_ = TimeQuotationStates.WAIT_FOR_QUOTATION_REQUEST;
 		private ACLMessage requestMsg_ = null;
@@ -203,7 +218,6 @@ public class TruckAgent extends BaseAgent {
         }
     }
 	
-	@SuppressWarnings("unused")
 	private class TruckScheduleServer extends CyclicBehaviour {
 		public void action() {
             MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.ACCEPT_PROPOSAL);
@@ -228,6 +242,50 @@ public class TruckAgent extends BaseAgent {
         }
 	}
 	
+	@SuppressWarnings("unused")
+	private class MoveTruck extends CyclicBehaviour {
+		
+		private void updateTruckPosition() {
+			float timeSinceDeliveryStart = getCurrentHour() - deliveryStartTime_;
+			float minTimeToNextNode = 0;
+			int i = 1;			
+			while (true) {
+				if (timeSinceDeliveryStart < currPath_.get(i)[2]) {
+					break;
+				}
+				i++;
+			}
+			
+			currTruckLocation_ = new float[2];
+			currTruckLocation_[0] = currPath_.get(i - 1)[0];
+			currTruckLocation_[1] = currPath_.get(i - 1)[1];
+		}
+		
+		private String getVisualizationMessage() {			
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("TruckID", baseAgent.getAID().getLocalName());
+			jsonObj.put("X", currTruckLocation_[0]);
+			jsonObj.put("Y", currTruckLocation_[1]);
+			jsonObj.put("OrderID", currOrder_.orderID_);
+			jsonObj.put("EstimatedTime", currPath_.get(currPath_.size() - 1)[2] - deliveryStartTime_);
+			return jsonObj.toString();
+		}
+		
+		public void action() {
+            if (getAllowAction()) {
+            	updateTruckPosition();
+            	
+                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+                msg.addReceiver(discoverAgent("transport-visualization"));
+                msg.setConversationId("truck-location");
+                msg.setContent(getVisualizationMessage());
+                baseAgent.send(msg);
+            } else {
+                block();
+            }
+        }
+	}
+	
 	private enum StreetNetworkQueryStates{
 		FIND_STREET_NETWORK_AGENTS,
 		REQUEST_STREET_NETWORK,
@@ -236,7 +294,6 @@ public class TruckAgent extends BaseAgent {
 		QUERY_FAILED
 	}
 	
-	@SuppressWarnings("unused")
 	private class QueryTime extends Behaviour {
 		private AID streetNwAgent_;
 		private StreetNetworkQueryStates state_ = StreetNetworkQueryStates.FIND_STREET_NETWORK_AGENTS;
@@ -366,6 +423,12 @@ public class TruckAgent extends BaseAgent {
 				node[0] = jsonArr.getJSONObject(i).getFloat("X");
 				node[1] = jsonArr.getJSONObject(i).getFloat("Y");
 				node[2] = jsonArr.getJSONObject(i).getFloat("time");
+				
+				if (i > 0) {
+					// Add time until previous node
+					node[2] += path.get(i - 1)[2];
+				}
+				
 				path.add(node);
 			}
 			return path;
@@ -399,8 +462,7 @@ public class TruckAgent extends BaseAgent {
                 if (reply != null) {
                     // Reply received
                     if (reply.getPerformative() == ACLMessage.INFORM) {
-                        ArrayList<float[]> path = parseJSONPath(reply.getContent());
-                        //TODO store the path for use.
+                        setNewPath(parseJSONPath(reply.getContent()));
                         state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
                     }
                     else {

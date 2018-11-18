@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.yourteamname.agents.BaseAgent;
 
 import com.fxgraph.cells.*;
 import jade.core.Agent;
@@ -22,10 +23,11 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 
 @SuppressWarnings("serial")
-public class GraphVisualizationAgent extends Agent {
+public class GraphVisualizationAgent extends BaseAgent {
   Main m = new Main();
   Graph graph = new Graph();
   Model model = graph.getModel();
+  ArrayList <String> trucksID = new ArrayList<String>();
 
   public void setup() {
     System.out.println("Hello! Visualization-agent "+getAID().getName()+" is ready each second is one hour.");
@@ -33,6 +35,7 @@ public class GraphVisualizationAgent extends Agent {
     
     addBehaviour(new GraphBuilder());
     addBehaviour(new JFXStart());
+    addBehaviour(new TruckTracker());
     
    }
   
@@ -70,11 +73,11 @@ public class GraphVisualizationAgent extends Agent {
     
   }
   private class GraphBuilder extends CyclicBehaviour{
-    CellType shape;
+    
     @Override
     public void action() {
       ACLMessage recieve = myAgent.receive();
-      
+      CellType shape;
       if (recieve != null && recieve.getConversationId().equals("initial-state")) {
         
         JSONObject wholeMsg = new JSONObject(recieve);
@@ -132,4 +135,46 @@ public class GraphVisualizationAgent extends Agent {
     }
     
   }
+  
+  private class TruckTracker extends CyclicBehaviour{
+
+    @Override
+    public void action() {
+      ACLMessage recieve = myAgent.receive();
+      CellType shape = CellType.BALL;
+      if (recieve != null && recieve.getConversationId().equals("truck-location")) {
+        String content = recieve.getContent();
+        
+        JSONObject truck = new JSONObject(content);
+        String truckID = truck.getString("TruckID");
+        String orderID = truck.getString("OrderID");
+        float truckXLoc = truck.getFloat("X");
+        float truckYLoc = truck.getFloat("Y");
+        float estimatedTime = truck.getFloat("EstimatedTime");
+        
+        if (trucksID.contains(truckID)) {
+          // If it is already there in the graph then search for it by id and relocate it
+          for (int i = 0; i < model.getAllCells().size(); i++) {
+            if (model.getAllCells().get(i).getCellId().equals(truckID)) {
+              model.getAllCells().get(i).relocate(truckXLoc, truckYLoc);
+              break;
+            }
+          }
+        }
+        else {
+          graph.beginUpdate();
+          model.addCell(truckID, shape);
+          graph.endUpdate();
+          
+          model.getAllCells().get(model.getAllCells().size()-1)
+          .relocate(truckXLoc, truckYLoc);
+        }
+        
+      
+      }  
+      
+    }
+    
+  }
+  
 }

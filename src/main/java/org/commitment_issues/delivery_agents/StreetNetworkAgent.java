@@ -94,6 +94,42 @@ public class StreetNetworkAgent extends BaseAgent {
 		}
 	}
 	
+	protected String createVisualizerMessage(String streetNetworkData) {
+		JSONObject JSONSNData = new JSONObject(streetNetworkData);
+		JSONObject JSONVisData = new JSONObject();
+		JSONArray JSONVisNodes = new JSONArray();
+		JSONArray JSONVisLinks = new JSONArray();
+		
+		nodesJSONArray = JSONSNData.getJSONArray("nodes");
+		linksJSONArray = JSONSNData.getJSONArray("links");
+		
+		for (int i = 0; i < nodesJSONArray.length(); i++) {
+			JSONObject JSONVisNodeInfo = new JSONObject();
+			JSONVisNodeInfo.put("guid", nodesJSONArray.getJSONObject(i).getString("guid"));
+			int type = 0;
+			if (nodesJSONArray.getJSONObject(i).getString("type").equals("bakery")) {
+				type = 1;
+			}
+			JSONVisNodeInfo.put("type",type);
+			JSONVisNodeInfo.put("location", nodesJSONArray.getJSONObject(i).getJSONObject("location"));
+			
+			JSONVisNodes.put(JSONVisNodeInfo);
+		}
+		
+		for (int i = 0; i < linksJSONArray.length(); i++) {
+			JSONObject JSONVisLinkInfo = new JSONObject();
+			JSONVisLinkInfo.put("source", linksJSONArray.getJSONObject(i).getString("source"));
+			JSONVisLinkInfo.put("target", linksJSONArray.getJSONObject(i).getString("target"));
+			
+			JSONVisLinks.put(JSONVisLinkInfo);
+		}
+		
+		JSONVisData.put("nodes", JSONVisNodes);		
+		JSONVisData.put("edges", JSONVisLinks);
+		
+		return JSONVisData.toString();
+	}
+	
 	protected void parseStreetNetworkData(String streetNetworkData) {
 		JSONObject JSONSNData = new JSONObject(streetNetworkData);
 		

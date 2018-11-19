@@ -17,10 +17,11 @@ import jade.lang.acl.MessageTemplate;
 
 import org.commitment_issues.agents.CustomerAgent;
 import org.json.*;
+import org.yourteamname.agents.BaseAgent;
 
 
 @SuppressWarnings("serial")
-public class TransportAgent extends Agent {
+public class TransportAgent extends BaseAgent {
   // declaring the attributes static as their will be only one transport agent
   private static ArrayList<Order> orders = new ArrayList<Order>(); //list of all the orders
   private static AID[] trucks;//list of all the trucks

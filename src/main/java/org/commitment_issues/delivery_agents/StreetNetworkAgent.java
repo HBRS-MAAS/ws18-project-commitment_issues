@@ -3,6 +3,10 @@ package org.commitment_issues.delivery_agents;
 
 import org.yourteamname.agents.BaseAgent;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +33,9 @@ public class StreetNetworkAgent extends BaseAgent {
 		
 		register("street-network", "street-network");
 		
+		parseStreetNetworkData(getStreetNetworkData());
+		
+		addBehaviour(new GraphVisualizerServer());
 		addBehaviour(new TimeToDeliveryServer());
 		addBehaviour(new PathServer());
 	}
@@ -38,7 +45,20 @@ public class StreetNetworkAgent extends BaseAgent {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 	
+	protected String getStreetNetworkData() {
+		File fileRelative = new File("src/main/resources/config/sample/clients.json");
+		String data = ""; 
+	    try {
+			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+		return data;
+	}
 	
+	// TODO: This behavior still requires the identity of the visualization agent
 	private class GraphVisualizerServer extends CyclicBehaviour {
 		private MessageTemplate mt;
 
@@ -46,7 +66,7 @@ public class StreetNetworkAgent extends BaseAgent {
 			ACLMessage SNVisualizationInfo = new ACLMessage(ACLMessage.INFORM);
 			// TODO:
 			AID receivingAgent = null;
-			String messageContent = "";
+			String messageContent = createVisualizerMessage();
 			
 			SNVisualizationInfo.addReceiver(receivingAgent);
 			SNVisualizationInfo.setContent(messageContent);
@@ -113,14 +133,10 @@ public class StreetNetworkAgent extends BaseAgent {
 		}
 	}
 	
-	protected String createVisualizerMessage(String streetNetworkData) {
-		JSONObject JSONSNData = new JSONObject(streetNetworkData);
+	protected String createVisualizerMessage() {
 		JSONObject JSONVisData = new JSONObject();
 		JSONArray JSONVisNodes = new JSONArray();
 		JSONArray JSONVisLinks = new JSONArray();
-		
-		nodesJSONArray = JSONSNData.getJSONArray("nodes");
-		linksJSONArray = JSONSNData.getJSONArray("links");
 		
 		for (int i = 0; i < nodesJSONArray.length(); i++) {
 			JSONObject JSONVisNodeInfo = new JSONObject();
@@ -176,8 +192,8 @@ public class StreetNetworkAgent extends BaseAgent {
 			addLink(linkInfo.getString("guid"), nodes.indexOf(sourceVertex), nodes.indexOf(targetVertex), linkInfo.getFloat("dist"));
 		}
 		
-//		graph = new Graph(nodes, edges);
-//        dijkstra = new DijkstraAlgorithm(graph);
+		graph = new Graph(nodes, edges);
+        dijkstra = new DijkstraAlgorithm(graph);
 				
 	}
 	
@@ -218,9 +234,7 @@ public class StreetNetworkAgent extends BaseAgent {
 	        }
 	        
 		}
-		
 		return fullPath;		
-		
     }
 	
 
@@ -299,16 +313,12 @@ public class StreetNetworkAgent extends BaseAgent {
 				if (edgeSourceID.equals(graphSourceID) && edgeTargetID.equals(graphTargetID)) {
 					time = linksJSONArray.getJSONObject(j).getDouble("dist") / speedFactor;
 					nodeInfo.put("time", time);
-					
 				}
 			}
 			
 			pathInfoArray.put(nodeInfo);
-			
 		}
-		
-		return pathInfoArray.toString();
-    	
+		return pathInfoArray.toString();    	
     }
 
 

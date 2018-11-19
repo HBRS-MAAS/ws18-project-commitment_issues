@@ -1,4 +1,4 @@
-package org.right_brothers.agents;
+package org.yourteamname.agents;
 
 import java.util.Arrays;
 import java.util.List;

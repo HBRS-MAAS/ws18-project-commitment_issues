@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 
 public class Cell extends Pane {
@@ -14,7 +15,7 @@ public class Cell extends Pane {
     private List<Cell> parents = new ArrayList<>();
 
     private Node view;
-
+    private Button b;
     public Cell(String cellId) {
         this.cellId = cellId;
     }
@@ -52,5 +53,13 @@ public class Cell extends Pane {
 
     public String getCellId() {
         return cellId;
+    }
+    
+    public Button getB() {
+      return b;
+    }
+
+    public void setB(Button b) {
+      this.b = b;
     }
 }

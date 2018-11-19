@@ -5,12 +5,12 @@ import javafx.scene.control.Button;
 public class TextCell extends Cell {
     private String parentID;
     private String content;
+    private Button view = new Button();
     public TextCell(String cellId, String parentID, String content) {
       super(cellId);
       this.parentID = parentID;
       this.content = content;
-      Button view = new Button();
-      view.setText(content);
+      view.setText(this.content);
       setView(view);
     }
     public String getParentID() {

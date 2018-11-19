@@ -5,6 +5,7 @@ import com.fxgraph.cells.CellType;
 import com.fxgraph.cells.Graph;
 import com.fxgraph.cells.Main;
 import com.fxgraph.cells.Model;
+import com.fxgraph.cells.TextCell;
 
 import java.util.ArrayList;
 
@@ -177,7 +178,9 @@ public class GraphVisualizationAgent extends BaseAgent {
           }
           model.getAllCells().get(truckIndex).relocate(truckXLoc, truckYLoc);
           model.getAllCells().get(orderIDindex).relocate(truckXLoc-(float)50, truckYLoc);
+          ((TextCell)model.getAllCells().get(orderIDindex)).setContent("order: "+orderID);
           model.getAllCells().get(currTimeIndex).relocate(truckXLoc-(float)75, truckYLoc);
+          ((TextCell)model.getAllCells().get(currTimeIndex)).setContent("Estimated Time: "+Float.toString(estimatedTime));
           
         }
         else {

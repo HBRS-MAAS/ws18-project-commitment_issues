@@ -1,4 +1,4 @@
-package org.commitment_issues.deliveryAgents;
+package org.commitment_issues.delivery_agents;
 
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
@@ -29,25 +29,27 @@ public class TruckAgent extends BaseAgent {
 	protected OrderDetails currOrder_;
 	protected OrderDetails nextOrder_;
 	protected ArrayList<float[]> currPath_;
-	protected float deliveryStartTime_;
-	
-	public TruckAgent() {
-		currOrder_ = null;
-		nextOrder_ = null;
-		numOfBoxes_ = 0;
-		
-		//TODO:
-		// currTruckLocation_ =
-		
-	}
+	protected float pathStartTime_;
+	protected TruckState truckState_;
 	
 	protected void setup() {
 		super.setup();
 		System.out.println("Hello! TruckAgent "+ getAID().getName() +" is ready.");
 		
+		currOrder_ = null;
+		nextOrder_ = null;
+		numOfBoxes_ = 0;
+		truckState_ = TruckState.IDLE;
+		
+		//TODO: Load from json
+		currTruckLocation_ = new float[2];
+		currTruckLocation_[0] = (float) -0.82;
+		currTruckLocation_[1] = (float) 7.19;
+		
 		register("transport-orders", "transport-orders");
 		addBehaviour(new TimeQuotationServer());
 		addBehaviour(new TruckScheduleServer());
+		addBehaviour(new MoveTruck());
 	}
 
 	protected void takeDown() {
@@ -64,14 +66,17 @@ public class TruckAgent extends BaseAgent {
 		return currOrder_.customerLocation_;
 	}
 	
-	protected void startNewOrder(String orderID, JSONArray boxes) {
-		nextOrder_ = null;
-		//TODO
+	protected void startNewOrder(OrderDetails order) {
+		truckState_ = TruckState.MOVING_TO_BAKERY;
+		currOrder_ = order;
+		pathStartTime_ = getCurrentHour();
+		currPath_ = null;
+
+		addBehaviour(new QueryPath(currOrder_.bakeryLocation_));
 	}
 	
-	protected void setNewPath(ArrayList<float[]> path) {
+	protected void updateCurrPath(ArrayList<float[]> path) {
 		currPath_ = path;
-		deliveryStartTime_ = getCurrentHour();
 		currTruckLocation_ = new float[2];
 		currTruckLocation_[0] = currPath_.get(0)[0];
 		currTruckLocation_[1] = currPath_.get(0)[1];
@@ -107,12 +112,19 @@ public class TruckAgent extends BaseAgent {
         return streetNwAgent;
     }
 	
-	@SuppressWarnings("unused")
+	private enum TruckState {
+		IDLE,
+		MOVING_TO_BAKERY,
+		MOVING_TO_CUSTOMER
+	}
+	
 	private class OrderDetails {
 		public String orderID_;
 		public float[] bakeryLocation_;
 		public float[] customerLocation_;
 		public int numOfBoxes_;
+		
+		// TODO
 		public String customerName_ = "No Customer Name Provided";
 		public String bakeryName_ = "No Bakery Name Provided";
 		public int deliveryDate_;
@@ -226,8 +238,15 @@ public class TruckAgent extends BaseAgent {
                 // ACCEPT_PROPOSAL Message received. Process it
                 ACLMessage reply = msg.createReply();
                 
-                if (nextOrder_ == null) {
-                	nextOrder_ = new OrderDetails(msg.getContent());
+                OrderDetails newOrder = new OrderDetails(msg.getContent());
+                
+                if (currOrder_ == null) {
+                	currOrder_ = newOrder;
+                	reply.setPerformative(ACLMessage.INFORM);
+                	reply.setContent("DeliveryAccepted");
+                }
+                else if (nextOrder_ == null) {
+                	nextOrder_ = newOrder;
                 	reply.setPerformative(ACLMessage.INFORM);
                 	reply.setContent("DeliveryAccepted");
                 }
@@ -242,23 +261,40 @@ public class TruckAgent extends BaseAgent {
         }
 	}
 	
-	@SuppressWarnings("unused")
 	private class MoveTruck extends CyclicBehaviour {
 		
-		private void updateTruckPosition() {
-			float timeSinceDeliveryStart = getCurrentHour() - deliveryStartTime_;
-			float minTimeToNextNode = 0;
-			int i = 1;			
-			while (true) {
-				if (timeSinceDeliveryStart < currPath_.get(i)[2]) {
-					break;
+		private boolean updateTruckPosition() {
+			boolean retval = false;
+			if (currPath_ != null) {
+				float timeSincePathStart = getCurrentHour() - pathStartTime_;
+				int i = 1;			
+				while (true) {
+					if (timeSincePathStart < currPath_.get(i)[2]) {
+						break;
+					}
+					i++;
 				}
-				i++;
+				
+				currTruckLocation_ = new float[2];
+				currTruckLocation_[0] = currPath_.get(i - 1)[0];
+				currTruckLocation_[1] = currPath_.get(i - 1)[1];
+				retval = true;
 			}
 			
-			currTruckLocation_ = new float[2];
-			currTruckLocation_[0] = currPath_.get(i - 1)[0];
-			currTruckLocation_[1] = currPath_.get(i - 1)[1];
+			return retval;
+		}
+		
+		private boolean reachedEndOfPath() {
+			float[] endPos = {currPath_.get(currPath_.size() - 1)[0], currPath_.get(currPath_.size() - 1)[1]};
+			return currTruckLocation_ == endPos;
+		}
+		
+		private boolean reachedCutomer() {
+			return (truckState_ == TruckState.MOVING_TO_CUSTOMER) && reachedEndOfPath();
+		}
+		
+		private boolean reachedBakery() {
+			return (truckState_ == TruckState.MOVING_TO_BAKERY) && reachedEndOfPath();
 		}
 		
 		private String getVisualizationMessage() {			
@@ -267,21 +303,38 @@ public class TruckAgent extends BaseAgent {
 			jsonObj.put("X", currTruckLocation_[0]);
 			jsonObj.put("Y", currTruckLocation_[1]);
 			jsonObj.put("OrderID", currOrder_.orderID_);
-			jsonObj.put("EstimatedTime", currPath_.get(currPath_.size() - 1)[2] - deliveryStartTime_);
+			jsonObj.put("EstimatedTime", currPath_.get(currPath_.size() - 1)[2] - pathStartTime_);
 			return jsonObj.toString();
 		}
 		
 		public void action() {
             if (getAllowAction()) {
-            	updateTruckPosition();
-            	
-                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                msg.addReceiver(discoverAgent("transport-visualization"));
-                msg.setConversationId("truck-location");
-                msg.setContent(getVisualizationMessage());
-                baseAgent.send(msg);
-            } else {
-                block();
+            	if ((truckState_ == TruckState.IDLE) && (currOrder_ != null)) {
+            		startNewOrder(currOrder_);
+            	}
+            	else if ((truckState_ != TruckState.IDLE)  && updateTruckPosition()) {
+	            	if (reachedBakery()) {
+	            		baseAgent.addBehaviour(new RequestBoxes(nextOrder_.orderID_));
+	            		truckState_ = TruckState.MOVING_TO_CUSTOMER;
+	            		currPath_ = null;
+	            	}
+	            	else if (reachedCutomer()) {
+	            		baseAgent.addBehaviour(new PostDeliveryCompletionMessage(currOrder_));
+	            		if (nextOrder_ != null) {
+	            			startNewOrder(nextOrder_);
+	            			nextOrder_ = null;
+	            		}
+	            		else {
+	            			truckState_ = TruckState.IDLE;
+	            		}
+	            	}
+	            	
+	                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+	                msg.addReceiver(discoverAgent("transport-visualization"));
+	                msg.setConversationId("truck-location");
+	                msg.setContent(getVisualizationMessage());
+	                baseAgent.send(msg);
+            	}
             }
         }
 	}
@@ -313,7 +366,7 @@ public class TruckAgent extends BaseAgent {
           		  	.put("Y", currTruckLocation_[1]));
 			
 			// If truck is not idle add the location of current customer
-			if (currOrder_.customerLocation_ != null) {
+			if (!isTruckIdle()) {
 				jsonArray.put(new JSONObject()
 						.put("X", currOrder_.customerLocation_[0])
 	          		  	.put("Y", currOrder_.customerLocation_[1]));
@@ -388,13 +441,9 @@ public class TruckAgent extends BaseAgent {
 		private AID streetNwAgent_;
 		private StreetNetworkQueryStates state_ = StreetNetworkQueryStates.FIND_STREET_NETWORK_AGENTS;
 		private MessageTemplate mt_;
-		private TimeQuotationServer requester_;
-		private float[] source_;
 		private float[] destination_;
 		
-		public QueryPath(TimeQuotationServer requester, float[] source, float[] destination) {
-			requester_ = requester;
-			source_ = source;
+		public QueryPath(float[] destination) {
 			destination_ = destination;
 		}
 		
@@ -403,8 +452,8 @@ public class TruckAgent extends BaseAgent {
 			
 			// Add source node location
 			jsonArray.put(new JSONObject()
-					.put("X", source_[0])
-          		  	.put("Y", source_[1]));
+					.put("X", currTruckLocation_[0])
+          		  	.put("Y", currTruckLocation_[1]));
 			
 			// Add location of new customer
 			jsonArray.put(new JSONObject()
@@ -462,7 +511,7 @@ public class TruckAgent extends BaseAgent {
                 if (reply != null) {
                     // Reply received
                     if (reply.getPerformative() == ACLMessage.INFORM) {
-                        setNewPath(parseJSONPath(reply.getContent()));
+                        updateCurrPath(parseJSONPath(reply.getContent()));
                         state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
                     }
                     else {
@@ -506,7 +555,8 @@ public class TruckAgent extends BaseAgent {
 			String orderID = obj.getString("OrderID");
 			JSONArray boxList = obj.getJSONArray("Boxes");
 			
-			startNewOrder(orderID, boxList);
+			baseAgent.addBehaviour(new QueryPath(currOrder_.customerLocation_));
+			// TODO
 		}
 		
 		public void action() {

@@ -4,6 +4,11 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'application'
+apply from: 'javafx.plugin'
+
+javafx {
+    mainClass = 'org.commitment_issues.Start'
+}
 
 mainClassName = 'org.commitment_issues.Start'
 
@@ -15,10 +20,6 @@ repositories {
     maven {
         url 'http://jade.tilab.com/maven/'
     }
-}
-
-eclipse {
-    classpath.containers 'org.eclipse.fx.ide.jdt.core.JAVAFX_CONTAINER'
 }
 
  dependencies {

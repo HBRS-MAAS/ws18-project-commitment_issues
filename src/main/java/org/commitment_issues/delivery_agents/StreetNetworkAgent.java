@@ -1,23 +1,20 @@
 //package org.commitment_issues.deliveryAgents;
 package org.commitment_issues.delivery_agents;
 
+import org.yourteamname.agents.BaseAgent;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.json.*;
 
-import jade.core.Agent;
 import jade.core.behaviours.*;
-import jade.domain.DFService;
-import jade.domain.FIPAException;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
-public class StreetNetworkAgent extends Agent {
+public class StreetNetworkAgent extends BaseAgent {
 	JSONArray nodesJSONArray = new JSONArray();
 	JSONArray linksJSONArray = new JSONArray();
 			
@@ -29,41 +26,14 @@ public class StreetNetworkAgent extends Agent {
 	protected void setup() {
 		System.out.println("Hello! StreetNetwork-agent "+getAID().getName()+" is ready.");
 		
-		registerInYellowPages();
+		register("street-network", "street-network");
 		
 		addBehaviour(new TimeToDeliveryServer());
 		addBehaviour(new PathServer());
-
-
 	}
-	
-	protected void registerInYellowPages() {
-        DFAgentDescription dfd = new DFAgentDescription();
-        dfd.setName(getAID());
-
-        ServiceDescription sd = new ServiceDescription();
-        sd.setType("street-network");
-        sd.setName("street-network");
-        dfd.addServices(sd);
-
-        try {
-            DFService.register(this, dfd);
-        } catch (FIPAException fe) {
-            fe.printStackTrace();
-        }
-    }
-
-    protected void deregisterFromYellowPages() {
-        // Deregister from the yellow pages
-        try {
-            DFService.deregister(this);
-        } catch (FIPAException fe) {
-            fe.printStackTrace();
-        }
-    }
 
 	protected void takeDown() {
-		deregisterFromYellowPages();
+		deRegister();
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 	

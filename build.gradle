@@ -17,6 +17,10 @@ repositories {
     }
 }
 
+eclipse {
+    classpath.containers 'org.eclipse.fx.ide.jdt.core.JAVAFX_CONTAINER'
+}
+
  dependencies {
     compile 'org.json:json:20171018'
     compile group: 'com.tilab.jade', name: 'jade', version: '4.5.+'

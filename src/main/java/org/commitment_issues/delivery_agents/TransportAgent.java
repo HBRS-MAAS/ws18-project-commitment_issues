@@ -5,7 +5,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
@@ -106,7 +105,6 @@ public class TransportAgent extends BaseAgent {
           String bakID = wholeOrder.getString("BackId");//This is assuming that the aggregator will also pass the customerID
           float [] bakLocation = TransportAgent.getBackPos(bakID);
           String wholeOrderID = wholeOrder.getString("OrderId");
-          JSONArray Boxes = wholeOrder.getJSONArray("Boxes");
           
           Order order = new Order();
           order.setOrderID(wholeOrderID);
@@ -220,25 +218,21 @@ public class TransportAgent extends BaseAgent {
         step = 3;
         break;
       
+      default: break;
       }
       
     }
     
     @Override
     public boolean done() {
-      if (step == 3) {
-        return true;
-      }
-      else {
-      return false;
-      }
+      return (step ==3);
     }
     
   }
   
   private class truckReady extends CyclicBehaviour{
-    String orderID;
-    ArrayList<Box> boxes = new ArrayList<Box>();
+    private String orderID;
+    private ArrayList<Box> boxes = new ArrayList<Box>();
 
     @Override
     public void action() {

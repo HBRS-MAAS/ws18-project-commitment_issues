@@ -4,13 +4,29 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'application'
+jar {
+    manifest {
+        attributes 'Main-Class': 'JavaFXDemo'
+    }
+}
 
+eclipse {
+    classpath {
+        file {
+            whenMerged {
+                def jre = entries.find { it.path.contains 'org.eclipse.jdt.launching.JRE_CONTAINER' }
+                jre.accessRules.add(new AccessRule('0', 'javafx/**'))
+            }
+        }
+    }
+}
 mainClassName = 'org.commitment_issues.Start'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
+    jcenter()
     mavenCentral()
     maven {
         url 'http://jade.tilab.com/maven/'

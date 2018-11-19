@@ -1,13 +1,10 @@
 package org.commitment_issues.delivery_agents;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import org.yourteamname.agents.BaseAgent;
 
 import org.json.*;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.behaviours.*;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -17,45 +14,37 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
-public class MailboxAgent extends Agent {
+public class MailboxAgent extends BaseAgent {
 
 	protected void setup() {
+		super.setup();
 		System.out.println("Hello! Mailbox-agent "+getAID().getName()+" is ready.");
 		
-		registerInYellowPages();
+		register("mailbox", "mailbox");
 		
 		addBehaviour(new truckDeliveryCompletionProcessor());
 		
 	}
-	
-	protected void registerInYellowPages() {
-        DFAgentDescription dfd = new DFAgentDescription();
-        dfd.setName(getAID());
-
-        ServiceDescription sd = new ServiceDescription();
-        sd.setType("mailbox");
-        sd.setName("mailbox");
-        dfd.addServices(sd);
-
-        try {
-            DFService.register(this, dfd);
-        } catch (FIPAException fe) {
-            fe.printStackTrace();
-        }
-    }
-
-    protected void deregisterFromYellowPages() {
-        // Deregister from the yellow pages
-        try {
-            DFService.deregister(this);
-        } catch (FIPAException fe) {
-            fe.printStackTrace();
-        }
-    }
 
 	protected void takeDown() {
-		deregisterFromYellowPages();
+		deRegister();
 		System.out.println(getAID().getLocalName() + ": Terminating.");
+	}
+	
+	protected DeliveryStatus parseTruckConfirmationMessage(String truckMessage) {		
+		DeliveryStatus status = new DeliveryStatus();
+		
+		JSONObject truckMessageData = new JSONObject(truckMessage);
+		JSONObject deliveryStatus = truckMessageData.getJSONObject("DeliveryStatus");
+		
+		status.orderDeliveredTo = deliveryStatus.getString("OrderDeliveredTo");
+		status.orderDeliveredBy = deliveryStatus.getString("OrderDeliveredBy");
+		status.dayOfDelivery = deliveryStatus.getInt("DayOfDelivery");
+		status.timeOfDelivery = deliveryStatus.getInt("TimeOfDelivery");
+		status.numOfBoxes = deliveryStatus.getInt("NumOfBoxes");
+		status.producedBy = deliveryStatus.getString("ProducedBy");
+		
+		return status;		
 	}
 	
 	private class truckDeliveryCompletionProcessor extends CyclicBehaviour {
@@ -80,7 +69,6 @@ public class MailboxAgent extends Agent {
         }
 
 		public void action() {
-			
 			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("DeliveryConfirmation"),
 					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
@@ -88,15 +76,9 @@ public class MailboxAgent extends Agent {
 			
 			if (msg != null) {
 				String truckMessageContent = msg.getContent();
-//				DeliveryStatus confirmedStatus = parseTruckConfirmationMessage(truckMessageContent);
-
-//				ACLMessage reply = msg.createReply();
-//				...
-//
-//				reply.setPerformative(ACLMessage.INFORM);
-//				reply.setContent(String.valueOf(time));
-//				myAgent.send(reply);
 				
+				// At the moment, this list includes all customers as well.
+				// TODO: Send the message only to the specific customer
 				findReceivers();
 				ACLMessage orderConfirmation = new ACLMessage(ACLMessage.INFORM);
 				
@@ -106,29 +88,16 @@ public class MailboxAgent extends Agent {
 				
 				orderConfirmation.setContent(truckMessageContent);
 				orderConfirmation.setConversationId("order-confirmation");
-				orderConfirmation.setReplyWith("Order Confirmation"+System.currentTimeMillis());
+				orderConfirmation.setPostTimeStamp(System.currentTimeMillis());
 				myAgent.send(orderConfirmation);
 			}
 
 			else {
 				block();
 			}
+			
+			// This is called unconditionally since the agent does not depend on time
+			finished();
 		}
-	}
-	
-	protected DeliveryStatus parseTruckConfirmationMessage(String truckMessage) {		
-		DeliveryStatus status = new DeliveryStatus();
-		
-		JSONObject truckMessageData = new JSONObject(truckMessage);
-		JSONObject deliveryStatus = truckMessageData.getJSONObject("DeliveryStatus");
-		
-		status.orderDeliveredTo = deliveryStatus.getString("OrderDeliveredTo");
-		status.orderDeliveredBy = deliveryStatus.getString("OrderDeliveredBy");
-		status.dayOfDelivery = deliveryStatus.getInt("DayOfDelivery");
-		status.timeOfDelivery = deliveryStatus.getInt("TimeOfDelivery");
-		status.numOfBoxes = deliveryStatus.getInt("NumOfBoxes");
-		status.producedBy = deliveryStatus.getString("ProducedBy");
-		
-		return status;		
 	}
 }

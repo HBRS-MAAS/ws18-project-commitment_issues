@@ -20,8 +20,8 @@ import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
 public class StreetNetworkAgent extends BaseAgent {
-	JSONArray nodesJSONArray = new JSONArray();
-	JSONArray linksJSONArray = new JSONArray();
+	public JSONArray nodesJSONArray = new JSONArray();
+	public JSONArray linksJSONArray = new JSONArray();
 			
 	public List<Vertex> nodes = new ArrayList<Vertex>();
 	public List<Edge> edges = new ArrayList<Edge>();

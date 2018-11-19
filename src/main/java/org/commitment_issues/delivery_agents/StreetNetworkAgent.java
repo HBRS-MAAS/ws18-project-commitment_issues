@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.json.*;
 
+import jade.core.AID;
 import jade.core.behaviours.*;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -35,6 +36,24 @@ public class StreetNetworkAgent extends BaseAgent {
 	protected void takeDown() {
 		deRegister();
 		System.out.println(getAID().getLocalName() + ": Terminating.");
+	}
+	
+	
+	private class GraphVisualizerServer extends CyclicBehaviour {
+		private MessageTemplate mt;
+
+		public void action() {			
+			ACLMessage SNVisualizationInfo = new ACLMessage(ACLMessage.INFORM);
+			// TODO:
+			AID receivingAgent = null;
+			String messageContent = "";
+			
+			SNVisualizationInfo.addReceiver(receivingAgent);
+			SNVisualizationInfo.setContent(messageContent);
+			SNVisualizationInfo.setConversationId("graph-visualization");
+			
+			myAgent.send(SNVisualizationInfo);
+		}
 	}
 	
 	private class TimeToDeliveryServer extends CyclicBehaviour {

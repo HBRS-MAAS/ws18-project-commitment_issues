@@ -1,4 +1,4 @@
-package org.right_brothers.agents;
+package org.yourteamname.agents;
 
 import jade.core.Agent;
 import jade.core.AID;

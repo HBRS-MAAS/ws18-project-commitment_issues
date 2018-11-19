@@ -21,6 +21,8 @@ public class TextCell extends Cell {
     }
     public void setContent(String content) {
       this.content = content;
+      view.setText(this.content);
+      setView(view);
     }
     
     

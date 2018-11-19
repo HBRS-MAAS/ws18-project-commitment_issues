@@ -7,7 +7,7 @@ public class Graph {
 
     private Model model;
 
-    private Group canvas;
+    
 
     private Pane scrollPane;
 
@@ -22,7 +22,7 @@ public class Graph {
 
         this.model = new Model();
 
-        canvas = new Group();
+        Group canvas = new Group();
         cellLayer = new Pane();
 
         canvas.getChildren().add(cellLayer);

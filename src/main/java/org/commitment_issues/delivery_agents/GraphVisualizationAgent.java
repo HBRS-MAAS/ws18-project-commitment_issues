@@ -13,7 +13,6 @@ import org.json.JSONObject;
 import org.yourteamname.agents.BaseAgent;
 
 import com.fxgraph.cells.*;
-import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
@@ -24,11 +23,11 @@ import jade.lang.acl.ACLMessage;
 
 @SuppressWarnings("serial")
 public class GraphVisualizationAgent extends BaseAgent {
-  Main m = new Main();
-  Graph graph = new Graph();
-  Model model = graph.getModel();
-  ArrayList <String> trucksID = new ArrayList<String>();// list of trucks ids for easy tracking
-  ArrayList <Cell> textNodes = new ArrayList<Cell>(); // list of all text nodes to track them easily
+  protected Main m = new Main();
+  protected Graph graph = new Graph();
+  protected Model model = graph.getModel();
+  protected ArrayList <String> trucksID = new ArrayList<String>();// list of trucks ids for easy tracking
+  protected ArrayList <Cell> textNodes = new ArrayList<Cell>(); // list of all text nodes to track them easily
   
   public void setup() {
     

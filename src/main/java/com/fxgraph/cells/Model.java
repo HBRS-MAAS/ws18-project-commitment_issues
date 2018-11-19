@@ -7,23 +7,22 @@ import java.util.Map;
 
 import com.fxgraph.cells.TriangleCell;
 
-import javafx.scene.Node;
 
 import com.fxgraph.cells.RectangleCell;
 
 public class Model {
 
-    Cell graphParent;
+    private Cell graphParent;
 
-    List<Cell> allCells;
-    List<Cell> addedCells;
-    List<Cell> removedCells;
+    private List<Cell> allCells;
+    private List<Cell> addedCells;
+    private List<Cell> removedCells;
 
-    List<Edge> allEdges;
-    List<Edge> addedEdges;
-    List<Edge> removedEdges;
+    private List<Edge> allEdges;
+    private List<Edge> addedEdges;
+    private List<Edge> removedEdges;
 
-    Map<String,Cell> cellMap; // <id,cell>
+    private Map<String,Cell> cellMap; // <id,cell>
 
     public Model() {
 

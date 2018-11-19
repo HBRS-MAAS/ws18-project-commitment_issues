@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-  static Graph graph = new Graph();
+  private static Graph graph = new Graph();
   public Main(Graph g) {
     super();
     Main.graph = g;
@@ -31,15 +31,7 @@ public class Main extends Application {
       primaryStage.show();
       
   }
-  private void addGraphComponents(String id, CellType t) {
-    Model model = graph.getModel();
-
-    graph.beginUpdate();
-    model.addCell(id, t);
-    graph.endUpdate();
-    model.getAllCells().get(0).relocate(100, 100);
-
-  }
+  
   
 
   public void main() throws InterruptedException {

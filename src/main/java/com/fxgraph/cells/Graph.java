@@ -1,7 +1,6 @@
 package com.fxgraph.cells;
 
 import javafx.scene.Group;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
 
 public class Graph {
@@ -17,7 +16,7 @@ public class Graph {
      * the top-most and left-most child to the top and left eg when you drag the
      * top child down, the entire scrollpane would move down
      */
-    Pane cellLayer;
+    private Pane cellLayer;
 
     public Graph() {
 
@@ -47,6 +46,7 @@ public class Graph {
     }
 
     public void beginUpdate() {
+    // to start over the graph update
     }
 
     public void endUpdate() {

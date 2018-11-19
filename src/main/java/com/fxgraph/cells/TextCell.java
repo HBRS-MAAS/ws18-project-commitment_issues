@@ -3,8 +3,8 @@ package com.fxgraph.cells;
 import javafx.scene.control.Button;
 
 public class TextCell extends Cell {
-    String parentID;
-    String content;
+    private String parentID;
+    private String content;
     public TextCell(String cellId, String parentID, String content) {
       super(cellId);
       this.parentID = parentID;

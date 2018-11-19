@@ -8,7 +8,7 @@ public class Edge extends Group {
     protected Cell source;
     protected Cell target;
 
-    Line line;
+    private Line line;
 
     public Edge(Cell source, Cell target) {
 

@@ -233,7 +233,7 @@ public class StreetNetworkAgent extends BaseAgent {
 	protected LinkedList<Vertex> getShortestPath(String truckMessageData) {
 		Vertex sourceNode = null;
 		Vertex targetNode = null;
-		LinkedList<Vertex> fullPath = null;
+		LinkedList<Vertex> fullPath = new LinkedList<Vertex>();
 		
 		JSONArray JSONTruckMessage = new JSONArray(truckMessageData);
 		
@@ -251,6 +251,9 @@ public class StreetNetworkAgent extends BaseAgent {
 					targetNode = nodes.get(j);
 				}
 			}
+			
+//			graph = new Graph(nodes, edges);
+//	        dijkstra = new DijkstraAlgorithm(graph);
 			
 			dijkstra.execute(sourceNode);
 	        LinkedList<Vertex> path = dijkstra.getPath(targetNode);

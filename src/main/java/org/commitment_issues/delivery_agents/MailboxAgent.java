@@ -74,6 +74,8 @@ public class MailboxAgent extends BaseAgent {
 					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
 			msg = myAgent.receive(mt);
 			
+			System.out.println("["+getAID().getLocalName()+"]: Waiting for order completion messages.");
+			
 			if (msg != null) {
 				String truckMessageContent = msg.getContent();
 				

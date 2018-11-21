@@ -5,6 +5,7 @@ import org.yourteamname.agents.BaseAgent;
 import org.json.*;
 
 import jade.core.AID;
+import jade.core.Agent;
 import jade.core.behaviours.*;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -14,7 +15,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
-public class MailboxAgent extends BaseAgent {
+public class MailboxAgent extends Agent {
 
 	protected void setup() {
 		super.setup();
@@ -26,10 +27,40 @@ public class MailboxAgent extends BaseAgent {
 		
 	}
 
-	protected void takeDown() {
-		deRegister();
-		System.out.println(getAID().getLocalName() + ": Terminating.");
-	}
+	  /* This function registers the agent to yellow pages
+	   * Call this in `setup()` function
+	   */
+	  protected void register(String type, String name){
+	      DFAgentDescription dfd = new DFAgentDescription();
+	      dfd.setName(getAID());
+	      ServiceDescription sd = new ServiceDescription();
+	      sd.setType(type);
+	      sd.setName(name);
+	      dfd.addServices(sd);
+	      try {
+	          DFService.register(this, dfd);
+	      }
+	      catch (FIPAException fe) {
+	          fe.printStackTrace();
+	      }
+	  }
+	  
+	  /* This function removes the agent from yellow pages
+	   * Call this in `doDelete()` function
+	   */
+	  protected void deRegister() {
+	  	try {
+	          DFService.deregister(this);
+	      }
+	      catch (FIPAException fe) {
+	          fe.printStackTrace();
+	      }
+	  }
+	  
+		protected void takeDown() {
+			deRegister();
+			System.out.println(getAID().getLocalName() + ": Terminating.");
+		}
 	
 	protected DeliveryStatus parseTruckConfirmationMessage(String truckMessage) {		
 		DeliveryStatus status = new DeliveryStatus();
@@ -105,9 +136,6 @@ public class MailboxAgent extends BaseAgent {
 			else {
 				block();
 			}
-			
-			// This is called unconditionally since the agent does not depend on time
-			finished();
 		}
 	}
 }

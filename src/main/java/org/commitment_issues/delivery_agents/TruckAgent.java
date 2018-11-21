@@ -282,11 +282,16 @@ public class TruckAgent extends BaseAgent {
 					i++;
 				}
 				
-				currTruckLocation_ = new float[2];
-				currTruckLocation_[0] = currPath_.get(i - 1)[0];
-				currTruckLocation_[1] = currPath_.get(i - 1)[1];
-				retval = true;
-				System.out.println(baseAgent.getAID().getLocalName() + " UpdatePosCalled -> " + currTruckLocation_);
+				if (currTruckLocation_[0] != currPath_.get(i - 1)[0] ||
+					currTruckLocation_[1] != currPath_.get(i - 1)[1])
+				{
+					currTruckLocation_ = new float[2];
+					currTruckLocation_[0] = currPath_.get(i - 1)[0];
+					currTruckLocation_[1] = currPath_.get(i - 1)[1];
+					retval = true;
+					System.out.println(baseAgent.getAID().getLocalName() + " UpdatePosCalled (" + currTruckLocation_[0] + "," + currTruckLocation_[0] + ")");
+
+				}
 			}
 			
 			return retval;
@@ -317,6 +322,7 @@ public class TruckAgent extends BaseAgent {
 		
 		public void action() {
             if (getAllowAction()) {
+            	System.out.println("Move: " + truckState_ + currOrder_);
             	if ((truckState_ == TruckState.IDLE) && (currOrder_ != null)) {
             		startNewOrder(currOrder_);
             		System.out.println(baseAgent.getAID().getLocalName() + " IDLE Truck started to move with new order");
@@ -341,13 +347,14 @@ public class TruckAgent extends BaseAgent {
 	            		}
 	            	}
 	            	
-	                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-	                msg.addReceiver(discoverAgent("transport-visualization"));
-	                msg.setConversationId("truck-location");
-	                msg.setContent(getVisualizationMessage());
-	                baseAgent.send(msg);
-	                System.out.println(baseAgent.getAID().getLocalName() + " Message sent to Visualization agent: " + msg.getContent());
+//	                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+//	                msg.addReceiver(discoverAgent("transport-visualization"));
+//	                msg.setConversationId("truck-location");
+//	                msg.setContent(getVisualizationMessage());
+//	                baseAgent.send(msg);
+//	                System.out.println(baseAgent.getAID().getLocalName() + " Message sent to Visualization agent: " + msg.getContent());
             	}
+//            	finished();
             }
         }
 	}
@@ -537,8 +544,6 @@ public class TruckAgent extends BaseAgent {
                     	state_ = StreetNetworkQueryStates.QUERY_FAILED;
                     	System.out.println(baseAgent.getAID().getLocalName() + " Query for path failed from SN");
                     }
-                } else {
-                    block();
                 }
 				break;
 			default:

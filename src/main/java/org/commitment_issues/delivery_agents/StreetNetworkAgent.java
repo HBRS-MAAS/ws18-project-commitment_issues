@@ -14,12 +14,17 @@ import java.util.List;
 import org.json.*;
 
 import jade.core.AID;
+import jade.core.Agent;
 import jade.core.behaviours.*;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
-public class StreetNetworkAgent extends BaseAgent {
+public class StreetNetworkAgent extends Agent {
 	public JSONArray nodesJSONArray = new JSONArray();
 	public JSONArray linksJSONArray = new JSONArray();
 			
@@ -41,11 +46,41 @@ public class StreetNetworkAgent extends BaseAgent {
 		addBehaviour(new PathServer());
 	}
 
-	protected void takeDown() {
-		deRegister();
-		System.out.println(getAID().getLocalName() + ": Terminating.");
-	}
-	
+	  /* This function registers the agent to yellow pages
+	   * Call this in `setup()` function
+	   */
+	  protected void register(String type, String name){
+	      DFAgentDescription dfd = new DFAgentDescription();
+	      dfd.setName(getAID());
+	      ServiceDescription sd = new ServiceDescription();
+	      sd.setType(type);
+	      sd.setName(name);
+	      dfd.addServices(sd);
+	      try {
+	          DFService.register(this, dfd);
+	      }
+	      catch (FIPAException fe) {
+	          fe.printStackTrace();
+	      }
+	  }
+	  
+	  /* This function removes the agent from yellow pages
+	   * Call this in `doDelete()` function
+	   */
+	  protected void deRegister() {
+	  	try {
+	          DFService.deregister(this);
+	      }
+	      catch (FIPAException fe) {
+	          fe.printStackTrace();
+	      }
+	  }
+	  
+		protected void takeDown() {
+			deRegister();
+			System.out.println(getAID().getLocalName() + ": Terminating.");
+		}
+		
 	protected String getStreetNetworkData() {
 		File fileRelative = new File("src/main/resources/config/sample/street-network.json");
 		String data = ""; 

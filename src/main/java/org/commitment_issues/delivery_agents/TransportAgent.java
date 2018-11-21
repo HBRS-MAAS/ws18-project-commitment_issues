@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import jade.core.AID;
+import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
@@ -21,17 +22,60 @@ import org.yourteamname.agents.BaseAgent;
 
 
 @SuppressWarnings("serial")
-public class TransportAgent extends BaseAgent {
+public class TransportAgent extends Agent {
   // declaring the attributes static as their will be only one transport agent
   private static ArrayList<Order> orders = new ArrayList<Order>(); //list of all the orders
   private static AID[] trucks;//list of all the trucks
   
   protected void setup() {
     System.out.println("Hello! TransportAgent-agent "+getAID().getName()+" is ready.");
+    
+    register("transport-agent", "transport-agent");
+    try {
+		Thread.sleep(3000);
+	} catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
     trucksFinder();//search for the trucks
     addBehaviour(new OrderParser());
     addBehaviour(new truckReady());// check if trucks are ready to pick orders
   }
+  
+  /* This function registers the agent to yellow pages
+   * Call this in `setup()` function
+   */
+  protected void register(String type, String name){
+      DFAgentDescription dfd = new DFAgentDescription();
+      dfd.setName(getAID());
+      ServiceDescription sd = new ServiceDescription();
+      sd.setType(type);
+      sd.setName(name);
+      dfd.addServices(sd);
+      try {
+          DFService.register(this, dfd);
+      }
+      catch (FIPAException fe) {
+          fe.printStackTrace();
+      }
+  }
+  
+  /* This function removes the agent from yellow pages
+   * Call this in `doDelete()` function
+   */
+  protected void deRegister() {
+  	try {
+          DFService.deregister(this);
+      }
+      catch (FIPAException fe) {
+          fe.printStackTrace();
+      }
+  }
+  
+	protected void takeDown() {
+		deRegister();
+		System.out.println(getAID().getLocalName() + ": Terminating.");
+	}
   
   protected static float[] getCustPos(String cusID) {
     // This method returns the location of a specific customer based on the id

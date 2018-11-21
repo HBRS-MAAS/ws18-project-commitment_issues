@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -89,12 +90,33 @@ public class TransportAgent extends BaseAgent {
     }
   }
   
-  private class OrderParser extends CyclicBehaviour{
+  private class OrderParser extends OneShotBehaviour{
     // Periodically updates the pending orders list by the data it takes from order aggregator
     public void action() {
-      ACLMessage msg = myAgent.receive();
+//      ACLMessage msg = myAgent.receive();
       String msgID = "orderToTransport";//conversationID for communicating with the aggregator
-      
+      ACLMessage msg = new ACLMessage();
+      JSONArray x = new JSONArray();
+      JSONObject orderr = new JSONObject();
+      orderr.put("CustId", "customer-001");
+      JSONArray boxess = new JSONArray();
+      JSONObject boxx = new JSONObject();
+      boxx.put("BoxID", "001");
+      boxx.put("ProductType", "Donuts");
+      boxx.put("Quantity", 5);
+      boxess.put(boxx);
+      boxx.put("BoxID", "002");
+      boxx.put("ProductType", "Bread");
+      boxx.put("Quantity", 10);
+      boxess.put(boxx);
+      boxx.put("BoxID", "003");
+      boxx.put("ProductType", "Weed");
+      boxx.put("Quantity", 15);
+      boxess.put(boxx);
+      orderr.put("BackId", "backery-001");
+      orderr.put("OrderId", "order-1");
+      orderr.put("boxes", boxess);
+      msg.setContent(orderr.toString());
       if (msg != null && msg.getConversationId().equals(msgID)) {
         JSONArray JSONOrdersBoxes = new JSONArray(msg.getContent());// a list of all the orders with their boxes
         
@@ -110,9 +132,10 @@ public class TransportAgent extends BaseAgent {
           order.setOrderID(wholeOrderID);
           order.setLocation(bakLocation);
           order.setDestination(custLocation);
+          JSONArray boxesss = wholeOrder.getJSONArray("boxes");
         
-          for (int k = 0; k < JSONOrdersBoxes.length(); k++) {
-            JSONObject box = JSONOrdersBoxes.getJSONObject(i);
+          for (int k = 0; k < boxesss.length(); k++) {
+            JSONObject box = boxesss.getJSONObject(i);
             String boxID = box.getString("BoxID");
             String productType = box.getString("ProductType");
             int quantity = box.getInt("Quantity");

@@ -145,6 +145,24 @@ public class TruckAgent extends TimedAgent {
 			customerLocation_[0] = jsonObj.getJSONObject("Destination").getFloat("X");
 			customerLocation_[1] = jsonObj.getJSONObject("Destination").getFloat("Y");
 		}
+		
+		public void print() {
+			System.out.println("******** Order Details ********");
+			System.out.println("Order ID: " + orderID_);
+			System.out.println("Bakery Name/Location: " + bakeryName_ + getPosAsString(bakeryLocation_));
+			System.out.println("Customer Name/Location: " + customerName_ + getPosAsString(customerLocation_));
+			System.out.println("NumOfBoxes: " + numOfBoxes_);
+			System.out.println("Delivery date/time: " + deliveryDate_ + "." + deliveryTime_);
+			System.out.println("*******************************");
+		}
+		
+		private String getPosAsString(float[] pos) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("( " + pos[0]);
+			sb.append(", ");
+			sb.append(pos[1] + ")");
+			return sb.toString();
+		}
 	}
 	
 	private enum TimeQuotationStates {
@@ -247,13 +265,15 @@ public class TruckAgent extends TimedAgent {
                 	currOrder_ = newOrder;
                 	reply.setPerformative(ACLMessage.INFORM);
                 	reply.setContent("DeliveryAccepted");
-                	System.out.println(timedAgent.getAID().getLocalName() + " Accepted new order as CURRENT order");
+                	System.out.println(timedAgent.getAID().getLocalName() + " Accepted new order as CURRENT order:");
+                	currOrder_.print();
                 }
                 else if (nextOrder_ == null) {
                 	nextOrder_ = newOrder;
                 	reply.setPerformative(ACLMessage.INFORM);
                 	reply.setContent("DeliveryAccepted");
-                	System.out.println(timedAgent.getAID().getLocalName() + " Accepted new order as NEXT order");
+                	System.out.println(timedAgent.getAID().getLocalName() + " Accepted new order as NEXT order:");
+                	nextOrder_.print();
                 }
                 else {
                 	reply.setPerformative(ACLMessage.FAILURE);
@@ -310,6 +330,7 @@ public class TruckAgent extends TimedAgent {
 			return (truckState_ == TruckState.MOVING_TO_BAKERY) && reachedEndOfPath();
 		}
 		
+		@SuppressWarnings("unused")
 		private String getVisualizationMessage() {			
 			JSONObject jsonObj = new JSONObject();
 			jsonObj.put("TruckID", timedAgent.getAID().getLocalName());
@@ -354,7 +375,7 @@ public class TruckAgent extends TimedAgent {
 //	                timedAgent.send(msg);
 //	                System.out.println(timedAgent.getAID().getLocalName() + " Message sent to Visualization agent: " + msg.getContent());
             	}
-//            	finished();
+            	finished();
             }
         }
 	}

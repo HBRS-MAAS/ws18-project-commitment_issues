@@ -7,7 +7,7 @@ public class Start {
     public static void main(String[] args) {
     	List<String> agents = new Vector<>();
 
-		agents.add("TimeKeeper:org.yourteamname.agents.TimeKeeper");
+		agents.add("TimeKeeper:org.maas.agents.TimeKeeper");
     	agents.add("bakery-001"+"-TransportAgent:org.commitment_issues.delivery_agents.TransportAgent");
     	agents.add("bakery-001"+"-TruckAgent:org.commitment_issues.delivery_agents.TruckAgent");
     	agents.add("bakery-001"+"-StreetNetworkAgent:org.commitment_issues.delivery_agents.StreetNetworkAgent");

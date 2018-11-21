@@ -295,7 +295,7 @@ public class TruckAgent extends TimedAgent {
 			if (currPath_ != null) {
 				float timeSincePathStart = getCurrentHour() - pathStartTime_;
 				int i = 1;			
-				while (true) {
+				while (true && (i < currPath_.size())) {
 					if (timeSincePathStart < currPath_.get(i)[2]) {
 						break;
 					}
@@ -305,11 +305,13 @@ public class TruckAgent extends TimedAgent {
 				if (currTruckLocation_[0] != currPath_.get(i - 1)[0] ||
 					currTruckLocation_[1] != currPath_.get(i - 1)[1])
 				{
+					System.out.println(timedAgent.getAID().getLocalName() + " UpdatePosCalled");
+					System.out.println(timedAgent.getAID().getLocalName() + " Old Pos (" + currTruckLocation_[0] + "," + currTruckLocation_[1] + ")");
 					currTruckLocation_ = new float[2];
 					currTruckLocation_[0] = currPath_.get(i - 1)[0];
 					currTruckLocation_[1] = currPath_.get(i - 1)[1];
 					retval = true;
-					System.out.println(timedAgent.getAID().getLocalName() + " UpdatePosCalled (" + currTruckLocation_[0] + "," + currTruckLocation_[0] + ")");
+					System.out.println(timedAgent.getAID().getLocalName() + " New Pos (" + currTruckLocation_[0] + "," + currTruckLocation_[1] + ")");
 
 				}
 			}
@@ -343,7 +345,6 @@ public class TruckAgent extends TimedAgent {
 		
 		public void action() {
             if (getAllowAction()) {
-            	System.out.println("Move: " + truckState_ + currOrder_);
             	if ((truckState_ == TruckState.IDLE) && (currOrder_ != null)) {
             		startNewOrder(currOrder_);
             		System.out.println(timedAgent.getAID().getLocalName() + " IDLE Truck started to move with new order");

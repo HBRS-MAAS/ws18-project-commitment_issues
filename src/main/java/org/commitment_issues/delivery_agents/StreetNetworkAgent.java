@@ -252,11 +252,24 @@ public class StreetNetworkAgent extends BaseAgent {
 				}
 			}
 			
+			// ++++
+			if (sourceNode == null) {
+				System.out.println("["+getAID().getLocalName()+"]: Source location invalid (not found in graph network) ");
+			}
+			if (targetNode == null) {
+				System.out.println("["+getAID().getLocalName()+"]: target location invalid (not found in graph network) ");
+			}
+			
 //			graph = new Graph(nodes, edges);
 //	        dijkstra = new DijkstraAlgorithm(graph);
 			
 			dijkstra.execute(sourceNode);
 	        LinkedList<Vertex> path = dijkstra.getPath(targetNode);
+	        
+	     // ++++
+	     if (path.size() == 0) {
+	     	System.out.println("["+getAID().getLocalName()+"]: No valid path found!! ");
+	     }
 	        
 	        for (int k = 0; k < path.size(); k++) {
 	        	fullPath.add(path.get(k));

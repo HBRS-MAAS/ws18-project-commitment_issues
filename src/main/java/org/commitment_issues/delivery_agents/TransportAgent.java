@@ -30,7 +30,9 @@ public class TransportAgent extends BaseAgent {
   protected void setup() {
     System.out.println("Hello! TransportAgent-agent "+getAID().getName()+" is ready.");
     
-    register("transport-agent", "transport-agent");
+	ArrayList<String> services = new ArrayList<String>();
+	services.add("transport-agent");
+    register(services, "transport-agent");
     try {
 		Thread.sleep(3000);
 	} catch (InterruptedException e) {

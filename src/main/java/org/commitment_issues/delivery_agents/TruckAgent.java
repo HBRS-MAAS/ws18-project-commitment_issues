@@ -46,7 +46,9 @@ public class TruckAgent extends TimedAgent {
 		currTruckLocation_[0] = (float) -0.82;
 		currTruckLocation_[1] = (float) 7.19;
 		
-		register("transport-orders", "transport-orders");
+		ArrayList<String> services = new ArrayList<String>();
+		services.add("transport-orders");
+		register(services, "transport-orders");
 		addBehaviour(new TimeQuotationServer());
 		addBehaviour(new TruckScheduleServer());
 		addBehaviour(new MoveTruck());

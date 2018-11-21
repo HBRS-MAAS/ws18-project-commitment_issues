@@ -36,7 +36,9 @@ public class StreetNetworkAgent extends BaseAgent {
 	protected void setup() {
 		System.out.println("Hello! StreetNetwork-agent "+getAID().getName()+" is ready.");
 		
-		register("street-network", "street-network");
+		ArrayList<String> services = new ArrayList<String>();
+		services.add("street-network");
+		register(services, "street-network");
 		
 		parseStreetNetworkData(getStreetNetworkData());
 		

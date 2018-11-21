@@ -2,6 +2,8 @@ package org.commitment_issues.delivery_agents;
 
 import org.maas.agents.BaseAgent;
 
+import java.util.ArrayList;
+
 import org.json.*;
 
 import jade.core.AID;
@@ -21,7 +23,9 @@ public class MailboxAgent extends BaseAgent {
 		super.setup();
 		System.out.println("Hello! Mailbox-agent "+getAID().getName()+" is ready.");
 		
-		register("mailbox", "mailbox");
+		ArrayList<String> services = new ArrayList<String>();
+		services.add("mailbox");
+		register(services, "mailbox");
 		
 		addBehaviour(new truckDeliveryCompletionProcessor());
 		

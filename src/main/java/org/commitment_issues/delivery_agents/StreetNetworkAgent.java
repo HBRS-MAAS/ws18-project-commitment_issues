@@ -82,13 +82,13 @@ public class StreetNetworkAgent extends BaseAgent {
 
 		public void action() {
 			
-			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+//			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+//			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("TimeQuery"),
+//					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("TimeQuery"),
-					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
-			msg = myAgent.receive(mt);
-			
-			System.out.println("["+getAID().getLocalName()+"]: Waiting for time request messages.");
-						
+					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+			ACLMessage msg = myAgent.receive(mt);
+								
 			
 			if (msg != null) {
 				// +++
@@ -110,6 +110,7 @@ public class StreetNetworkAgent extends BaseAgent {
 			}
 
 			else {
+				System.out.println("["+getAID().getLocalName()+"]: Waiting for time request messages.");
 				block();
 			}
 		}
@@ -121,13 +122,15 @@ public class StreetNetworkAgent extends BaseAgent {
 
 		public void action() {
 			
-			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
-					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
-			msg = myAgent.receive(mt);
+//			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+//			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
+//					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
+//			msg = myAgent.receive(mt);
 			
-			// +++
-			System.out.println("["+getAID().getLocalName()+"]: Waiting for path requests.");
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
+					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+			ACLMessage msg = myAgent.receive(mt);
+			
 					
 			if (msg != null) {
 				// +++
@@ -149,6 +152,8 @@ public class StreetNetworkAgent extends BaseAgent {
 			}
 
 			else {
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Waiting for path requests.");
 				block();
 			}
 		}

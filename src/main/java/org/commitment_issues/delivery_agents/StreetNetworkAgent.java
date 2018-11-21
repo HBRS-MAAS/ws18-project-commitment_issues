@@ -35,7 +35,8 @@ public class StreetNetworkAgent extends BaseAgent {
 		
 		parseStreetNetworkData(getStreetNetworkData());
 		
-		addBehaviour(new GraphVisualizerServer());
+		// Uncomment this behavior for graph visualization integration
+//		addBehaviour(new GraphVisualizerServer());
 		addBehaviour(new TimeToDeliveryServer());
 		addBehaviour(new PathServer());
 	}
@@ -86,6 +87,10 @@ public class StreetNetworkAgent extends BaseAgent {
 					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
 			msg = myAgent.receive(mt);
 			
+			// +++
+			System.out.println("["+getAID().getLocalName()+"]: Received time request from "+msg.getSender().getLocalName());
+			
+			
 			if (msg != null) {
 				String truckMessageContent = msg.getContent();
 				ACLMessage reply = msg.createReply();
@@ -96,6 +101,10 @@ public class StreetNetworkAgent extends BaseAgent {
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(time));
 				myAgent.send(reply);
+				
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Returned journey time for "+msg.getSender().getLocalName()+" is "+time);
+				
 			}
 
 			else {
@@ -115,6 +124,10 @@ public class StreetNetworkAgent extends BaseAgent {
 					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
 			msg = myAgent.receive(mt);
 			
+			// +++
+			System.out.println("["+getAID().getLocalName()+"]: Received path request from "+msg.getSender().getLocalName());
+						
+			
 			if (msg != null) {
 				String truckMessageContent = msg.getContent();
 				ACLMessage reply = msg.createReply();
@@ -125,6 +138,10 @@ public class StreetNetworkAgent extends BaseAgent {
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(JSONPath));
 				myAgent.send(reply);
+				
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Returned journey path for "+msg.getSender().getLocalName()+":\n"+JSONPath);
+				
 			}
 
 			else {

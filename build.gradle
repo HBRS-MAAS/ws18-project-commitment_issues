@@ -4,11 +4,9 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'application'
-apply from: 'javafx.plugin'
 
-javafx {
-    mainClass = 'org.commitment_issues.Start'
-}
+
+
 
 mainClassName = 'org.commitment_issues.Start'
 

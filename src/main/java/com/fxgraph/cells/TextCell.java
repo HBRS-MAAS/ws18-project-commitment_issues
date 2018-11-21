@@ -5,11 +5,13 @@ import javafx.scene.control.Button;
 public class TextCell extends Cell {
     private String parentID;
     private String content;
-    private Button view = new Button();
+    private Button view;
+    
     public TextCell(String cellId, String parentID, String content) {
       super(cellId);
       this.parentID = parentID;
       this.content = content;
+      view = new Button();
       view.setText(this.content);
       setView(view);
     }
@@ -21,6 +23,7 @@ public class TextCell extends Cell {
     }
     public void setContent(String content) {
       this.content = content;
+      
       view.setText(this.content);
       setView(view);
     }

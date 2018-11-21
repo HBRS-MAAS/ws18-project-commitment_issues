@@ -375,7 +375,7 @@ public class StreetNetworkAgent extends BaseAgent {
 				
 				for (int k = 0; k < nodesJSONArray.length(); k++) {
 					String nodeID = nodesJSONArray.getJSONObject(k).getString("guid");
-					if (nodeID.equals(graphSourceID)) {
+					if (nodeID.equals(graphTargetID)) {
 						x = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("x");
 						y = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("y");
 					}

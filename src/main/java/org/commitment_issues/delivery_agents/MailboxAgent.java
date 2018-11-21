@@ -77,6 +77,10 @@ public class MailboxAgent extends BaseAgent {
 			if (msg != null) {
 				String truckMessageContent = msg.getContent();
 				
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Received order completion message from "+msg.getSender().getLocalName()+":\n"+truckMessageContent);
+				
+				
 				// At the moment, this list includes all customers as well.
 				// TODO: Send the message only to the specific customer
 				findReceivers();
@@ -90,6 +94,10 @@ public class MailboxAgent extends BaseAgent {
 				orderConfirmation.setConversationId("order-confirmation");
 				orderConfirmation.setPostTimeStamp(System.currentTimeMillis());
 				myAgent.send(orderConfirmation);
+				
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Relayed order completion message from to all concerned agents");
+				
 			}
 
 			else {

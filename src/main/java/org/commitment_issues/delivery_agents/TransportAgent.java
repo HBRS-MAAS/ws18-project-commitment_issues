@@ -41,7 +41,7 @@ public class TransportAgent extends BaseAgent {
     JSONArray clientDetailsJSONArray = new JSONArray(clientFileContents);
     for (int i = 0; i < clientDetailsJSONArray.length(); i++) {
       JSONObject client = clientDetailsJSONArray.getJSONObject(i);
-      String id = client.getString("guide");
+      String id = client.getString("guid");
       if(id.equals(cusID)) {
         JSONObject position = client.getJSONObject("location");
         location[0] = position.getFloat("x");
@@ -61,7 +61,7 @@ public class TransportAgent extends BaseAgent {
     JSONArray clientDetailsJSONArray = new JSONArray(clientFileContents);
     for (int i = 0; i < clientDetailsJSONArray.length(); i++) {
       JSONObject client = clientDetailsJSONArray.getJSONObject(i);
-      String id = client.getString("guide");
+      String id = client.getString("guid");
       if(id.equals(cusID)) {
         JSONObject position = client.getJSONObject("location");
         location[0] = position.getFloat("x");
@@ -262,8 +262,9 @@ public class TransportAgent extends BaseAgent {
     public void action() {
       MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
       ACLMessage truckRequest = myAgent.receive(mt);
-      ACLMessage reply = truckRequest.createReply();
+      
       if (truckRequest != null) {
+        ACLMessage reply = truckRequest.createReply();
         JSONObject truckArrived = new JSONObject(truckRequest.getContent());
         orderID = truckArrived.getString("OrderId");
         for (int i = 0; i < TransportAgent.orders.size(); i++) {

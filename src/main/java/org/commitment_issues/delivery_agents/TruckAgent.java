@@ -87,7 +87,7 @@ public class TruckAgent extends TimedAgent {
 		currTruckLocation_ = new float[2];
 		currTruckLocation_[0] = currPath_.get(0)[0];
 		currTruckLocation_[1] = currPath_.get(0)[1];
-		pathStartTime_ = getCurrentHour();
+		pathStartTime_ = (getCurrentDay() * 24) + getCurrentHour();
 		System.out.println(timedAgent.getAID().getLocalName() + " Truck started with new path at " + getCurrentHour() + " hrs");
 	}
 	
@@ -301,7 +301,7 @@ public class TruckAgent extends TimedAgent {
 		private boolean updateTruckPosition() {
 			boolean retval = false;
 			if (currPath_ != null && getAllowAction()) {
-				float timeSincePathStart = getCurrentHour() - pathStartTime_;
+				float timeSincePathStart = getTime() - pathStartTime_;
 				int i = 1;			
 				while (true && (i < currPath_.size())) {
 					if (timeSincePathStart < currPath_.get(i)[2]) {
@@ -324,6 +324,10 @@ public class TruckAgent extends TimedAgent {
 			}
 			finished();
 			return retval;
+		}
+		
+		private int getTime() {
+			return (getCurrentDay() * 24) + getCurrentHour();
 		}
 		
 		private boolean reachedEndOfPath() {
@@ -369,6 +373,7 @@ public class TruckAgent extends TimedAgent {
             			System.out.println(timedAgent.getAID().getLocalName() + " Reached customer. Starting with next request");
             		}
             		else {
+            			currOrder_ = null;
             			truckState_ = TruckState.IDLE;
             			System.out.println(timedAgent.getAID().getLocalName() + " Reached customer. Truck is Idle as there is no next order");
             		}
@@ -594,7 +599,7 @@ public class TruckAgent extends TimedAgent {
 		
 		private String generateJsonMessage() {			
 			JSONObject jsonObj = new JSONObject();						
-			jsonObj.put("OrderID", orderID_);
+			jsonObj.put("OrderId", orderID_);
 			
 			return jsonObj.toString();
 		}
@@ -616,7 +621,7 @@ public class TruckAgent extends TimedAgent {
 				msg.addReceiver(discoverAgent("transport-agent")); // TODO fix this services name
 				msg.setContent(generateJsonMessage());
 				msg.setConversationId(convID);
-				msg.setPostTimeStamp(System.currentTimeMillis());
+				msg.setReplyWith("req" + System.currentTimeMillis());
 				timedAgent.send(msg);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(convID),

@@ -113,7 +113,7 @@ public class TransportAgent extends BaseAgent {
       boxx.put("ProductType", "Weed");
       boxx.put("Quantity", 15);
       boxess.put(boxx);
-      orderr.put("BackId", "backery-001");
+      orderr.put("BackId", "bakery-001");
       orderr.put("OrderId", "order-1");
       orderr.put("boxes", boxess);
       x.put(orderr);
@@ -168,6 +168,7 @@ public class TransportAgent extends BaseAgent {
       super();
       this.order = order;
       this.orderID = order.getOrderID();
+      bestTime = 9999;
     }
     @Override
     public void action() {
@@ -206,7 +207,7 @@ public class TransportAgent extends BaseAgent {
         ACLMessage reply = myAgent.receive(mt);
         if (reply != null) {
           // Reply received
-          if (reply.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
+          if (reply.getPerformative() == ACLMessage.PROPOSE) {
             // This is an offer 
             JSONObject replyCont = new JSONObject(reply.getContent());
             float time = replyCont.getFloat("Time");
@@ -214,6 +215,7 @@ public class TransportAgent extends BaseAgent {
               // This is the best offer at present
               bestTime = time;
               fastestTruck = reply.getSender();
+              System.out.println("Received new best time: " + time);
             }
           }
           rpliesCount++;

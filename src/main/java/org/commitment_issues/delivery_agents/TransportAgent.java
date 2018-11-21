@@ -117,7 +117,7 @@ public class TransportAgent extends BaseAgent {
       orderr.put("OrderId", "order-1");
       orderr.put("boxes", boxess);
       msg.setContent(orderr.toString());
-      if (msg != null && msg.getConversationId().equals(msgID)) {
+      if (msg != null) {// && msg.getConversationId().equals(msgID)
         JSONArray JSONOrdersBoxes = new JSONArray(msg.getContent());// a list of all the orders with their boxes
         
         for (int i = 0; i < JSONOrdersBoxes.length(); i++) {

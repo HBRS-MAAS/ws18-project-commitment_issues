@@ -209,8 +209,8 @@ public class TransportAgent extends BaseAgent {
           // Reply received
           if (reply.getPerformative() == ACLMessage.PROPOSE) {
             // This is an offer 
-            JSONObject replyCont = new JSONObject(reply.getContent());
-            float time = replyCont.getFloat("Time");
+//            JSONObject replyCont = new JSONObject(reply.getContent());
+            float time = Float.parseFloat(reply.getContent());
             if (fastestTruck == null || time < bestTime) {
               // This is the best offer at present
               bestTime = time;

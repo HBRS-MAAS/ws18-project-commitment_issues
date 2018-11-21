@@ -18,6 +18,8 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.maas.agents.*;
 
 import org.json.*;
@@ -76,6 +78,9 @@ public class TruckAgent extends TimedAgent {
 
 		addBehaviour(new QueryPath(currOrder_.bakeryLocation_));
 		System.out.println(timedAgent.getAID().getLocalName() + " Started executing new order: " + currOrder_.orderID_);
+		
+		//TODO: Find a proper place to put the below finished command
+		finished();
 	}
 	
 	protected void updateCurrPath(ArrayList<float[]> path) {
@@ -114,6 +119,14 @@ public class TruckAgent extends TimedAgent {
         
         return streetNwAgent;
     }
+	
+	private String getPosAsString(float[] pos) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("( " + pos[0]);
+		sb.append(", ");
+		sb.append(pos[1] + ")");
+		return sb.toString();
+	}
 	
 	private enum TruckState {
 		IDLE,
@@ -156,14 +169,6 @@ public class TruckAgent extends TimedAgent {
 			System.out.println("NumOfBoxes: " + numOfBoxes_);
 			System.out.println("Delivery date/time: " + deliveryDate_ + "." + deliveryTime_);
 			System.out.println("*******************************");
-		}
-		
-		private String getPosAsString(float[] pos) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("( " + pos[0]);
-			sb.append(", ");
-			sb.append(pos[1] + ")");
-			return sb.toString();
 		}
 	}
 	
@@ -294,7 +299,7 @@ public class TruckAgent extends TimedAgent {
 		
 		private boolean updateTruckPosition() {
 			boolean retval = false;
-			if (currPath_ != null) {
+			if (currPath_ != null && getAllowAction()) {
 				float timeSincePathStart = getCurrentHour() - pathStartTime_;
 				int i = 1;			
 				while (true && (i < currPath_.size())) {
@@ -307,7 +312,7 @@ public class TruckAgent extends TimedAgent {
 				if (currTruckLocation_[0] != currPath_.get(i - 1)[0] ||
 					currTruckLocation_[1] != currPath_.get(i - 1)[1])
 				{
-					System.out.println(timedAgent.getAID().getLocalName() + " UpdatePosCalled");
+					System.out.println(timedAgent.getAID().getLocalName() + " UpdatePosCalled at " + timeSincePathStart);
 					System.out.println(timedAgent.getAID().getLocalName() + " Old Pos (" + currTruckLocation_[0] + "," + currTruckLocation_[1] + ")");
 					currTruckLocation_ = new float[2];
 					currTruckLocation_[0] = currPath_.get(i - 1)[0];
@@ -317,13 +322,13 @@ public class TruckAgent extends TimedAgent {
 
 				}
 			}
-			
+			finished();
 			return retval;
 		}
 		
 		private boolean reachedEndOfPath() {
 			float[] endPos = {currPath_.get(currPath_.size() - 1)[0], currPath_.get(currPath_.size() - 1)[1]};
-			return currTruckLocation_ == endPos;
+			return Arrays.equals(currTruckLocation_, endPos);
 		}
 		
 		private boolean reachedCutomer() {
@@ -346,17 +351,16 @@ public class TruckAgent extends TimedAgent {
 		}
 		
 		public void action() {
-            if (getAllowAction()) {
-            	if ((truckState_ == TruckState.IDLE) && (currOrder_ != null)) {
-            		startNewOrder(currOrder_);
-            		System.out.println(timedAgent.getAID().getLocalName() + " IDLE Truck started to move with new order");
-            	}
-            	else if ((truckState_ != TruckState.IDLE)  && updateTruckPosition()) {
-	            	if (reachedBakery()) {
-	            		timedAgent.addBehaviour(new RequestBoxes(nextOrder_.orderID_));
-	            		truckState_ = TruckState.MOVING_TO_CUSTOMER;
-	            		currPath_ = null;
-	            		System.out.println(timedAgent.getAID().getLocalName() + " Reached bakery. Requested boxes from transport agent");
+        	if ((truckState_ == TruckState.IDLE) && (currOrder_ != null)) {
+        		startNewOrder(currOrder_);
+        		System.out.println(timedAgent.getAID().getLocalName() + " IDLE Truck started to move with new order");
+        	}
+        	else if ((truckState_ != TruckState.IDLE)  && updateTruckPosition()) {
+            	if (reachedBakery()) {
+            		timedAgent.addBehaviour(new RequestBoxes(currOrder_.orderID_));
+            		truckState_ = TruckState.MOVING_TO_CUSTOMER;
+            		currPath_ = null;
+            		System.out.println(timedAgent.getAID().getLocalName() + " Reached bakery. Requested boxes from transport agent");
 	            	}
 	            	else if (reachedCutomer()) {
 	            		timedAgent.addBehaviour(new PostDeliveryCompletionMessage(currOrder_));
@@ -368,18 +372,16 @@ public class TruckAgent extends TimedAgent {
 	            		else {
 	            			truckState_ = TruckState.IDLE;
 	            			System.out.println(timedAgent.getAID().getLocalName() + " Reached customer. Truck is Idle as there is no next order");
-	            		}
-	            	}
-	            	
-//	                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-//	                msg.addReceiver(discoverAgent("transport-visualization"));
-//	                msg.setConversationId("truck-location");
-//	                msg.setContent(getVisualizationMessage());
-//	                timedAgent.send(msg);
-//	                System.out.println(timedAgent.getAID().getLocalName() + " Message sent to Visualization agent: " + msg.getContent());
+            		}
             	}
-            	finished();
-            }
+            	
+//                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+//                msg.addReceiver(discoverAgent("transport-visualization"));
+//                msg.setConversationId("truck-location");
+//                msg.setContent(getVisualizationMessage());
+//                timedAgent.send(msg);
+//                System.out.println(timedAgent.getAID().getLocalName() + " Message sent to Visualization agent: " + msg.getContent());
+        	}
         }
 	}
 	
@@ -520,10 +522,10 @@ public class TruckAgent extends TimedAgent {
 				node[1] = jsonArr.getJSONObject(i).getFloat("Y");
 				node[2] = jsonArr.getJSONObject(i).getFloat("time");
 				
-				if (i > 0) {
-					// Add time until previous node
-					node[2] += path.get(i - 1)[2];
-				}
+//				if (i > 0) {
+//					// Add time until previous node
+//					node[2] += path.get(i - 1)[2];
+//				}
 				
 				path.add(node);
 			}

@@ -73,7 +73,6 @@ public class TruckAgent extends TimedAgent {
 	protected void startNewOrder(OrderDetails order) {
 		truckState_ = TruckState.MOVING_TO_BAKERY;
 		currOrder_ = order;
-		pathStartTime_ = getCurrentHour();
 		currPath_ = null;
 
 		addBehaviour(new QueryPath(currOrder_.bakeryLocation_));
@@ -88,6 +87,8 @@ public class TruckAgent extends TimedAgent {
 		currTruckLocation_ = new float[2];
 		currTruckLocation_[0] = currPath_.get(0)[0];
 		currTruckLocation_[1] = currPath_.get(0)[1];
+		pathStartTime_ = getCurrentHour();
+		System.out.println(timedAgent.getAID().getLocalName() + " Truck started with new path at " + getCurrentHour() + " hrs");
 	}
 	
 	protected void visualiseStreetNetwork(ACLMessage msg) {
@@ -312,13 +313,12 @@ public class TruckAgent extends TimedAgent {
 				if (currTruckLocation_[0] != currPath_.get(i - 1)[0] ||
 					currTruckLocation_[1] != currPath_.get(i - 1)[1])
 				{
-					System.out.println(timedAgent.getAID().getLocalName() + " UpdatePosCalled at " + timeSincePathStart);
-					System.out.println(timedAgent.getAID().getLocalName() + " Old Pos (" + currTruckLocation_[0] + "," + currTruckLocation_[1] + ")");
+					float[] oldPos = currTruckLocation_;
 					currTruckLocation_ = new float[2];
 					currTruckLocation_[0] = currPath_.get(i - 1)[0];
 					currTruckLocation_[1] = currPath_.get(i - 1)[1];
 					retval = true;
-					System.out.println(timedAgent.getAID().getLocalName() + " New Pos (" + currTruckLocation_[0] + "," + currTruckLocation_[1] + ")");
+					System.out.println("Truck moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
 
 				}
 			}
@@ -353,7 +353,6 @@ public class TruckAgent extends TimedAgent {
 		public void action() {
         	if ((truckState_ == TruckState.IDLE) && (currOrder_ != null)) {
         		startNewOrder(currOrder_);
-        		System.out.println(timedAgent.getAID().getLocalName() + " IDLE Truck started to move with new order");
         	}
         	else if ((truckState_ != TruckState.IDLE)  && updateTruckPosition()) {
             	if (reachedBakery()) {
@@ -361,17 +360,17 @@ public class TruckAgent extends TimedAgent {
             		truckState_ = TruckState.MOVING_TO_CUSTOMER;
             		currPath_ = null;
             		System.out.println(timedAgent.getAID().getLocalName() + " Reached bakery. Requested boxes from transport agent");
-	            	}
-	            	else if (reachedCutomer()) {
-	            		timedAgent.addBehaviour(new PostDeliveryCompletionMessage(currOrder_));
-	            		if (nextOrder_ != null) {
-	            			startNewOrder(nextOrder_);
-	            			nextOrder_ = null;
-	            			System.out.println(timedAgent.getAID().getLocalName() + " Reached customer. Starting with next request");
-	            		}
-	            		else {
-	            			truckState_ = TruckState.IDLE;
-	            			System.out.println(timedAgent.getAID().getLocalName() + " Reached customer. Truck is Idle as there is no next order");
+            	}
+            	else if (reachedCutomer()) {
+            		timedAgent.addBehaviour(new PostDeliveryCompletionMessage(currOrder_));
+            		if (nextOrder_ != null) {
+            			startNewOrder(nextOrder_);
+            			nextOrder_ = null;
+            			System.out.println(timedAgent.getAID().getLocalName() + " Reached customer. Starting with next request");
+            		}
+            		else {
+            			truckState_ = TruckState.IDLE;
+            			System.out.println(timedAgent.getAID().getLocalName() + " Reached customer. Truck is Idle as there is no next order");
             		}
             	}
             	
@@ -561,9 +560,9 @@ public class TruckAgent extends TimedAgent {
                 if (reply != null) {
                     // Reply received
                     if (reply.getPerformative() == ACLMessage.INFORM) {
+                    	System.out.println(timedAgent.getAID().getLocalName() + " Response for path received from SN: " + reply.getContent());
                         updateCurrPath(parseJSONPath(reply.getContent()));
                         state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
-                        System.out.println(timedAgent.getAID().getLocalName() + " Response for path received from SN: " + reply.getContent());
                     }
                     else {
                     	System.out.println(timedAgent.getAID().getLocalName() + ": Querying path from street network failed!!");

@@ -210,9 +210,6 @@ public class TruckAgent extends BaseAgent {
         			responseReceivedFromStreetNW_ = false;
         			System.out.println(baseAgent.getAID().getLocalName() + " Query response for time received");
         		}
-        		else {
-        			block();
-        		}
         		break;
         	case SEND_QUOTATION:
         		ACLMessage reply = requestMsg_.createReply();

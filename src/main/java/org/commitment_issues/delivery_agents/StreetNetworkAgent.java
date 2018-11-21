@@ -87,11 +87,13 @@ public class StreetNetworkAgent extends BaseAgent {
 					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
 			msg = myAgent.receive(mt);
 			
-			// +++
-			System.out.println("["+getAID().getLocalName()+"]: Received time request from "+msg.getSender().getLocalName());
-			
+			System.out.println("["+getAID().getLocalName()+"]: Waiting for time request messages.");
+						
 			
 			if (msg != null) {
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Received time request from "+msg.getSender().getLocalName());
+				
 				String truckMessageContent = msg.getContent();
 				ACLMessage reply = msg.createReply();
 				
@@ -125,10 +127,12 @@ public class StreetNetworkAgent extends BaseAgent {
 			msg = myAgent.receive(mt);
 			
 			// +++
-			System.out.println("["+getAID().getLocalName()+"]: Received path request from "+msg.getSender().getLocalName());
-						
-			
+			System.out.println("["+getAID().getLocalName()+"]: Waiting for path requests.");
+					
 			if (msg != null) {
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Received path request from "+msg.getSender().getLocalName());
+				
 				String truckMessageContent = msg.getContent();
 				ACLMessage reply = msg.createReply();
 				

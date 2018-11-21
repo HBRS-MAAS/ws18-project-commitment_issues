@@ -1,4 +1,4 @@
-package org.commitment_issues.agents;
+package org.maas.agents;
 
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;

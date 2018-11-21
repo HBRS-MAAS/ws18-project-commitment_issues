@@ -1,7 +1,7 @@
 //package org.commitment_issues.deliveryAgents;
 package org.commitment_issues.delivery_agents;
 
-import org.yourteamname.agents.BaseAgent;
+import org.maas.agents.BaseAgent;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
-public class StreetNetworkAgent extends Agent {
+public class StreetNetworkAgent extends BaseAgent {
 	public JSONArray nodesJSONArray = new JSONArray();
 	public JSONArray linksJSONArray = new JSONArray();
 			
@@ -45,36 +45,6 @@ public class StreetNetworkAgent extends Agent {
 		addBehaviour(new TimeToDeliveryServer());
 		addBehaviour(new PathServer());
 	}
-
-	  /* This function registers the agent to yellow pages
-	   * Call this in `setup()` function
-	   */
-	  protected void register(String type, String name){
-	      DFAgentDescription dfd = new DFAgentDescription();
-	      dfd.setName(getAID());
-	      ServiceDescription sd = new ServiceDescription();
-	      sd.setType(type);
-	      sd.setName(name);
-	      dfd.addServices(sd);
-	      try {
-	          DFService.register(this, dfd);
-	      }
-	      catch (FIPAException fe) {
-	          fe.printStackTrace();
-	      }
-	  }
-	  
-	  /* This function removes the agent from yellow pages
-	   * Call this in `doDelete()` function
-	   */
-	  protected void deRegister() {
-	  	try {
-	          DFService.deregister(this);
-	      }
-	      catch (FIPAException fe) {
-	          fe.printStackTrace();
-	      }
-	  }
 	  
 		protected void takeDown() {
 			deRegister();

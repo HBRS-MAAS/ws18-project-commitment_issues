@@ -327,41 +327,78 @@ public class StreetNetworkAgent extends BaseAgent {
 	
 	protected String getJSONPath(LinkedList<Vertex> fullPath) {
 		double time = 0.0;
+		double edgeTime = 0.0;
 		double speedFactor = 1.0;
 		double x = 0.0;
 		double y = 0.0;
+		
 		JSONArray pathInfoArray = new JSONArray();
 		
-		for (int i = 0; i < fullPath.size()-1; i++) {
-			String graphSourceID = fullPath.get(i).getId();
-			String graphTargetID = fullPath.get(i+1).getId();
-			
-			for (int k = 0; k < nodesJSONArray.length(); k++) {
-				String nodeID = nodesJSONArray.getJSONObject(k).getString("guid");
-				if (nodeID.equals(graphSourceID)) {
-					x = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("x");
-					y = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("y");
-				}
-			}
-			
+//		String graphSourceID = fullPath.get(0).getId();
+//		String graphTargetID = fullPath.get(1).getId();
+//		
+//		for (int k = 0; k < nodesJSONArray.length(); k++) {
+//			String nodeID = nodesJSONArray.getJSONObject(k).getString("guid");
+//			if (nodeID.equals(graphSourceID)) {
+//				x = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("x");
+//				y = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("y");
+//			}
+//		}
+//		
+//		JSONObject nodeInfo = new JSONObject();
+//		nodeInfo.put("X", x);
+//		nodeInfo.put("Y", y);
+		
+		for (int i = 0; i < fullPath.size(); i++) {
 			JSONObject nodeInfo = new JSONObject();
-			nodeInfo.put("X", x);
-			nodeInfo.put("Y", y);
 			
-			for (int j = 0; j < linksJSONArray.length(); j++) {
-				String edgeSourceID = linksJSONArray.getJSONObject(j).getString("source");
-				String edgeTargetID = linksJSONArray.getJSONObject(j).getString("target");
+			if (i == 0) {
+				String graphSourceID = fullPath.get(i).getId();
 				
-				if (edgeSourceID.equals(graphSourceID) && edgeTargetID.equals(graphTargetID)) {
-					time = linksJSONArray.getJSONObject(j).getDouble("dist") / speedFactor;
-					nodeInfo.put("time", time);
+				for (int k = 0; k < nodesJSONArray.length(); k++) {
+					String nodeID = nodesJSONArray.getJSONObject(k).getString("guid");
+					if (nodeID.equals(graphSourceID)) {
+						x = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("x");
+						y = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("y");
+					}
 				}
+				
+				nodeInfo.put("X", x);
+				nodeInfo.put("Y", y);
+				
+				nodeInfo.put("time", time);
 			}
 			
+			else {
+				String graphSourceID = fullPath.get(i-1).getId();
+				String graphTargetID = fullPath.get(i).getId();
+				
+				for (int k = 0; k < nodesJSONArray.length(); k++) {
+					String nodeID = nodesJSONArray.getJSONObject(k).getString("guid");
+					if (nodeID.equals(graphSourceID)) {
+						x = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("x");
+						y = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("y");
+					}
+				}
+				
+//				JSONObject nodeInfo = new JSONObject();
+				nodeInfo.put("X", x);
+				nodeInfo.put("Y", y);
+				
+				for (int j = 0; j < linksJSONArray.length(); j++) {
+					String edgeSourceID = linksJSONArray.getJSONObject(j).getString("source");
+					String edgeTargetID = linksJSONArray.getJSONObject(j).getString("target");
+					
+					if (edgeSourceID.equals(graphSourceID) && edgeTargetID.equals(graphTargetID)) {
+						edgeTime = linksJSONArray.getJSONObject(j).getDouble("dist") / speedFactor;
+						time = time + edgeTime;
+						
+						nodeInfo.put("time", time);
+					}
+				}
+			}
 			pathInfoArray.put(nodeInfo);
 		}
 		return pathInfoArray.toString();    	
     }
-
-
 }

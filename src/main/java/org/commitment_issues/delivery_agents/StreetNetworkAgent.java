@@ -240,8 +240,11 @@ public class StreetNetworkAgent extends BaseAgent {
 		for (int i = 0; i < JSONTruckMessage.length()-1; i++) {
 			JSONObject sourceInfo = JSONTruckMessage.getJSONObject(i);
 			JSONObject nextInfo = JSONTruckMessage.getJSONObject(i+1);
-			String sourceID = findNodeFromLocation(sourceInfo.getDouble("X"), sourceInfo.getDouble("Y"));
-			String targetID = findNodeFromLocation(nextInfo.getDouble("X"), nextInfo.getDouble("Y"));
+//			String sourceID = findNodeFromLocation(sourceInfo.getDouble("X"), sourceInfo.getDouble("Y"));
+//			String targetID = findNodeFromLocation(nextInfo.getDouble("X"), nextInfo.getDouble("Y"));
+			
+			String sourceID = findNodeFromLocation(sourceInfo.getInt("X"), sourceInfo.getInt("Y"));
+			String targetID = findNodeFromLocation(nextInfo.getInt("X"), nextInfo.getInt("Y"));
 			
 			for (int j = 0; j < nodes.size(); j++) {
 				if (nodes.get(j).getId().equals(sourceID)) {
@@ -279,19 +282,23 @@ public class StreetNetworkAgent extends BaseAgent {
 		return fullPath;		
     }
 	
-
-	protected String findNodeFromLocation(double x, double y) {
-		String roundedX = Double.toString(Math.round(x*100.0) / 100.0);
-		String roundedY = Double.toString(Math.round(y*100.0) / 100.0);
+	protected String findNodeFromLocation(int x, int y) {
+//	protected String findNodeFromLocation(double x, double y) {
+//		String roundedX = Double.toString(Math.round(x*100.0) / 100.0);
+//		String roundedY = Double.toString(Math.round(y*100.0) / 100.0);
+		String roundedX = Integer.toString(x);
+		String roundedY = Integer.toString(y);
 		String nodeID = null;
 		
 		int numNodes = nodesJSONArray.length();
 		for (int i = 0; i < numNodes; i++) {
 			JSONObject nodeInfo = nodesJSONArray.getJSONObject(i);
 
-			String roundedNodeX = Double.toString(Math.round(nodeInfo.getJSONObject("location").getDouble("x")*100.0) / 100.0);
-			String roundedNodeY = Double.toString(Math.round(nodeInfo.getJSONObject("location").getDouble("y")*100.0) / 100.0);
-			
+//			String roundedNodeX = Double.toString(Math.round(nodeInfo.getJSONObject("location").getDouble("x")*100.0) / 100.0);
+//			String roundedNodeY = Double.toString(Math.round(nodeInfo.getJSONObject("location").getDouble("y")*100.0) / 100.0);
+			String roundedNodeX = Integer.toString(nodeInfo.getJSONObject("location").getInt("x"));
+			String roundedNodeY = Integer.toString(nodeInfo.getJSONObject("location").getInt("y"));
+					
 			if (roundedX.equals(roundedNodeX) && roundedY.equals(roundedNodeY)) {
 				nodeID = nodeInfo.getString("guid");
 			}

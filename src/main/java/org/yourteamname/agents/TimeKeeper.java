@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Vector;
 
 import jade.core.Agent;
+import jade.core.AID;
 import jade.core.behaviours.*;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -19,7 +20,7 @@ public class TimeKeeper extends Agent{
 	private int countAgentsReplied;
 	
 	protected void setup() {
-		System.out.println("Hallo! time-teller-agent "+getAID().getLocalName()+" is ready.");
+		System.out.println("\tHello! time-teller-agent "+getAID().getLocalName()+" is ready.");
 		
         /* Wait for all the agents to start
          */
@@ -58,11 +59,16 @@ public class TimeKeeper extends Agent{
 	private class SendTimeStep extends OneShotBehaviour {
 		public void action() {
             List<DFAgentDescription> agents = getAllAgents();
+            
+            //System.out.println("\nAgent to wait on:");
+            for (DFAgentDescription i : agents) {
+            	//System.out.println(i.getName());
+            }
             currentTimeStep++;
             countAgentsReplied = agents.size();
-
+            System.out.println(">>>>> " + currentTimeStep + " <<<<<");
             for (DFAgentDescription agent : agents) {
-                ACLMessage timeMessage = new ACLMessage(ACLMessage.INFORM);
+                ACLMessage timeMessage = new ACLMessage(55);
                 timeMessage.addReceiver(agent.getName());
                 timeMessage.setContent(Integer.toString(currentTimeStep));
                 myAgent.send(timeMessage);
@@ -74,13 +80,27 @@ public class TimeKeeper extends Agent{
      * call SendTimeStep to increment time step
      */
 	private class TimeStepConfirmationBehaviour extends CyclicBehaviour {
+        private List<AID> agents;
+
+        public TimeStepConfirmationBehaviour(){
+            this.agents = new Vector<AID> ();
+        }
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
 			ACLMessage msg = myAgent.receive(mt);
+			//System.out.println("countAgentsReplied:" + countAgentsReplied);
 			if (msg != null) {
-				countAgentsReplied--;
-                if (countAgentsReplied <= 0){
-                    myAgent.addBehaviour(new SendTimeStep());
+	            for (AID i : agents) {
+	            	//System.out.println(i.getLocalName());
+	            }
+                AID agent = msg.getSender();
+                if (!this.agents.contains(agent)){
+                    this.agents.add(agent);
+                    countAgentsReplied--;
+                    if (countAgentsReplied <= 0){
+                        myAgent.addBehaviour(new SendTimeStep());
+                        this.agents.clear();
+                    }
                 }
 			}
 			else {

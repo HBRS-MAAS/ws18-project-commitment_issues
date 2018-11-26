@@ -71,8 +71,8 @@ public abstract class BaseAgent extends Agent {
         this.send(finish);
     }
 
-    protected boolean getAllowAction() {
-        return true;
+    public boolean getAllowAction() {
+        return allowAction;
     }
     protected int getCurrentDay() {
         return currentDay;

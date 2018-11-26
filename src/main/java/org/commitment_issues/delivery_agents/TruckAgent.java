@@ -33,6 +33,7 @@ public class TruckAgent extends BaseAgent {
 	protected ArrayList<float[]> currPath_;
 	protected float pathStartTime_;
 	protected TruckState truckState_;
+	protected boolean autoFinish = true;
 	
 	protected void setup() {
 		super.setup();
@@ -52,6 +53,7 @@ public class TruckAgent extends BaseAgent {
 		addBehaviour(new TimeQuotationServer());
 		addBehaviour(new TruckScheduleServer());
 		addBehaviour(new MoveTruck());
+		addBehaviour(new TimeUpdater());
 	}
 
 	protected void takeDown() {
@@ -77,7 +79,7 @@ public class TruckAgent extends BaseAgent {
 		System.out.println(baseAgent.getAID().getLocalName() + " Started executing new order: " + currOrder_.orderID_);
 		
 		//TODO: Find a proper place to put the below finished command
-		finished();
+//		finished();
 	}
 	
 	protected void updateCurrPath(ArrayList<float[]> path) {
@@ -169,6 +171,18 @@ public class TruckAgent extends BaseAgent {
 			System.out.println("NumOfBoxes: " + numOfBoxes_);
 			System.out.println("Delivery date/time: " + deliveryDate_ + "." + deliveryTime_);
 			System.out.println("*******************************");
+		}
+	}
+	
+	private class TimeUpdater extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+			ACLMessage msg = baseAgent.receive(mt);
+			if (msg != null && autoFinish) {
+				finished();
+			} else {
+				block();
+			}
 		}
 	}
 	
@@ -433,6 +447,11 @@ public class TruckAgent extends BaseAgent {
 		}
 		
 		public void action() {
+			// blocking action
+            if (!baseAgent.getAllowAction()) {
+                //return;
+            }
+            
 			switch(state_) {
 			case FIND_STREET_NETWORK_AGENTS:
 				streetNwAgent_ = discoverAgent("street-network");
@@ -534,6 +553,10 @@ public class TruckAgent extends BaseAgent {
 		}
 		
 		public void action() {
+			// blocking action
+            if (!baseAgent.getAllowAction()) {
+                //return;
+            }
 			switch(state_) {
 			case FIND_STREET_NETWORK_AGENTS:
 				streetNwAgent_ = discoverAgent("street-network");
@@ -612,6 +635,10 @@ public class TruckAgent extends BaseAgent {
 		}
 		
 		public void action() {
+			// blocking action
+            if (!baseAgent.getAllowAction()) {
+                //return;
+            }
 			switch(state_) {
 			case 0:
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);

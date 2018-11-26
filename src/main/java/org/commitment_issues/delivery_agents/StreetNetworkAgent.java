@@ -24,7 +24,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
-public class StreetNetworkAgent extends Agent {
+public class StreetNetworkAgent extends BaseAgent {
 	public JSONArray nodesJSONArray = new JSONArray();
 	public JSONArray linksJSONArray = new JSONArray();
 			
@@ -44,37 +44,8 @@ public class StreetNetworkAgent extends Agent {
 //		addBehaviour(new GraphVisualizerServer());
 		addBehaviour(new TimeToDeliveryServer());
 		addBehaviour(new PathServer());
+		addBehaviour(new TimeUpdater());
 	}
-
-	  /* This function registers the agent to yellow pages
-	   * Call this in `setup()` function
-	   */
-	  protected void register(String type, String name){
-	      DFAgentDescription dfd = new DFAgentDescription();
-	      dfd.setName(getAID());
-	      ServiceDescription sd = new ServiceDescription();
-	      sd.setType(type);
-	      sd.setName(name);
-	      dfd.addServices(sd);
-	      try {
-	          DFService.register(this, dfd);
-	      }
-	      catch (FIPAException fe) {
-	          fe.printStackTrace();
-	      }
-	  }
-	  
-	  /* This function removes the agent from yellow pages
-	   * Call this in `doDelete()` function
-	   */
-	  protected void deRegister() {
-	  	try {
-	          DFService.deregister(this);
-	      }
-	      catch (FIPAException fe) {
-	          fe.printStackTrace();
-	      }
-	  }
 	  
 		protected void takeDown() {
 			deRegister();
@@ -82,7 +53,7 @@ public class StreetNetworkAgent extends Agent {
 		}
 		
 	protected String getStreetNetworkData() {
-		File fileRelative = new File("src/main/resources/config/sample/street-network.json");
+		File fileRelative = new File("src/main/resources/config/small/street-network.json");
 		String data = ""; 
 	    try {
 			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));
@@ -94,23 +65,35 @@ public class StreetNetworkAgent extends Agent {
 		return data;
 	}
 	
-	// TODO: This behavior still requires the identity of the visualization agent
-	private class GraphVisualizerServer extends CyclicBehaviour {
-		private MessageTemplate mt;
-
-		public void action() {			
-			ACLMessage SNVisualizationInfo = new ACLMessage(ACLMessage.INFORM);
-			// TODO:
-			AID receivingAgent = null;
-			String messageContent = createVisualizerMessage();
-			
-			SNVisualizationInfo.addReceiver(receivingAgent);
-			SNVisualizationInfo.setContent(messageContent);
-			SNVisualizationInfo.setConversationId("graph-visualization");
-			
-			myAgent.send(SNVisualizationInfo);
+	private class TimeUpdater extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+			ACLMessage msg = baseAgent.receive(mt);
+			if (msg != null) {
+				finished();
+			} else {
+				block();
+			}
 		}
 	}
+	
+	// TODO: This behavior still requires the identity of the visualization agent
+//	private class GraphVisualizerServer extends CyclicBehaviour {
+//		private MessageTemplate mt;
+//
+//		public void action() {			
+//			ACLMessage SNVisualizationInfo = new ACLMessage(ACLMessage.INFORM);
+//			// TODO:
+//			AID receivingAgent = null;
+//			String messageContent = createVisualizerMessage();
+//			
+//			SNVisualizationInfo.addReceiver(receivingAgent);
+//			SNVisualizationInfo.setContent(messageContent);
+//			SNVisualizationInfo.setConversationId("graph-visualization");
+//			
+//			myAgent.send(SNVisualizationInfo);
+//		}
+//	}
 	
 	private class TimeToDeliveryServer extends CyclicBehaviour {
 		private MessageTemplate mt;

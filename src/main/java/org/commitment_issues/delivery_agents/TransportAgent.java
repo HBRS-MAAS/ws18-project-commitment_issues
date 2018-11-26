@@ -22,7 +22,7 @@ import org.yourteamname.agents.BaseAgent;
 
 
 @SuppressWarnings("serial")
-public class TransportAgent extends Agent {
+public class TransportAgent extends BaseAgent {
   // declaring the attributes static as their will be only one transport agent
   private static ArrayList<Order> orders = new ArrayList<Order>(); //list of all the orders
   private static AID[] trucks;//list of all the trucks
@@ -40,38 +40,9 @@ public class TransportAgent extends Agent {
     trucksFinder();//search for the trucks
     addBehaviour(new OrderParser());
     addBehaviour(new truckReady());// check if trucks are ready to pick orders
+    addBehaviour(new TimeUpdater());
   }
-  
-  /* This function registers the agent to yellow pages
-   * Call this in `setup()` function
-   */
-  protected void register(String type, String name){
-      DFAgentDescription dfd = new DFAgentDescription();
-      dfd.setName(getAID());
-      ServiceDescription sd = new ServiceDescription();
-      sd.setType(type);
-      sd.setName(name);
-      dfd.addServices(sd);
-      try {
-          DFService.register(this, dfd);
-      }
-      catch (FIPAException fe) {
-          fe.printStackTrace();
-      }
-  }
-  
-  /* This function removes the agent from yellow pages
-   * Call this in `doDelete()` function
-   */
-  protected void deRegister() {
-  	try {
-          DFService.deregister(this);
-      }
-      catch (FIPAException fe) {
-          fe.printStackTrace();
-      }
-  }
-  
+   
 	protected void takeDown() {
 		deRegister();
 		System.out.println(getAID().getLocalName() + ": Terminating.");
@@ -79,7 +50,7 @@ public class TransportAgent extends Agent {
   
 	  protected static float[] getNodePosition(String guid) {
 		  float location[] = new float[2];
-		    File relativePath = new File("src/main/resources/config/sample/street-network.json");
+		    File relativePath = new File("src/main/resources/config/small/street-network.json");
 		    String streetNWContents = CustomerAgent.readFileAsString(relativePath.getAbsolutePath());
 		    JSONArray nodesArray = new JSONObject(streetNWContents).getJSONArray("nodes");
 		    for (int i = 0; i < nodesArray.length(); i++) {
@@ -117,6 +88,18 @@ public class TransportAgent extends Agent {
         fe.printStackTrace();
     }
   }
+  
+	private class TimeUpdater extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+			ACLMessage msg = baseAgent.receive(mt);
+			if (msg != null) {
+				finished();
+			} else {
+				block();
+			}
+		}
+	}
   
   private class OrderParser extends OneShotBehaviour{
     // Periodically updates the pending orders list by the data it takes from order aggregator
@@ -200,6 +183,11 @@ public class TransportAgent extends Agent {
     }
     @Override
     public void action() {
+    	// blocking action
+        if (!baseAgent.getAllowAction()) {
+            //return;
+        }
+        
       // Creating a JSON object to send it to all the trucks
       JSONObject assignmentToTrucks = new JSONObject();
       assignmentToTrucks.put("OrderID", this.order.getOrderID());

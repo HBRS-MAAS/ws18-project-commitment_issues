@@ -1,4 +1,28 @@
 # Delivery Stage messages
+
+## LoadingBay to OrderAggregator
+
+### Example message:
+```
+{
+      "OrderID": "Order-123",
+      "Boxes": [
+        {
+          "BoxID": "1",
+          "ProductType":"1",
+          "Quantity":"12"
+        },
+                {
+          "BoxID": "2",
+          "ProductType":"5",
+          "Quantity":"1"
+        }
+      ]
+    }
+
+
+
+
 ## OrderAggregator to TransportAgent
 
 ### Example message:

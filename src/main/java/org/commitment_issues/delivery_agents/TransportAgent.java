@@ -27,50 +27,48 @@ public class TransportAgent extends BaseAgent {
   
   protected void setup() {
     System.out.println("Hello! TransportAgent-agent "+getAID().getName()+" is ready.");
+    
+    register("transport-agent", "transport-agent");
+    try {
+		Thread.sleep(3000);
+	} catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
     trucksFinder();//search for the trucks
     addBehaviour(new OrderParser());
     addBehaviour(new truckReady());// check if trucks are ready to pick orders
+    addBehaviour(new TimeUpdater());
   }
+   
+	protected void takeDown() {
+		deRegister();
+		System.out.println(getAID().getLocalName() + ": Terminating.");
+	}
   
-  protected static float[] getCustPos(String cusID) {
-    // This method returns the location of a specific customer based on the id
-    float location[] = new float[2];
-    File fileRelative = new File("src/main/resources/config/sample/clients.json");
-    String clientFileContents = CustomerAgent.readFileAsString(fileRelative.getAbsolutePath());
-    JSONArray clientDetailsJSONArray = new JSONArray(clientFileContents);
-    for (int i = 0; i < clientDetailsJSONArray.length(); i++) {
-      JSONObject client = clientDetailsJSONArray.getJSONObject(i);
-      String id = client.getString("guide");
-      if(id.equals(cusID)) {
-        JSONObject position = client.getJSONObject("location");
-        location[0] = position.getFloat("x");
-        location[1] = position.getFloat("y");
-        return location;
-      }
-      
-    }
-    return location;
-  }
-  
-  protected static float[] getBackPos(String cusID) {
-    // This method returns the location of a specific bakery based on the id
-    float location[] = new float[2];
-    File fileRelative = new File("src/main/resources/config/sample/bakeries.json");
-    String clientFileContents = CustomerAgent.readFileAsString(fileRelative.getAbsolutePath());
-    JSONArray clientDetailsJSONArray = new JSONArray(clientFileContents);
-    for (int i = 0; i < clientDetailsJSONArray.length(); i++) {
-      JSONObject client = clientDetailsJSONArray.getJSONObject(i);
-      String id = client.getString("guide");
-      if(id.equals(cusID)) {
-        JSONObject position = client.getJSONObject("location");
-        location[0] = position.getFloat("x");
-        location[1] = position.getFloat("y");
-        return location;
-      }
-      
-    }
-    return location;
-  }
+	  protected static float[] getNodePosition(String guid) {
+		  float location[] = new float[2];
+		    File relativePath = new File("src/main/resources/config/small/street-network.json");
+		    String streetNWContents = CustomerAgent.readFileAsString(relativePath.getAbsolutePath());
+		    JSONArray nodesArray = new JSONObject(streetNWContents).getJSONArray("nodes");
+		    for (int i = 0; i < nodesArray.length(); i++) {
+		      JSONObject node = nodesArray.getJSONObject(i);
+		      String id = null;
+		      try {
+				id = node.getString("company");
+		      	} catch (JSONException e) {
+					continue;
+				}
+		      
+		      if(id.equals(guid)) {
+		        JSONObject position = node.getJSONObject("location");
+		        location[0] = position.getInt("x");
+		        location[1] = position.getInt("y");
+		        return location;
+		      }
+		    }
+		    return location;
+	  }
   
   protected void trucksFinder() {
     // search for the trucks by their services 
@@ -89,30 +87,43 @@ public class TransportAgent extends BaseAgent {
     }
   }
   
+	private class TimeUpdater extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+			ACLMessage msg = baseAgent.receive(mt);
+			if (msg != null) {
+				finished();
+			} else {
+				block();
+			}
+		}
+	}
+  
   private class OrderParser extends CyclicBehaviour{
     // Periodically updates the pending orders list by the data it takes from order aggregator
     public void action() {
-      ACLMessage msg = myAgent.receive();
-      String msgID = "orderToTransport";//conversationID for communicating with the aggregator
-      
-      if (msg != null && msg.getConversationId().equals(msgID)) {
+//      ACLMessage msg = myAgent.receive();
+      MessageTemplate mt = MessageTemplate.MatchConversationId("transport-order");
+      ACLMessage msg = myAgent.receive(mt);
+      if (msg != null) {// && msg.getConversationId().equals(msgID)
         JSONArray JSONOrdersBoxes = new JSONArray(msg.getContent());// a list of all the orders with their boxes
-        
+        System.out.println(getAID().getName()+"rec");
         for (int i = 0; i < JSONOrdersBoxes.length(); i++) {
           JSONObject wholeOrder = JSONOrdersBoxes.getJSONObject(i);
           String cutID = wholeOrder.getString("CustId");//This is assuming that the aggregator will also pass the customerID
-          float [] custLocation = TransportAgent.getCustPos(cutID);
+          float [] custLocation = TransportAgent.getNodePosition(cutID);
           String bakID = wholeOrder.getString("BackId");//This is assuming that the aggregator will also pass the customerID
-          float [] bakLocation = TransportAgent.getBackPos(bakID);
+          float [] bakLocation = TransportAgent.getNodePosition(bakID);
           String wholeOrderID = wholeOrder.getString("OrderId");
           
           Order order = new Order();
           order.setOrderID(wholeOrderID);
           order.setLocation(bakLocation);
           order.setDestination(custLocation);
+          JSONArray boxesss = wholeOrder.getJSONArray("boxes");
         
-          for (int k = 0; k < JSONOrdersBoxes.length(); k++) {
-            JSONObject box = JSONOrdersBoxes.getJSONObject(i);
+          for (int k = 0; k < boxesss.length(); k++) {
+            JSONObject box = boxesss.getJSONObject(i);
             String boxID = box.getString("BoxID");
             String productType = box.getString("ProductType");
             int quantity = box.getInt("Quantity");
@@ -120,6 +131,8 @@ public class TransportAgent extends BaseAgent {
             order.addBoxes(boxObject);
           }
           TransportAgent.orders.add(order);
+          
+
           myAgent.addBehaviour(new TrucksRequester(order));
         }
         
@@ -144,9 +157,10 @@ public class TransportAgent extends BaseAgent {
       super();
       this.order = order;
       this.orderID = order.getOrderID();
+      bestTime = 9999;
     }
     @Override
-    public void action() {
+    public void action() {        
       // Creating a JSON object to send it to all the trucks
       JSONObject assignmentToTrucks = new JSONObject();
       assignmentToTrucks.put("OrderID", this.order.getOrderID());
@@ -182,14 +196,15 @@ public class TransportAgent extends BaseAgent {
         ACLMessage reply = myAgent.receive(mt);
         if (reply != null) {
           // Reply received
-          if (reply.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
+          if (reply.getPerformative() == ACLMessage.PROPOSE) {
             // This is an offer 
-            JSONObject replyCont = new JSONObject(reply.getContent());
-            float time = replyCont.getFloat("Time");
+//            JSONObject replyCont = new JSONObject(reply.getContent());
+            float time = Float.parseFloat(reply.getContent());
             if (fastestTruck == null || time < bestTime) {
               // This is the best offer at present
               bestTime = time;
               fastestTruck = reply.getSender();
+              System.out.println("Received new best time: " + time);
             }
           }
           rpliesCount++;
@@ -238,8 +253,9 @@ public class TransportAgent extends BaseAgent {
     public void action() {
       MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
       ACLMessage truckRequest = myAgent.receive(mt);
-      ACLMessage reply = truckRequest.createReply();
+      
       if (truckRequest != null) {
+        ACLMessage reply = truckRequest.createReply();
         JSONObject truckArrived = new JSONObject(truckRequest.getContent());
         orderID = truckArrived.getString("OrderId");
         for (int i = 0; i < TransportAgent.orders.size(); i++) {
@@ -273,5 +289,3 @@ public class TransportAgent extends BaseAgent {
     
   }
 }
-
-

@@ -70,7 +70,7 @@ public class OrderAggregatorAgent extends Agent {
     
   }
   private class LoadingBayParser extends CyclicBehaviour{
-
+    boolean flag = false;
     @Override
     public void action() {
       MessageTemplate mt = MessageTemplate.MatchConversationId("packaged-orders");
@@ -82,6 +82,7 @@ public class OrderAggregatorAgent extends Agent {
         for (int k = 0; k < orders.size();k++) {
           if (orders.get(k).getOrderID().equals(recieved.getString("OrderID"))) {
             order = orders.get(k);
+            flag = true;
             break;
           }
           else {
@@ -101,39 +102,42 @@ public class OrderAggregatorAgent extends Agent {
         }
         ((OrderAggregatorAgent)myAgent).orders.add(order);
         System.out.println(getAID().getName()+"recieved an order");
-        addBehaviour(new CheckOrderComplete(order));
+        if (flag == true) {
+          myAgent.addBehaviour(new SendOrderToTransport(order));
+        }
       }
       
     }
     
   }
   
-  private class CheckOrderComplete extends OneShotBehaviour {
-    // This class is now implemented this way for the purpose of simulating the scenario
-    // The actual implementation is partially done in the commented class below this class
-    // It is not fully implemented because the order processor is not known yet
-    private Order order; 
-    private Order fullOrder;
-    public CheckOrderComplete(Order order) {
-      this.order = order;
-    }
-
-    @Override
-    public void action() {
-      if(((OrderAggregatorAgent)myAgent).orders.size()==2) {
-       for(int i = 0; i< ((OrderAggregatorAgent)myAgent).orders.size();i++) {
-         Order partialOrder = ((OrderAggregatorAgent)myAgent).orders.get(i);
-         for (int k = 0; k < partialOrder.getBoxes().size(); k++) {
-           fullOrder.addBoxes(partialOrder.getBoxes().get(k));
-         }
-       }
-       fullOrder.setOrderID(order.getOrderID());
-       fullOrder.setDestination(order.getDestination());
-       fullOrder.setLocation(order.getLocation());
-       myAgent.addBehaviour(new SendOrderToTransport(fullOrder));
-    } 
-    
-  }
+//  private class CheckOrderComplete extends OneShotBehaviour {
+//    // This class is now implemented this way for the purpose of simulating the scenario
+//    // The actual implementation is partially done in the commented class below this class
+//    // It is not fully implemented because the order processor is not known yet
+//    private Order order; 
+//    private Order fullOrder;
+//    public CheckOrderComplete(Order order) {
+//      this.order = order;
+//    }
+//
+//    @Override
+//    public void action() {
+//      if(((OrderAggregatorAgent)myAgent).orders.size()==2) {
+//       for(int i = 0; i< ((OrderAggregatorAgent)myAgent).orders.size();i++) {
+//         Order partialOrder = ((OrderAggregatorAgent)myAgent).orders.get(i);
+//         for (int k = 0; k < partialOrder.getBoxes().size(); k++) {
+//           fullOrder.addBoxes(partialOrder.getBoxes().get(k));
+//         }
+//       }
+//       fullOrder.setOrderID(order.getOrderID());
+//       fullOrder.setDestination(order.getDestination());
+//       fullOrder.setLocation(order.getLocation());
+//       myAgent.addBehaviour(new SendOrderToTransport(fullOrder));
+//    } 
+//    
+//  }
+//  }
   
 //  private class CheckOrderComplete extends CyclicBehaviour {
 //    private int state = 0;
@@ -218,5 +222,5 @@ public class OrderAggregatorAgent extends Agent {
     }
     
   }
-  }
+  
 }

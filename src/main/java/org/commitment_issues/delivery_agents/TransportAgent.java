@@ -5,8 +5,10 @@ import java.io.File;
 import java.util.ArrayList;
 
 import jade.core.AID;
+import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -20,17 +22,60 @@ import org.yourteamname.agents.BaseAgent;
 
 
 @SuppressWarnings("serial")
-public class TransportAgent extends BaseAgent {
+public class TransportAgent extends Agent {
   // declaring the attributes static as their will be only one transport agent
   private static ArrayList<Order> orders = new ArrayList<Order>(); //list of all the orders
   private static AID[] trucks;//list of all the trucks
   
   protected void setup() {
     System.out.println("Hello! TransportAgent-agent "+getAID().getName()+" is ready.");
+    
+    register("transport-agent", "transport-agent");
+    try {
+		Thread.sleep(3000);
+	} catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
     trucksFinder();//search for the trucks
     addBehaviour(new OrderParser());
     addBehaviour(new truckReady());// check if trucks are ready to pick orders
   }
+  
+  /* This function registers the agent to yellow pages
+   * Call this in `setup()` function
+   */
+  protected void register(String type, String name){
+      DFAgentDescription dfd = new DFAgentDescription();
+      dfd.setName(getAID());
+      ServiceDescription sd = new ServiceDescription();
+      sd.setType(type);
+      sd.setName(name);
+      dfd.addServices(sd);
+      try {
+          DFService.register(this, dfd);
+      }
+      catch (FIPAException fe) {
+          fe.printStackTrace();
+      }
+  }
+  
+  /* This function removes the agent from yellow pages
+   * Call this in `doDelete()` function
+   */
+  protected void deRegister() {
+  	try {
+          DFService.deregister(this);
+      }
+      catch (FIPAException fe) {
+          fe.printStackTrace();
+      }
+  }
+  
+	protected void takeDown() {
+		deRegister();
+		System.out.println(getAID().getLocalName() + ": Terminating.");
+	}
   
   protected static float[] getCustPos(String cusID) {
     // This method returns the location of a specific customer based on the id
@@ -40,7 +85,7 @@ public class TransportAgent extends BaseAgent {
     JSONArray clientDetailsJSONArray = new JSONArray(clientFileContents);
     for (int i = 0; i < clientDetailsJSONArray.length(); i++) {
       JSONObject client = clientDetailsJSONArray.getJSONObject(i);
-      String id = client.getString("guide");
+      String id = client.getString("guid");
       if(id.equals(cusID)) {
         JSONObject position = client.getJSONObject("location");
         location[0] = position.getFloat("x");
@@ -60,7 +105,7 @@ public class TransportAgent extends BaseAgent {
     JSONArray clientDetailsJSONArray = new JSONArray(clientFileContents);
     for (int i = 0; i < clientDetailsJSONArray.length(); i++) {
       JSONObject client = clientDetailsJSONArray.getJSONObject(i);
-      String id = client.getString("guide");
+      String id = client.getString("guid");
       if(id.equals(cusID)) {
         JSONObject position = client.getJSONObject("location");
         location[0] = position.getFloat("x");
@@ -89,13 +134,35 @@ public class TransportAgent extends BaseAgent {
     }
   }
   
-  private class OrderParser extends CyclicBehaviour{
+  private class OrderParser extends OneShotBehaviour{
     // Periodically updates the pending orders list by the data it takes from order aggregator
     public void action() {
-      ACLMessage msg = myAgent.receive();
+//      ACLMessage msg = myAgent.receive();
       String msgID = "orderToTransport";//conversationID for communicating with the aggregator
-      
-      if (msg != null && msg.getConversationId().equals(msgID)) {
+      ACLMessage msg = new ACLMessage();
+      JSONArray x = new JSONArray();
+      JSONObject orderr = new JSONObject();
+      orderr.put("CustId", "customer-001");
+      JSONArray boxess = new JSONArray();
+      JSONObject boxx = new JSONObject();
+      boxx.put("BoxID", "001");
+      boxx.put("ProductType", "Donuts");
+      boxx.put("Quantity", 5);
+      boxess.put(boxx);
+      boxx.put("BoxID", "002");
+      boxx.put("ProductType", "Bread");
+      boxx.put("Quantity", 10);
+      boxess.put(boxx);
+      boxx.put("BoxID", "003");
+      boxx.put("ProductType", "Weed");
+      boxx.put("Quantity", 15);
+      boxess.put(boxx);
+      orderr.put("BackId", "bakery-001");
+      orderr.put("OrderId", "order-1");
+      orderr.put("boxes", boxess);
+      x.put(orderr);
+      msg.setContent(x.toString());
+      if (msg != null) {// && msg.getConversationId().equals(msgID)
         JSONArray JSONOrdersBoxes = new JSONArray(msg.getContent());// a list of all the orders with their boxes
         
         for (int i = 0; i < JSONOrdersBoxes.length(); i++) {
@@ -110,9 +177,10 @@ public class TransportAgent extends BaseAgent {
           order.setOrderID(wholeOrderID);
           order.setLocation(bakLocation);
           order.setDestination(custLocation);
+          JSONArray boxesss = wholeOrder.getJSONArray("boxes");
         
-          for (int k = 0; k < JSONOrdersBoxes.length(); k++) {
-            JSONObject box = JSONOrdersBoxes.getJSONObject(i);
+          for (int k = 0; k < boxesss.length(); k++) {
+            JSONObject box = boxesss.getJSONObject(i);
             String boxID = box.getString("BoxID");
             String productType = box.getString("ProductType");
             int quantity = box.getInt("Quantity");
@@ -144,6 +212,7 @@ public class TransportAgent extends BaseAgent {
       super();
       this.order = order;
       this.orderID = order.getOrderID();
+      bestTime = 9999;
     }
     @Override
     public void action() {
@@ -182,14 +251,15 @@ public class TransportAgent extends BaseAgent {
         ACLMessage reply = myAgent.receive(mt);
         if (reply != null) {
           // Reply received
-          if (reply.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
+          if (reply.getPerformative() == ACLMessage.PROPOSE) {
             // This is an offer 
-            JSONObject replyCont = new JSONObject(reply.getContent());
-            float time = replyCont.getFloat("Time");
+//            JSONObject replyCont = new JSONObject(reply.getContent());
+            float time = Float.parseFloat(reply.getContent());
             if (fastestTruck == null || time < bestTime) {
               // This is the best offer at present
               bestTime = time;
               fastestTruck = reply.getSender();
+              System.out.println("Received new best time: " + time);
             }
           }
           rpliesCount++;
@@ -238,8 +308,9 @@ public class TransportAgent extends BaseAgent {
     public void action() {
       MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
       ACLMessage truckRequest = myAgent.receive(mt);
-      ACLMessage reply = truckRequest.createReply();
+      
       if (truckRequest != null) {
+        ACLMessage reply = truckRequest.createReply();
         JSONObject truckArrived = new JSONObject(truckRequest.getContent());
         orderID = truckArrived.getString("OrderId");
         for (int i = 0; i < TransportAgent.orders.size(); i++) {

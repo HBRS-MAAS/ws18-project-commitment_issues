@@ -72,7 +72,7 @@ public abstract class BaseAgent extends Agent {
     }
 
     protected boolean getAllowAction() {
-        return allowAction;
+        return true;
     }
     protected int getCurrentDay() {
         return currentDay;

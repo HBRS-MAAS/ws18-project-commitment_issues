@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Order {
   private String orderID;
-  private ArrayList<Box> boxes;
+  private ArrayList<Box> boxes = new ArrayList<Box>();
   private float[] location = new float[2];
   private float[] destination = new float[2];
   

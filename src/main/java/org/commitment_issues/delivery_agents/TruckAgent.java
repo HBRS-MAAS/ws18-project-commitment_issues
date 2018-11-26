@@ -548,10 +548,6 @@ public class TruckAgent extends BaseAgent {
 		}
 		
 		public void action() {
-			// blocking action
-            if (!baseAgent.getAllowAction()) {
-                //return;
-            }
 			switch(state_) {
 			case FIND_STREET_NETWORK_AGENTS:
 				streetNwAgent_ = discoverAgent("street-network");
@@ -630,10 +626,6 @@ public class TruckAgent extends BaseAgent {
 		}
 		
 		public void action() {
-			// blocking action
-            if (!baseAgent.getAllowAction()) {
-                //return;
-            }
 			switch(state_) {
 			case 0:
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);

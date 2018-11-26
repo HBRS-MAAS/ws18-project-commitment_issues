@@ -84,7 +84,7 @@ public class OrderAggregatorAgent extends BaseAgent {
     }
   }
   private class LoadingBayParser extends CyclicBehaviour{
-    boolean flag = false;
+    private boolean flag = false;
     @Override
     public void action() {
       MessageTemplate mt = MessageTemplate.MatchConversationId("packaged-orders");
@@ -133,7 +133,7 @@ public class OrderAggregatorAgent extends BaseAgent {
         
         ((OrderAggregatorAgent)myAgent).orders.add(order);
         System.out.println(getAID().getName()+"recieved an order");
-        if (flag == true) {
+        if (flag) {
           myAgent.addBehaviour(new SendOrderToTransport(order));
         }
       }
@@ -224,7 +224,7 @@ public class OrderAggregatorAgent extends BaseAgent {
   
   private class SendOrderToTransport extends OneShotBehaviour {
     private Order order;
-    ACLMessage finalOrder = new ACLMessage(ACLMessage.INFORM);
+    private ACLMessage finalOrder = new ACLMessage(ACLMessage.INFORM);
     public SendOrderToTransport(Order fullOrder) {
     this.order = fullOrder;
   }

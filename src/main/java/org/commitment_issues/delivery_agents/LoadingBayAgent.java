@@ -14,6 +14,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
 public class LoadingBayAgent extends BaseAgent {
@@ -23,7 +24,8 @@ public class LoadingBayAgent extends BaseAgent {
 		
 		register("loading-bay", "loading-bay");	
 		
-		addBehaviour(new PackagingPhaseMessageSender());		
+		addBehaviour(new PackagingPhaseMessageSender());	
+		addBehaviour(new TimeUpdater());
 	}
 	
 	protected void takeDown() {
@@ -42,6 +44,18 @@ public class LoadingBayAgent extends BaseAgent {
 		}
 	    
 	    return data;
+	}
+	
+	private class TimeUpdater extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+			ACLMessage msg = baseAgent.receive(mt);
+			if (msg != null) {
+				finished();
+			} else {
+				block();
+			}
+		}
 	}
 	
 	private class PackagingPhaseMessageSender extends OneShotBehaviour {

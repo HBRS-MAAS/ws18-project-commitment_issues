@@ -27,7 +27,6 @@ public class OrderAggregatorAgent extends BaseAgent {
       findTransportAgent();
     }
     addBehaviour(new LoadingBayParser());
-    addBehaviour(new LoadingBayParser());
     addBehaviour(new TimeUpdater());
 
   }
@@ -84,7 +83,7 @@ public class OrderAggregatorAgent extends BaseAgent {
       }
     }
   }
-  private class LoadingBayParser extends OneShotBehaviour{
+  private class LoadingBayParser extends CyclicBehaviour{
     boolean flag = false;
     @Override
     public void action() {

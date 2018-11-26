@@ -446,12 +446,7 @@ public class TruckAgent extends BaseAgent {
 			return jsonArray.toString();
 		}
 		
-		public void action() {
-			// blocking action
-            if (!baseAgent.getAllowAction()) {
-                //return;
-            }
-            
+		public void action() {            
 			switch(state_) {
 			case FIND_STREET_NETWORK_AGENTS:
 				streetNwAgent_ = discoverAgent("street-network");

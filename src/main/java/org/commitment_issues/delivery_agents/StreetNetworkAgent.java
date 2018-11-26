@@ -13,13 +13,7 @@ import java.util.List;
 
 import org.json.*;
 
-import jade.core.AID;
-import jade.core.Agent;
 import jade.core.behaviours.*;
-import jade.domain.DFService;
-import jade.domain.FIPAException;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 

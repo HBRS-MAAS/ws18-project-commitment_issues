@@ -5,7 +5,6 @@ import org.yourteamname.agents.BaseAgent;
 import org.json.*;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.behaviours.*;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -54,9 +53,10 @@ public class MailboxAgent extends BaseAgent {
 			ACLMessage msg = baseAgent.receive(mt);
 			if (msg != null) {
 				finished();
-			} else {
-				//block();
-			}
+			} 
+//			else {
+//				block();
+//			}
 		}
 	}
 	

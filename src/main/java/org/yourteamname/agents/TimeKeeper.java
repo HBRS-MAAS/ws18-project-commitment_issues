@@ -61,10 +61,6 @@ public class TimeKeeper extends Agent{
 		public void action() {
             List<DFAgentDescription> agents = getAllAgents();
             
-            //System.out.println("\nAgent to wait on:");
-            for (DFAgentDescription i : agents) {
-            	//System.out.println(i.getName());
-            }
             currentTimeStep++;
             countAgentsReplied = agents.size();
             System.out.println(">>>>> " + currentTimeStep + " <<<<<");
@@ -89,11 +85,7 @@ public class TimeKeeper extends Agent{
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
 			ACLMessage msg = myAgent.receive(mt);
-			//System.out.println("countAgentsReplied:" + countAgentsReplied);
 			if (msg != null) {
-	            for (AID i : agents) {
-	            	//System.out.println(i.getLocalName());
-	            }
                 AID agent = msg.getSender();
                 if (!this.agents.contains(agent)){
                     this.agents.add(agent);

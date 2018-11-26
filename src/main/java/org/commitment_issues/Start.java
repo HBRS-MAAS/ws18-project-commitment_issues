@@ -13,6 +13,7 @@ public class Start {
     	agents.add("bakery-001"+"-TruckAgent:org.commitment_issues.delivery_agents.TruckAgent");
     	agents.add("bakery-001"+"-StreetNetworkAgent:org.commitment_issues.delivery_agents.StreetNetworkAgent");
     	agents.add("bakery-001"+"-MailboxAgent:org.commitment_issues.delivery_agents.MailboxAgent");
+    	agents.add("customer-001"+":org.commitment_issues.DummyCustomer");
     	
     	List<String> cmd = new Vector<>();
     	cmd.add("-agents");

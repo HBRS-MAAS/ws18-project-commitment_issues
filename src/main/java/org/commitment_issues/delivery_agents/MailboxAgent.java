@@ -74,10 +74,9 @@ public class MailboxAgent extends BaseAgent {
         }
 
 		public void action() {
-			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("DeliveryConfirmation"),
-					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
-			msg = myAgent.receive(mt);
+					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			ACLMessage msg = myAgent.receive(mt);
 			
 			System.out.println("["+getAID().getLocalName()+"]: Waiting for order completion messages.");
 			
@@ -103,7 +102,7 @@ public class MailboxAgent extends BaseAgent {
 				myAgent.send(orderConfirmation);
 				
 				// +++
-				System.out.println("["+getAID().getLocalName()+"]: Relayed order completion message from to all concerned agents");
+				System.out.println("["+getAID().getLocalName()+"]: Relayed order completion message to all concerned agents");
 				
 			}
 

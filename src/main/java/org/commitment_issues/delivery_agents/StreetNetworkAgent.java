@@ -54,7 +54,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		}
 		
 	protected String getStreetNetworkData() {
-		File fileRelative = new File("src/main/resources/config/sample/street-network.json");
+		File fileRelative = new File("src/main/resources/config/small/street-network.json");
 		String data = ""; 
 	    try {
 			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));

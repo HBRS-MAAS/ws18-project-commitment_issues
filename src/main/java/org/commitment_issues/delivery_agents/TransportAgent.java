@@ -48,45 +48,29 @@ public class TransportAgent extends BaseAgent {
 		deRegister();
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
-  
-  protected static float[] getCustPos(String cusID) {
-    // This method returns the location of a specific customer based on the id
-    float location[] = new float[2];
-    File fileRelative = new File("src/main/resources/config/sample/clients.json");
-    String clientFileContents = CustomerAgent.readFileAsString(fileRelative.getAbsolutePath());
-    JSONArray clientDetailsJSONArray = new JSONArray(clientFileContents);
-    for (int i = 0; i < clientDetailsJSONArray.length(); i++) {
-      JSONObject client = clientDetailsJSONArray.getJSONObject(i);
-      String id = client.getString("guid");
-      if(id.equals(cusID)) {
-        JSONObject position = client.getJSONObject("location");
-        location[0] = position.getFloat("x");
-        location[1] = position.getFloat("y");
-        return location;
-      }
-      
-    }
-    return location;
-  }
-  
-  protected static float[] getBackPos(String cusID) {
-    // This method returns the location of a specific bakery based on the id
-    float location[] = new float[2];
-    File fileRelative = new File("src/main/resources/config/sample/bakeries.json");
-    String clientFileContents = CustomerAgent.readFileAsString(fileRelative.getAbsolutePath());
-    JSONArray clientDetailsJSONArray = new JSONArray(clientFileContents);
-    for (int i = 0; i < clientDetailsJSONArray.length(); i++) {
-      JSONObject client = clientDetailsJSONArray.getJSONObject(i);
-      String id = client.getString("guid");
-      if(id.equals(cusID)) {
-        JSONObject position = client.getJSONObject("location");
-        location[0] = position.getFloat("x");
-        location[1] = position.getFloat("y");
-        return location;
-      }
-      
-    }
-    return location;
+
+  protected static float[] getNodePosition(String guid) {
+	  float location[] = new float[2];
+	    File relativePath = new File("src/main/resources/config/small/street-network.json");
+	    String streetNWContents = CustomerAgent.readFileAsString(relativePath.getAbsolutePath());
+	    JSONArray nodesArray = new JSONObject(streetNWContents).getJSONArray("nodes");
+	    for (int i = 0; i < nodesArray.length(); i++) {
+	      JSONObject node = nodesArray.getJSONObject(i);
+	      String id = null;
+	      try {
+			id = node.getString("company");
+	      	} catch (JSONException e) {
+				continue;
+			}
+	      
+	      if(id.equals(guid)) {
+	        JSONObject position = node.getJSONObject("location");
+	        location[0] = position.getInt("x");
+	        location[1] = position.getInt("y");
+	        return location;
+	      }
+	    }
+	    return location;
   }
   
   protected void trucksFinder() {
@@ -140,9 +124,9 @@ public class TransportAgent extends BaseAgent {
         for (int i = 0; i < JSONOrdersBoxes.length(); i++) {
           JSONObject wholeOrder = JSONOrdersBoxes.getJSONObject(i);
           String cutID = wholeOrder.getString("CustId");//This is assuming that the aggregator will also pass the customerID
-          float [] custLocation = TransportAgent.getCustPos(cutID);
+          float [] custLocation = TransportAgent.getNodePosition(cutID);
           String bakID = wholeOrder.getString("BackId");//This is assuming that the aggregator will also pass the customerID
-          float [] bakLocation = TransportAgent.getBackPos(bakID);
+          float [] bakLocation = TransportAgent.getNodePosition(bakID);
           String wholeOrderID = wholeOrder.getString("OrderId");
           
           Order order = new Order();

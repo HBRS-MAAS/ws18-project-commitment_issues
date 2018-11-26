@@ -1,0 +1,20 @@
+{
+  "OrderID": "Order-123",
+  "Boxes": [
+    {
+      "BoxID": "1",
+      "ProductType": "Bread",
+      "Quantity": 12
+    },
+    {
+      "BoxID": "2",
+      "ProductType": "Bread",
+      "Quantity": 6
+    },
+    {
+      "BoxID": "3",
+      "ProductType": "Donut",
+      "Quantity": 5
+    }
+  ]
+}

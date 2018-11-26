@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.yourteamname.agents.BaseAgent;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
@@ -17,15 +17,19 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
-public class OrderAggregatorAgent extends Agent {
+public class OrderAggregatorAgent extends BaseAgent {
   private ArrayList<Order> orders = new ArrayList<Order>(); //list of all the orders
   private AID transportAgent = null;
   protected void setup() {
-    addBehaviour(new LoadingBayParser());
+    
     this.register("order-aggregator","order-aggregator");
     while(this.transportAgent == null) {
       findTransportAgent();
     }
+    addBehaviour(new LoadingBayParser());
+    addBehaviour(new LoadingBayParser());
+    addBehaviour(new TimeUpdater());
+
   }
   protected void register(String type, String name){
     DFAgentDescription dfd = new DFAgentDescription();
@@ -69,26 +73,52 @@ public class OrderAggregatorAgent extends Agent {
     
     
   }
-  private class LoadingBayParser extends CyclicBehaviour{
+  private class TimeUpdater extends CyclicBehaviour {
+    public void action() {
+      MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+      ACLMessage msg = baseAgent.receive(mt);
+      if (msg != null) {
+        finished();
+      } else {
+        block();
+      }
+    }
+  }
+  private class LoadingBayParser extends OneShotBehaviour{
     boolean flag = false;
     @Override
     public void action() {
       MessageTemplate mt = MessageTemplate.MatchConversationId("packaged-orders");
       ACLMessage msg = myAgent.receive(mt);
+      
+      
+      
       if (msg != null) {
         JSONObject recieved = new JSONObject(msg.getContent());
         JSONArray boxesJSON = recieved.getJSONArray("Boxes");
         Order order = new Order();
-        for (int k = 0; k < orders.size();k++) {
-          if (orders.get(k).getOrderID().equals(recieved.getString("OrderID"))) {
+        
+        if (((OrderAggregatorAgent)myAgent).orders.size()==0) {
+          order.setOrderID(recieved.getString("OrderID"));
+          System.out.println(order.getOrderID());
+          
+        }for (int k = 0; k < ((OrderAggregatorAgent)myAgent).orders.size();k++) {
+          if (((OrderAggregatorAgent)myAgent).orders.size()==0) {
+            order.setOrderID(recieved.getString("OrderID"));
+            System.out.println(order.getOrderID());
+            break;
+          }
+          else {
+            System.out.println((((OrderAggregatorAgent)myAgent).orders.get(k).getOrderID()));
+          if ((((OrderAggregatorAgent)myAgent).orders.get(k).getOrderID()).equals(recieved.getString("OrderID"))) {
             order = orders.get(k);
             flag = true;
             break;
           }
           else {
             order.setOrderID(recieved.getString("OrderID"));
-            ((OrderAggregatorAgent)myAgent).orders.add(order);
-          }
+            
+          }}
         }
         
         
@@ -100,6 +130,8 @@ public class OrderAggregatorAgent extends Agent {
           box.setQuantity(boxJSON.getInt("Quantity"));
           order.addBoxes(box);
         }
+        
+        
         ((OrderAggregatorAgent)myAgent).orders.add(order);
         System.out.println(getAID().getName()+"recieved an order");
         if (flag == true) {
@@ -219,6 +251,8 @@ public class OrderAggregatorAgent extends Agent {
       msgJSON.put(orderJSON);
       finalOrder.setContent(msgJSON.toString());
       myAgent.send(finalOrder);
+      System.out.println(getAID().getName()+"sent order to transport agent");
+
     }
     
   }

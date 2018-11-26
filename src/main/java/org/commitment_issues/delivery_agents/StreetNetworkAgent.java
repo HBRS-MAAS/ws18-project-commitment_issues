@@ -82,7 +82,7 @@ public class StreetNetworkAgent extends Agent {
 		}
 		
 	protected String getStreetNetworkData() {
-		File fileRelative = new File("src/main/resources/config/small/street-network.json");
+		File fileRelative = new File("src/main/resources/config/sample/street-network.json");
 		String data = ""; 
 	    try {
 			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));
@@ -145,7 +145,7 @@ public class StreetNetworkAgent extends Agent {
 			}
 
 			else {
-				System.out.println("["+getAID().getLocalName()+"]: Waiting for time request messages.");
+//				System.out.println("["+getAID().getLocalName()+"]: Waiting for time request messages.");
 				block();
 			}
 		}
@@ -188,7 +188,7 @@ public class StreetNetworkAgent extends Agent {
 
 			else {
 				// +++
-				System.out.println("["+getAID().getLocalName()+"]: Waiting for path requests.");
+//				System.out.println("["+getAID().getLocalName()+"]: Waiting for path requests.");
 				block();
 			}
 		}

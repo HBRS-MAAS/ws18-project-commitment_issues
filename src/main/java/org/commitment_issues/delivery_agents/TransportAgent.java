@@ -79,7 +79,7 @@ public class TransportAgent extends Agent {
   
 	  protected static float[] getNodePosition(String guid) {
 		  float location[] = new float[2];
-		    File relativePath = new File("src/main/resources/config/small/street-network.json");
+		    File relativePath = new File("src/main/resources/config/sample/street-network.json");
 		    String streetNWContents = CustomerAgent.readFileAsString(relativePath.getAbsolutePath());
 		    JSONArray nodesArray = new JSONObject(streetNWContents).getJSONArray("nodes");
 		    for (int i = 0; i < nodesArray.length(); i++) {

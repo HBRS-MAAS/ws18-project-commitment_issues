@@ -101,7 +101,7 @@ public class TransportAgent extends BaseAgent {
 		}
 	}
   
-  private class OrderParser extends OneShotBehaviour{
+  private class OrderParser extends CyclicBehaviour{
     // Periodically updates the pending orders list by the data it takes from order aggregator
     public void action() {
 //      ACLMessage msg = myAgent.receive();

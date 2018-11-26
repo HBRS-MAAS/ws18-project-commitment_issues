@@ -26,11 +26,24 @@ public class DummyCustomer extends BaseAgent {
  		}
 //		addBehaviour(new shutdown());
         addBehaviour(new ReceiveOrderConfirmation());
+        addBehaviour(new TimeUpdater());
 		register("order-confirmation", "order-confirmation");
 
 	}
 	protected void takeDown() {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
+	}
+	
+	private class TimeUpdater extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+			ACLMessage msg = baseAgent.receive(mt);
+			if (msg != null) {
+				finished();
+			} else {
+				block();
+			}
+		}
 	}
 	
 	private class ReceiveOrderConfirmation extends CyclicBehaviour {

@@ -15,7 +15,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
-public class MailboxAgent extends Agent {
+public class MailboxAgent extends BaseAgent {
 
 	protected void setup() {
 		super.setup();
@@ -24,38 +24,8 @@ public class MailboxAgent extends Agent {
 		register("mailbox", "mailbox");
 		
 		addBehaviour(new truckDeliveryCompletionProcessor());
-		
+		addBehaviour(new TimeUpdater());
 	}
-
-	  /* This function registers the agent to yellow pages
-	   * Call this in `setup()` function
-	   */
-	  protected void register(String type, String name){
-	      DFAgentDescription dfd = new DFAgentDescription();
-	      dfd.setName(getAID());
-	      ServiceDescription sd = new ServiceDescription();
-	      sd.setType(type);
-	      sd.setName(name);
-	      dfd.addServices(sd);
-	      try {
-	          DFService.register(this, dfd);
-	      }
-	      catch (FIPAException fe) {
-	          fe.printStackTrace();
-	      }
-	  }
-	  
-	  /* This function removes the agent from yellow pages
-	   * Call this in `doDelete()` function
-	   */
-	  protected void deRegister() {
-	  	try {
-	          DFService.deregister(this);
-	      }
-	      catch (FIPAException fe) {
-	          fe.printStackTrace();
-	      }
-	  }
 	  
 		protected void takeDown() {
 			deRegister();
@@ -76,6 +46,18 @@ public class MailboxAgent extends Agent {
 		status.producedBy = deliveryStatus.getString("ProducedBy");
 		
 		return status;		
+	}
+	
+	private class TimeUpdater extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+			ACLMessage msg = baseAgent.receive(mt);
+			if (msg != null) {
+				finished();
+			} else {
+				//block();
+			}
+		}
 	}
 	
 	private class truckDeliveryCompletionProcessor extends CyclicBehaviour {

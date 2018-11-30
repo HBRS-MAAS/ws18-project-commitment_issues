@@ -38,6 +38,7 @@ public class StreetNetworkAgent extends BaseAgent {
 //		addBehaviour(new GraphVisualizerServer());
 		addBehaviour(new TimeToDeliveryServer());
 		addBehaviour(new PathServer());
+		addBehaviour(new NodeLocationServer());
 		addBehaviour(new TimeUpdater());
 	}
 	  
@@ -349,19 +350,23 @@ public class StreetNetworkAgent extends BaseAgent {
 	
 	protected String findLocationFromNode(String queryID) {
 		JSONObject nodeLocation = new JSONObject();
+		String nodeID = null;
 		
 		int numNodes = nodesJSONArray.length();
 		
 		for (int i = 0; i < numNodes; i++) {
 			JSONObject nodeInfo = nodesJSONArray.getJSONObject(i);
 			
-			String nodeID = nodeInfo.getString("guid");
+			try {
+				nodeID = nodeInfo.getString("company");
+			} catch (Exception e) {
+				continue;
+			}
 			
 			if (nodeID.equals(queryID)) {
 				nodeLocation = nodeInfo.getJSONObject("location");
 			}
 		}
-		
 		return nodeLocation.toString();
 	}
 	

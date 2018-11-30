@@ -33,15 +33,7 @@ public class OrderAggregatorAgent extends BaseAgent {
     addBehaviour(new TimeUpdater());
 
   }
-//  protected  JSONArray parseOrders() {
-//    File relativePath = new File("src/main/resources/config/small/bakeries.json");
-//    String read = CustomerAgent.readFileAsString(relativePath.getAbsolutePath());
-//    JSONArray ordersJSON = new JSONArray(read);
-//    for (int i = 0; i < ordersJSON.length();i ++) {
-//      
-//    }
-//
-//  }
+
   protected void register(String type, String name){
     DFAgentDescription dfd = new DFAgentDescription();
     dfd.setName(getAID());

@@ -153,19 +153,87 @@ public class LoadingBayAgent extends BaseAgent {
 		}
 	}
 	
-	private class OrderDetailsReceiver extends CyclicBehaviour {
+//	private class OrderDetailsReceiver extends CyclicBehaviour {
+//		private MessageTemplate mt;
+//		
+//		public void action() {
+//			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("..........."),
+//					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+//			ACLMessage msg = myAgent.receive(mt);
+//			
+//			if (msg != null) {
+//				orderDetailsArray = new JSONArray(msg.getContent());
+//			} else {
+//				block();
+//			}
+//		}
+//	}
+	
+	// Later change to generic behavior with a limiting condition, to avoid having to keep it being
+	// called indefinitely (for this test case).
+	private class OrderDetailsReceiver extends Behaviour {
+		private AID orderProcessor;
 		private MessageTemplate mt;
+		private int step = 0;
 		
+		protected void findOrderProcessor() {
+            DFAgentDescription template = new DFAgentDescription();
+            ServiceDescription sd = new ServiceDescription();
+            // SERVICE TYPE FOR RECEIVING ORDER CONFIRMATIONS:
+            sd.setType("order-processor");
+            template.addServices(sd);
+            try {
+                DFAgentDescription[] result = DFService.search(myAgent, template);
+                orderProcessor = result[0].getName();
+                
+                if (orderProcessor == null) {
+                	System.out.println("["+getAID().getLocalName()+"]: No OrderProcessor agent found.");
+                }
+            } catch (FIPAException fe) {
+                fe.printStackTrace();
+            }
+        }
+
 		public void action() {
-			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("..........."),
-					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-			ACLMessage msg = myAgent.receive(mt);
+			findOrderProcessor();
 			
-			if (msg != null) {
-				orderDetailsArray = new JSONArray(msg.getContent());
-			} else {
-				block();
+			switch (step) {
+			case 0:
+				ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
+
+				cfp.addReceiver(orderProcessor);
+				String convID = "loading-bay";
+				cfp.setContent(convID);
+				cfp.setConversationId(convID);
+				cfp.setPostTimeStamp(System.currentTimeMillis());
+				
+				myAgent.send(cfp);
+				
+				mt = MessageTemplate.MatchConversationId(convID);
+				
+				step = 1;
+				break;
+				
+			case 1:
+				ACLMessage reply = myAgent.receive(mt);
+				
+				if (reply != null) {
+					orderDetailsArray = new JSONArray(reply.getContent());					
+				}
+				else {
+					block();
+				}
+				
+				step = 2;
+				break;
+				
+			default:
+				break;
 			}
+		}
+		
+		public boolean done() {
+			return (step == 2);
 		}
 	}
 	

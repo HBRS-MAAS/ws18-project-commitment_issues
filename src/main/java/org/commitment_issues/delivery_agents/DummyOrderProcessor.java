@@ -75,6 +75,7 @@ public class DummyOrderProcessor extends Agent {
      if (request != null) {
        String orderID = request.getContent();
        ACLMessage reply = request.createReply();
+       reply.setPerformative(ACLMessage.INFORM);
        for (int i = 0; i < orders.length();i++) {
          if (orders.getJSONObject(i).getString("OrderID").equals(orderID)) {
            reply.setContent(orders.getJSONObject(i).toString());

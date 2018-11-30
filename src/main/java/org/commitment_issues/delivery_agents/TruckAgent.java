@@ -35,7 +35,7 @@ public class TruckAgent extends BaseAgent {
 	protected TruckState truckState_;
 	protected boolean autoFinish = true;
 	protected int capacity_;
-	
+
 	protected void setup() {
 		super.setup();
 
@@ -44,41 +44,41 @@ public class TruckAgent extends BaseAgent {
 		numOfBoxes_ = 0;
 		truckState_ = TruckState.IDLE;
 		capacity_ = 0;
-		
+
 		Object args[] = getArguments();
 		if (args != null && args.length > 0) {
 			capacity_ = Integer.parseInt(args[0].toString());
 		}
-		
-		//TODO: Load from json
+
+		// TODO: Load from json
 		currTruckLocation_ = new float[2];
 		currTruckLocation_[0] = (float) -0.82;
 		currTruckLocation_[1] = (float) 7.19;
-		
+
 		register("transport-orders", "transport-orders");
 		addBehaviour(new TimeQuotationServer());
 		addBehaviour(new TruckScheduleServer());
 		addBehaviour(new MoveTruck());
 		addBehaviour(new TimeUpdater());
-		
+
 		addBehaviour(new QueryNodePosition(getLocalName().split("_")[0]));
-		System.out.println("Hello! TruckAgent "+ getAID().getName() +" with capacity " + capacity_ + " is ready.");
+		System.out.println("Hello! TruckAgent " + getAID().getName() + " with capacity " + capacity_ + " is ready.");
 	}
 
 	protected void takeDown() {
 		deRegister();
-		
+
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
-	
+
 	protected boolean isTruckIdle() {
 		return currOrder_ == null;
 	}
-	
+
 	protected float[] getCustomerLocation() {
 		return currOrder_.customerLocation_;
 	}
-	
+
 	protected void startNewOrder(OrderDetails order) {
 		truckState_ = TruckState.MOVING_TO_BAKERY;
 		currOrder_ = order;
@@ -86,51 +86,50 @@ public class TruckAgent extends BaseAgent {
 
 		addBehaviour(new QueryPath(currOrder_.bakeryLocation_));
 		System.out.println(baseAgent.getAID().getLocalName() + " Started executing new order: " + currOrder_.orderID_);
-		
-		//TODO: Find a proper place to put the below finished command
-//		finished();
+
+		// TODO: Find a proper place to put the below finished command
+		// finished();
 	}
-	
+
 	protected void updateCurrPath(ArrayList<float[]> path) {
 		currPath_ = path;
 		currTruckLocation_ = new float[2];
 		currTruckLocation_[0] = currPath_.get(0)[0];
 		currTruckLocation_[1] = currPath_.get(0)[1];
-		
+
 		pathStartTime_ = (getCurrentDay() * 24) + getCurrentHour();
 		System.out.println(getAID().getLocalName() + " Truck started with new path at " + getCurrentHour() + " hrs");
 	}
-	
+
 	protected void visualiseStreetNetwork(ACLMessage msg) {
-		//TODO
-    }
-	
+		// TODO
+	}
+
 	protected AID discoverAgent(String serviceType) {
-        // Find the an agent for given service type
-        DFAgentDescription template = new DFAgentDescription();
-        ServiceDescription sd = new ServiceDescription();
-        sd.setType(serviceType);
-        template.addServices(sd);
-        
-        AID streetNwAgent = null;
-        
-        try {
-            DFAgentDescription[] result = DFService.search(this, template);
-            if (result.length > 0) {
-            	streetNwAgent = result[0].getName();
-            }
-            else
-            {
-            	streetNwAgent = null;
-            	System.out.println(getAID().getLocalName() +  ": No agent with Service type (" + serviceType + ") found!");
-            }
-        } catch (FIPAException fe) {
-            fe.printStackTrace();
-        }
-        
-        return streetNwAgent;
-    }
-	
+		// Find the an agent for given service type
+		DFAgentDescription template = new DFAgentDescription();
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType(serviceType);
+		template.addServices(sd);
+
+		AID streetNwAgent = null;
+
+		try {
+			DFAgentDescription[] result = DFService.search(this, template);
+			if (result.length > 0) {
+				streetNwAgent = result[0].getName();
+			} else {
+				streetNwAgent = null;
+				System.out
+						.println(getAID().getLocalName() + ": No agent with Service type (" + serviceType + ") found!");
+			}
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
+
+		return streetNwAgent;
+	}
+
 	private String getPosAsString(float[] pos) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("( " + pos[0]);
@@ -138,40 +137,38 @@ public class TruckAgent extends BaseAgent {
 		sb.append(pos[1] + ")");
 		return sb.toString();
 	}
-	
+
 	private enum TruckState {
-		IDLE,
-		MOVING_TO_BAKERY,
-		MOVING_TO_CUSTOMER
+		IDLE, MOVING_TO_BAKERY, MOVING_TO_CUSTOMER
 	}
-	
+
 	private class OrderDetails {
 		public String orderID_;
 		public float[] bakeryLocation_;
 		public float[] customerLocation_;
 		public int numOfBoxes_;
-		
+
 		// TODO
 		public String customerName_ = "No Customer Name Provided";
 		public String bakeryName_ = "No Bakery Name Provided";
 		public int deliveryDate_;
 		public int deliveryTime_;
-		
+
 		public OrderDetails(String jsonMessage) {
 			JSONObject jsonObj = new JSONObject(jsonMessage);
-			
+
 			orderID_ = jsonObj.getString("OrderID");
 			numOfBoxes_ = jsonObj.getInt("NumOfBoxes");
-			
+
 			bakeryLocation_ = new float[2];
 			bakeryLocation_[0] = jsonObj.getJSONObject("Source").getFloat("X");
 			bakeryLocation_[1] = jsonObj.getJSONObject("Source").getFloat("Y");
-			
+
 			customerLocation_ = new float[2];
 			customerLocation_[0] = jsonObj.getJSONObject("Destination").getFloat("X");
 			customerLocation_[1] = jsonObj.getJSONObject("Destination").getFloat("Y");
 		}
-		
+
 		public void print() {
 			System.out.println("******** Order Details ********");
 			System.out.println("Order ID: " + orderID_);
@@ -182,7 +179,7 @@ public class TruckAgent extends BaseAgent {
 			System.out.println("*******************************");
 		}
 	}
-	
+
 	private class TimeUpdater extends CyclicBehaviour {
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
@@ -194,177 +191,172 @@ public class TruckAgent extends BaseAgent {
 			}
 		}
 	}
-	
+
 	private enum TimeQuotationStates {
-		WAIT_FOR_QUOTATION_REQUEST,
-		QUOTATION_REQUESTED,
-		REQUEST_TIME_TO_CUSTOMER,
-		WAIT_FOR_TIME_FROM_STREET_NETWORK,
-		SEND_QUOTATION,
-		SEND_REFUSAL
+		WAIT_FOR_QUOTATION_REQUEST, QUOTATION_REQUESTED, REQUEST_TIME_TO_CUSTOMER, WAIT_FOR_TIME_FROM_STREET_NETWORK, SEND_QUOTATION, SEND_REFUSAL
 	}
-	
+
 	private class TimeQuotationServer extends CyclicBehaviour {
 
 		private TimeQuotationStates state_ = TimeQuotationStates.WAIT_FOR_QUOTATION_REQUEST;
 		private ACLMessage requestMsg_ = null;
 		private float timeQuote_ = 0;
-		private boolean responseReceivedFromStreetNW_ = false;	
+		private boolean responseReceivedFromStreetNW_ = false;
 		public OrderDetails orderDetails_;
-		
+
 		private void resetClassMembers() {
 			state_ = TimeQuotationStates.WAIT_FOR_QUOTATION_REQUEST;
 			requestMsg_ = null;
 			timeQuote_ = 0;
-			responseReceivedFromStreetNW_ = false;	
+			responseReceivedFromStreetNW_ = false;
 			orderDetails_ = null;
 		}
-		
+
 		protected void handleTimeQueryResponse(float time) {
 			timeQuote_ = time;
 			responseReceivedFromStreetNW_ = true;
 		}
-		
-        public void action() {
-        	switch (state_) {
-        	case WAIT_FOR_QUOTATION_REQUEST:
-        		MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-        		requestMsg_ = baseAgent.receive(mt);
-                if (requestMsg_ != null) {
-                	state_ = TimeQuotationStates.QUOTATION_REQUESTED;
-                	System.out.println(baseAgent.getAID().getLocalName() + " Received Quotation message: " + requestMsg_.getContent());
-                }
-                else {
-                	block();
-                }
-        		break;
-        	case QUOTATION_REQUESTED:
-        		if (nextOrder_ == null) {
-	        		orderDetails_ = new OrderDetails(requestMsg_.getContent());
-	        		state_ = TimeQuotationStates.REQUEST_TIME_TO_CUSTOMER;
-        		} 
-        		else {
-        			state_ = TimeQuotationStates.SEND_REFUSAL;
-        		}
-        		break;
-        	case REQUEST_TIME_TO_CUSTOMER:
-        		baseAgent.addBehaviour(new QueryTime(this));
-        		state_ = TimeQuotationStates.WAIT_FOR_TIME_FROM_STREET_NETWORK;
-        		System.out.println(baseAgent.getAID().getLocalName() + " Query for total time placed");
-        		break;
-        	case WAIT_FOR_TIME_FROM_STREET_NETWORK:
-        		if (responseReceivedFromStreetNW_) {
-        			state_ = TimeQuotationStates.SEND_QUOTATION;
-        			responseReceivedFromStreetNW_ = false;
-        			System.out.println(baseAgent.getAID().getLocalName() + " Query response for time received");
-        		}
-        		break;
-        	case SEND_QUOTATION:
-        		ACLMessage reply = requestMsg_.createReply();
-                reply.setPerformative(ACLMessage.PROPOSE);
-                reply.setContent(Float.toString(timeQuote_));
-                baseAgent.send(reply);
-                System.out.println(baseAgent.getAID().getLocalName() + " Sent time to deliver quote" + timeQuote_);
-                resetClassMembers();
-        		break;
-        	case SEND_REFUSAL:
-        		ACLMessage reject = requestMsg_.createReply();
-        		reject.setPerformative(ACLMessage.REFUSE);
-        		reject.setContent("Busy");
-                baseAgent.send(reject);
-                System.out.println(baseAgent.getAID().getLocalName() + " Rejected Quotation request");
-                resetClassMembers();
-        		break;
+
+		public void action() {
+			switch (state_) {
+			case WAIT_FOR_QUOTATION_REQUEST:
+				MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+				requestMsg_ = baseAgent.receive(mt);
+				if (requestMsg_ != null) {
+					state_ = TimeQuotationStates.QUOTATION_REQUESTED;
+					System.out.println(baseAgent.getAID().getLocalName() + " Received Quotation message: "
+							+ requestMsg_.getContent());
+				} else {
+					block();
+				}
+				break;
+			case QUOTATION_REQUESTED:
+				if (nextOrder_ == null) {
+					orderDetails_ = new OrderDetails(requestMsg_.getContent());
+					state_ = TimeQuotationStates.REQUEST_TIME_TO_CUSTOMER;
+				} else {
+					state_ = TimeQuotationStates.SEND_REFUSAL;
+				}
+				break;
+			case REQUEST_TIME_TO_CUSTOMER:
+				baseAgent.addBehaviour(new QueryTime(this));
+				state_ = TimeQuotationStates.WAIT_FOR_TIME_FROM_STREET_NETWORK;
+				System.out.println(baseAgent.getAID().getLocalName() + " Query for total time placed");
+				break;
+			case WAIT_FOR_TIME_FROM_STREET_NETWORK:
+				if (responseReceivedFromStreetNW_) {
+					state_ = TimeQuotationStates.SEND_QUOTATION;
+					responseReceivedFromStreetNW_ = false;
+					System.out.println(baseAgent.getAID().getLocalName() + " Query response for time received");
+				}
+				break;
+			case SEND_QUOTATION:
+				ACLMessage reply = requestMsg_.createReply();
+				reply.setPerformative(ACLMessage.PROPOSE);
+				reply.setContent(Float.toString(timeQuote_));
+				baseAgent.send(reply);
+				System.out.println(baseAgent.getAID().getLocalName() + " Sent time to deliver quote" + timeQuote_);
+				resetClassMembers();
+				break;
+			case SEND_REFUSAL:
+				ACLMessage reject = requestMsg_.createReply();
+				reject.setPerformative(ACLMessage.REFUSE);
+				reject.setContent("Busy");
+				baseAgent.send(reject);
+				System.out.println(baseAgent.getAID().getLocalName() + " Rejected Quotation request");
+				resetClassMembers();
+				break;
 			default:
 				break;
-        	}
-        }
-    }
-	
+			}
+		}
+	}
+
 	private class TruckScheduleServer extends CyclicBehaviour {
 		public void action() {
-            MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.ACCEPT_PROPOSAL);
-            ACLMessage msg = baseAgent.receive(mt);
-            if (msg != null) {
-                // ACCEPT_PROPOSAL Message received. Process it
-                ACLMessage reply = msg.createReply();
-                
-                OrderDetails newOrder = new OrderDetails(msg.getContent());
-                
-                if (currOrder_ == null) {
-                	currOrder_ = newOrder;
-                	reply.setPerformative(ACLMessage.INFORM);
-                	reply.setContent("DeliveryAccepted");
-                	System.out.println(baseAgent.getAID().getLocalName() + " Accepted new order as CURRENT order:");
-                	currOrder_.print();
-                }
-                else if (nextOrder_ == null) {
-                	nextOrder_ = newOrder;
-                	reply.setPerformative(ACLMessage.INFORM);
-                	reply.setContent("DeliveryAccepted");
-                	System.out.println(baseAgent.getAID().getLocalName() + " Accepted new order as NEXT order:");
-                	nextOrder_.print();
-                }
-                else {
-                	reply.setPerformative(ACLMessage.FAILURE);
-                    reply.setContent("Busy");
-                    System.out.println(baseAgent.getAID().getLocalName() + " Failed to accept new order");
-                }
-                baseAgent.send(reply);
-                System.out.println(baseAgent.getAID().getLocalName() + " Responded to ACCEPT_PROPOSAL with : " + reply.getContent());
-            } else {
-                block();
-            }
-        }
+			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.ACCEPT_PROPOSAL);
+			ACLMessage msg = baseAgent.receive(mt);
+			if (msg != null) {
+				// ACCEPT_PROPOSAL Message received. Process it
+				ACLMessage reply = msg.createReply();
+
+				OrderDetails newOrder = new OrderDetails(msg.getContent());
+
+				if (currOrder_ == null) {
+					currOrder_ = newOrder;
+					baseAgent.addBehaviour(new QueryOrderInfo(true));
+					reply.setPerformative(ACLMessage.INFORM);
+					reply.setContent("DeliveryAccepted");
+					System.out.println(baseAgent.getAID().getLocalName() + " Accepted new order as CURRENT order:");
+					currOrder_.print();
+				} else if (nextOrder_ == null) {
+					nextOrder_ = newOrder;
+					baseAgent.addBehaviour(new QueryOrderInfo(false));
+					reply.setPerformative(ACLMessage.INFORM);
+					reply.setContent("DeliveryAccepted");
+					System.out.println(baseAgent.getAID().getLocalName() + " Accepted new order as NEXT order:");
+					nextOrder_.print();
+				} else {
+					reply.setPerformative(ACLMessage.FAILURE);
+					reply.setContent("Busy");
+					System.out.println(baseAgent.getAID().getLocalName() + " Failed to accept new order");
+				}
+				baseAgent.send(reply);
+				System.out.println(baseAgent.getAID().getLocalName() + " Responded to ACCEPT_PROPOSAL with : "
+						+ reply.getContent());
+			} else {
+				block();
+			}
+		}
 	}
-	
+
 	private class MoveTruck extends CyclicBehaviour {
-		
+
 		private boolean updateTruckPosition() {
 			boolean retval = false;
 			if (currPath_ != null && getAllowAction()) {
 				float timeSincePathStart = getTime() - pathStartTime_;
-				int i = 1;			
+				int i = 1;
 				while (true && (i < currPath_.size())) {
 					if (timeSincePathStart < currPath_.get(i)[2]) {
 						break;
 					}
 					i++;
 				}
-				
-				if (currTruckLocation_[0] != currPath_.get(i - 1)[0] ||
-					currTruckLocation_[1] != currPath_.get(i - 1)[1])
-				{
+
+				if (currTruckLocation_[0] != currPath_.get(i - 1)[0]
+						|| currTruckLocation_[1] != currPath_.get(i - 1)[1]) {
 					float[] oldPos = currTruckLocation_;
 					currTruckLocation_ = new float[2];
 					currTruckLocation_[0] = currPath_.get(i - 1)[0];
 					currTruckLocation_[1] = currPath_.get(i - 1)[1];
 					retval = true;
-					System.out.println("Truck moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
+					System.out.println("Truck moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos)
+							+ " to " + getPosAsString(currTruckLocation_));
 				}
 			}
 			finished();
 			return retval;
 		}
-		
+
 		private int getTime() {
 			return (getCurrentDay() * 24) + getCurrentHour();
 		}
-		
+
 		private boolean reachedEndOfPath() {
-			float[] endPos = {currPath_.get(currPath_.size() - 1)[0], currPath_.get(currPath_.size() - 1)[1]};
+			float[] endPos = { currPath_.get(currPath_.size() - 1)[0], currPath_.get(currPath_.size() - 1)[1] };
 			return Arrays.equals(currTruckLocation_, endPos);
 		}
-		
+
 		private boolean reachedCutomer() {
 			return (truckState_ == TruckState.MOVING_TO_CUSTOMER) && reachedEndOfPath();
 		}
-		
+
 		private boolean reachedBakery() {
 			return (truckState_ == TruckState.MOVING_TO_BAKERY) && reachedEndOfPath();
 		}
-		
-		private String getVisualizationMessage() {			
+
+		private String getVisualizationMessage() {
 			JSONObject jsonObj = new JSONObject();
 			jsonObj.put("TruckID", baseAgent.getAID().getLocalName());
 			jsonObj.put("X", currTruckLocation_[0]);
@@ -373,90 +365,82 @@ public class TruckAgent extends BaseAgent {
 			jsonObj.put("EstimatedTime", currPath_.get(currPath_.size() - 1)[2] - pathStartTime_);
 			return jsonObj.toString();
 		}
-		
+
 		public void action() {
-            	if ((truckState_ == TruckState.IDLE) && (currOrder_ != null)) {
-            		startNewOrder(currOrder_);
-            	}
-            	else if ((truckState_ != TruckState.IDLE)  && updateTruckPosition()) {
-	            	if (reachedBakery()) {
-	            		baseAgent.addBehaviour(new RequestBoxes(currOrder_.orderID_));
-	            		truckState_ = TruckState.MOVING_TO_CUSTOMER;
-	            		currPath_ = null;
-	            		System.out.println(baseAgent.getAID().getLocalName() + " Reached bakery. Requested boxes from transport agent");
-	            	}
-	            	else if (reachedCutomer()) {
-	            		baseAgent.addBehaviour(new PostDeliveryCompletionMessage(currOrder_));
-	            		if (nextOrder_ != null) {
-	            			startNewOrder(nextOrder_);
-	            			nextOrder_ = null;
-	            			System.out.println(baseAgent.getAID().getLocalName() + " Reached customer. Starting with next request");
-	            		}
-	            		else {
-	            			currOrder_ = null;
-	            			truckState_ = TruckState.IDLE;
-	            			System.out.println(baseAgent.getAID().getLocalName() + " Reached customer. Truck is Idle as there is no next order");
-	            		}
-	            	}
-	            	
-//	                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-//	                msg.addReceiver(discoverAgent("transport-visualization"));
-//	                msg.setConversationId("truck-location");
-//	                msg.setContent(getVisualizationMessage());
-//	                baseAgent.send(msg);
-//	                System.out.println(baseAgent.getAID().getLocalName() + " Message sent to Visualization agent: " + msg.getContent());
-            }
-        }
+			if ((truckState_ == TruckState.IDLE) && (currOrder_ != null)) {
+				startNewOrder(currOrder_);
+			} else if ((truckState_ != TruckState.IDLE) && updateTruckPosition()) {
+				if (reachedBakery()) {
+					baseAgent.addBehaviour(new RequestBoxes(currOrder_.orderID_));
+					truckState_ = TruckState.MOVING_TO_CUSTOMER;
+					currPath_ = null;
+					System.out.println(baseAgent.getAID().getLocalName()
+							+ " Reached bakery. Requested boxes from transport agent");
+				} else if (reachedCutomer()) {
+					baseAgent.addBehaviour(new PostDeliveryCompletionMessage(currOrder_));
+					if (nextOrder_ != null) {
+						startNewOrder(nextOrder_);
+						nextOrder_ = null;
+						System.out.println(
+								baseAgent.getAID().getLocalName() + " Reached customer. Starting with next request");
+					} else {
+						currOrder_ = null;
+						truckState_ = TruckState.IDLE;
+						System.out.println(baseAgent.getAID().getLocalName()
+								+ " Reached customer. Truck is Idle as there is no next order");
+					}
+				}
+
+				// ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+				// msg.addReceiver(discoverAgent("transport-visualization"));
+				// msg.setConversationId("truck-location");
+				// msg.setContent(getVisualizationMessage());
+				// baseAgent.send(msg);
+				// System.out.println(baseAgent.getAID().getLocalName() + " Message sent to
+				// Visualization agent: " + msg.getContent());
+			}
+		}
 	}
-	
-	private enum StreetNetworkQueryStates{
-		FIND_STREET_NETWORK_AGENTS,
-		REQUEST_STREET_NETWORK,
-		WAIT_FOR_RESPONSE,
-		QUERY_COMPLETE,
-		QUERY_FAILED
+
+	private enum StreetNetworkQueryStates {
+		FIND_STREET_NETWORK_AGENTS, REQUEST_STREET_NETWORK, WAIT_FOR_RESPONSE, QUERY_COMPLETE, QUERY_FAILED
 	}
-	
+
 	private class QueryTime extends Behaviour {
 		private AID streetNwAgent_;
 		private StreetNetworkQueryStates state_ = StreetNetworkQueryStates.FIND_STREET_NETWORK_AGENTS;
 		private MessageTemplate mt_;
 		private TimeQuotationServer requester_;
-		
+
 		public QueryTime(TimeQuotationServer requester) {
 			requester_ = requester;
 		}
-		
+
 		private String getRequestContent() {
 			JSONArray jsonArray = new JSONArray();
-			
+
 			// Add source node location
-			jsonArray.put(new JSONObject()
-					.put("X", currTruckLocation_[0])
-          		  	.put("Y", currTruckLocation_[1]));
-			
+			jsonArray.put(new JSONObject().put("X", currTruckLocation_[0]).put("Y", currTruckLocation_[1]));
+
 			// If truck is not idle add the location of current customer
 			if (!isTruckIdle()) {
-				jsonArray.put(new JSONObject()
-						.put("X", currOrder_.customerLocation_[0])
-	          		  	.put("Y", currOrder_.customerLocation_[1]));
+				jsonArray.put(new JSONObject().put("X", currOrder_.customerLocation_[0]).put("Y",
+						currOrder_.customerLocation_[1]));
 			}
-			
+
 			// Add location of bakery
-			jsonArray.put(new JSONObject()
-					.put("X", requester_.orderDetails_.bakeryLocation_[0])
-          		  	.put("Y", requester_.orderDetails_.bakeryLocation_[1]));
-			
+			jsonArray.put(new JSONObject().put("X", requester_.orderDetails_.bakeryLocation_[0]).put("Y",
+					requester_.orderDetails_.bakeryLocation_[1]));
+
 			// Add location of new customer
-			jsonArray.put(new JSONObject()
-					.put("X", requester_.orderDetails_.customerLocation_[0])
-			        .put("Y", requester_.orderDetails_.customerLocation_[1]));
-			
+			jsonArray.put(new JSONObject().put("X", requester_.orderDetails_.customerLocation_[0]).put("Y",
+					requester_.orderDetails_.customerLocation_[1]));
+
 			return jsonArray.toString();
 		}
-		
-		public void action() {            
-			switch(state_) {
+
+		public void action() {
+			switch (state_) {
 			case FIND_STREET_NETWORK_AGENTS:
 				streetNwAgent_ = discoverAgent("street-network");
 				if (streetNwAgent_ != null) {
@@ -466,98 +450,95 @@ public class TruckAgent extends BaseAgent {
 			case REQUEST_STREET_NETWORK:
 				// Send the request to the street network
 				String conversationID = "TimeQuery";
-                ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
-                request.addReceiver(streetNwAgent_);
-                request.setContent(getRequestContent());
-                request.setConversationId(conversationID);
-                request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
-                baseAgent.send(request);
-                // Prepare the template to get replies
-                mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
-                        MessageTemplate.MatchInReplyTo(request.getReplyWith()));
-                state_ = StreetNetworkQueryStates.WAIT_FOR_RESPONSE;
-                System.out.println(baseAgent.getAID().getLocalName() + " Placed time query with SN for: " + request.getContent());
+				ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+				request.addReceiver(streetNwAgent_);
+				request.setContent(getRequestContent());
+				request.setConversationId(conversationID);
+				request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
+				baseAgent.send(request);
+				// Prepare the template to get replies
+				mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
+						MessageTemplate.MatchInReplyTo(request.getReplyWith()));
+				state_ = StreetNetworkQueryStates.WAIT_FOR_RESPONSE;
+				System.out.println(
+						baseAgent.getAID().getLocalName() + " Placed time query with SN for: " + request.getContent());
 				break;
 			case WAIT_FOR_RESPONSE:
 				// Receive response from StreetNetworkAgent
-                ACLMessage reply = baseAgent.receive(mt_);
-                if (reply != null) {
-                    // Reply received
-                    if (reply.getPerformative() == ACLMessage.INFORM) {
-                        float time = Float.parseFloat(reply.getContent());
-                        requester_.handleTimeQueryResponse(time);
-                        state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
-                        System.out.println(baseAgent.getAID().getLocalName() + " Response for time received from SN: " + time);
-                    }
-                    else {
-                    	System.out.println(baseAgent.getAID().getLocalName() + ": Querying time from street network failed!!");
-                    	state_ = StreetNetworkQueryStates.QUERY_FAILED;
-                    	System.out.println(baseAgent.getAID().getLocalName() + " Time query from SN failed: ");
-                    }
-                } else {
-                    block();
-                }
+				ACLMessage reply = baseAgent.receive(mt_);
+				if (reply != null) {
+					// Reply received
+					if (reply.getPerformative() == ACLMessage.INFORM) {
+						float time = Float.parseFloat(reply.getContent());
+						requester_.handleTimeQueryResponse(time);
+						state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
+						System.out.println(
+								baseAgent.getAID().getLocalName() + " Response for time received from SN: " + time);
+					} else {
+						System.out.println(
+								baseAgent.getAID().getLocalName() + ": Querying time from street network failed!!");
+						state_ = StreetNetworkQueryStates.QUERY_FAILED;
+						System.out.println(baseAgent.getAID().getLocalName() + " Time query from SN failed: ");
+					}
+				} else {
+					block();
+				}
 				break;
 			default:
 				break;
 			}
 		}
-		
+
 		public boolean done() {
-			return state_ == StreetNetworkQueryStates.QUERY_COMPLETE ||
-					state_ == StreetNetworkQueryStates.QUERY_FAILED;
+			return state_ == StreetNetworkQueryStates.QUERY_COMPLETE || state_ == StreetNetworkQueryStates.QUERY_FAILED;
 		}
 	}
-	
+
 	@SuppressWarnings("unused")
 	private class QueryPath extends Behaviour {
 		private AID streetNwAgent_;
 		private StreetNetworkQueryStates state_ = StreetNetworkQueryStates.FIND_STREET_NETWORK_AGENTS;
 		private MessageTemplate mt_;
 		private float[] destination_;
-		
+
 		public QueryPath(float[] destination) {
 			destination_ = destination;
 		}
-		
+
 		private String getRequestContent() {
 			JSONArray jsonArray = new JSONArray();
-			
+
 			// Add source node location
-			jsonArray.put(new JSONObject()
-					.put("X", currTruckLocation_[0])
-          		  	.put("Y", currTruckLocation_[1]));
-			
+			jsonArray.put(new JSONObject().put("X", currTruckLocation_[0]).put("Y", currTruckLocation_[1]));
+
 			// Add location of new customer
-			jsonArray.put(new JSONObject()
-					.put("X", destination_[0])
-			        .put("Y", destination_[1]));
-			
+			jsonArray.put(new JSONObject().put("X", destination_[0]).put("Y", destination_[1]));
+
 			return jsonArray.toString();
 		}
-		
+
 		private ArrayList<float[]> parseJSONPath(String jsonString) {
 			ArrayList<float[]> path = new ArrayList<float[]>();
 			JSONArray jsonArr = new JSONArray(jsonString);
-			
+
 			for (int i = 0; i < jsonArr.length(); i++) {
 				float[] node = new float[3];
 				node[0] = jsonArr.getJSONObject(i).getFloat("X");
 				node[1] = jsonArr.getJSONObject(i).getFloat("Y");
 				node[2] = jsonArr.getJSONObject(i).getFloat("time");
-				
-//				if (i > 0) {
-//					// Add time until previous node
-//					node[2] += path.get(i - 1)[2];
-//				}
-				
+
+				// if (i > 0) {
+				// // Add time until previous node
+				// node[2] += path.get(i - 1)[2];
+				// }
+
 				path.add(node);
 			}
 			return path;
 		}
-		
+
 		public void action() {
-			switch(state_) {
+			switch (state_) {
 			case FIND_STREET_NETWORK_AGENTS:
 				streetNwAgent_ = discoverAgent("street-network");
 				if (streetNwAgent_ != null) {
@@ -567,58 +548,59 @@ public class TruckAgent extends BaseAgent {
 			case REQUEST_STREET_NETWORK:
 				// Send the request to the street network
 				String conversationID = "PathQuery";
-                ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
-                request.addReceiver(streetNwAgent_);
-                request.setContent(getRequestContent());
-                request.setConversationId(conversationID);
-                request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
-                baseAgent.send(request);
-                // Prepare the template to get replies
-                mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
-                        MessageTemplate.MatchInReplyTo(request.getReplyWith()));
-                state_ = StreetNetworkQueryStates.WAIT_FOR_RESPONSE;
-                System.out.println(baseAgent.getAID().getLocalName() + " Query for path placed with SN: " + request.getContent());
+				ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+				request.addReceiver(streetNwAgent_);
+				request.setContent(getRequestContent());
+				request.setConversationId(conversationID);
+				request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
+				baseAgent.send(request);
+				// Prepare the template to get replies
+				mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
+						MessageTemplate.MatchInReplyTo(request.getReplyWith()));
+				state_ = StreetNetworkQueryStates.WAIT_FOR_RESPONSE;
+				System.out.println(
+						baseAgent.getAID().getLocalName() + " Query for path placed with SN: " + request.getContent());
 				break;
 			case WAIT_FOR_RESPONSE:
 				// Receive response from StreetNetworkAgent
-                ACLMessage reply = baseAgent.receive(mt_);
-                if (reply != null) {
-                    // Reply received
-                    if (reply.getPerformative() == ACLMessage.INFORM) {
-                    	System.out.println(baseAgent.getAID().getLocalName() + " Response for path received from SN: " + reply.getContent());
-                        updateCurrPath(parseJSONPath(reply.getContent()));
-                        state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
-                        
-                    }
-                    else {
-                    	System.out.println(baseAgent.getAID().getLocalName() + ": Querying path from street network failed!!");
-                    	state_ = StreetNetworkQueryStates.QUERY_FAILED;
-                    	System.out.println(baseAgent.getAID().getLocalName() + " Query for path failed from SN");
-                    }
-                }
+				ACLMessage reply = baseAgent.receive(mt_);
+				if (reply != null) {
+					// Reply received
+					if (reply.getPerformative() == ACLMessage.INFORM) {
+						System.out.println(baseAgent.getAID().getLocalName() + " Response for path received from SN: "
+								+ reply.getContent());
+						updateCurrPath(parseJSONPath(reply.getContent()));
+						state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
+
+					} else {
+						System.out.println(
+								baseAgent.getAID().getLocalName() + ": Querying path from street network failed!!");
+						state_ = StreetNetworkQueryStates.QUERY_FAILED;
+						System.out.println(baseAgent.getAID().getLocalName() + " Query for path failed from SN");
+					}
+				}
 				break;
 			default:
 				break;
 			}
 		}
-		
+
 		public boolean done() {
-			return state_ == StreetNetworkQueryStates.QUERY_COMPLETE ||
-					state_ == StreetNetworkQueryStates.QUERY_FAILED;
+			return state_ == StreetNetworkQueryStates.QUERY_COMPLETE || state_ == StreetNetworkQueryStates.QUERY_FAILED;
 		}
 	}
-	
+
 	@SuppressWarnings("unused")
 	private class QueryNodePosition extends Behaviour {
 		private AID streetNwAgent_;
 		private StreetNetworkQueryStates state_ = StreetNetworkQueryStates.FIND_STREET_NETWORK_AGENTS;
 		private MessageTemplate mt_;
 		private String nodeID_;
-		
+
 		public QueryNodePosition(String nodeID) {
 			nodeID_ = nodeID;
 		}
-		
+
 		private float[] parseNodePosition(String jsonString) {
 			float[] position = new float[2];
 			JSONObject jsonObj = new JSONObject(jsonString);
@@ -626,9 +608,9 @@ public class TruckAgent extends BaseAgent {
 			position[1] = jsonObj.getFloat("y");
 			return position;
 		}
-		
+
 		public void action() {
-			switch(state_) {
+			switch (state_) {
 			case FIND_STREET_NETWORK_AGENTS:
 				streetNwAgent_ = discoverAgent("street-network");
 				if (streetNwAgent_ != null) {
@@ -638,74 +620,150 @@ public class TruckAgent extends BaseAgent {
 			case REQUEST_STREET_NETWORK:
 				// Send the request to the street network
 				String conversationID = "LocationQuery";
-                ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
-                request.addReceiver(streetNwAgent_);
-                request.setContent(nodeID_);
-                request.setConversationId(conversationID);
-                request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
-                baseAgent.send(request);
-                // Prepare the template to get replies
-                mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
-                        MessageTemplate.MatchInReplyTo(request.getReplyWith()));
-                state_ = StreetNetworkQueryStates.WAIT_FOR_RESPONSE;
-                System.out.println(baseAgent.getAID().getLocalName() + " Query for node position placed with SN: " + request.getContent());
+				ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+				request.addReceiver(streetNwAgent_);
+				request.setContent(nodeID_);
+				request.setConversationId(conversationID);
+				request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
+				baseAgent.send(request);
+				// Prepare the template to get replies
+				mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
+						MessageTemplate.MatchInReplyTo(request.getReplyWith()));
+				state_ = StreetNetworkQueryStates.WAIT_FOR_RESPONSE;
+				System.out.println(baseAgent.getAID().getLocalName() + " Query for node position placed with SN: "
+						+ request.getContent());
 				break;
 			case WAIT_FOR_RESPONSE:
 				// Receive response from StreetNetworkAgent
-                ACLMessage reply = baseAgent.receive(mt_);
-                if (reply != null) {
-                    // Reply received
-                    if (reply.getPerformative() == ACLMessage.INFORM) {
-                    	System.out.println(baseAgent.getAID().getLocalName() + " Response for node position received from SN: " + reply.getContent());
-                        currTruckLocation_ = parseNodePosition(reply.getContent());
-                        state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
-                        
-                    }
-                    else {
-                    	System.out.println(baseAgent.getAID().getLocalName() + ": Querying node position from street network failed!!");
-                    	state_ = StreetNetworkQueryStates.QUERY_FAILED;
-                    }
-                }
+				ACLMessage reply = baseAgent.receive(mt_);
+				if (reply != null) {
+					// Reply received
+					if (reply.getPerformative() == ACLMessage.INFORM) {
+						System.out.println(baseAgent.getAID().getLocalName()
+								+ " Response for node position received from SN: " + reply.getContent());
+						currTruckLocation_ = parseNodePosition(reply.getContent());
+						state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
+
+					} else {
+						System.out.println(baseAgent.getAID().getLocalName()
+								+ ": Querying node position from street network failed!!");
+						state_ = StreetNetworkQueryStates.QUERY_FAILED;
+					}
+				}
 				break;
 			default:
 				break;
 			}
 		}
-		
+
 		public boolean done() {
-			return state_ == StreetNetworkQueryStates.QUERY_COMPLETE ||
-					state_ == StreetNetworkQueryStates.QUERY_FAILED;
+			return state_ == StreetNetworkQueryStates.QUERY_COMPLETE || state_ == StreetNetworkQueryStates.QUERY_FAILED;
 		}
 	}
 	
+	@SuppressWarnings("unused")
+	private class QueryOrderInfo extends Behaviour {
+		private AID orderProcessorAgent_;
+		private StreetNetworkQueryStates state_ = StreetNetworkQueryStates.FIND_STREET_NETWORK_AGENTS;
+		private MessageTemplate mt_;
+		private boolean isCurrOrder_;
+
+		public QueryOrderInfo(boolean isCurrOrder) {
+			isCurrOrder_ = isCurrOrder;
+		}
+
+		private void parseNames(String jsonString) {
+			JSONObject jsonObj = new JSONObject(jsonString);
+			
+			if (isCurrOrder_) {
+				currOrder_.bakeryName_ = jsonObj.getString("Bakery");
+				currOrder_.customerName_ = jsonObj.getString("CustName");
+			} else {
+				nextOrder_.bakeryName_ = jsonObj.getString("Bakery");
+				nextOrder_.customerName_ = jsonObj.getString("CustName");				
+			}
+		}
+
+		public void action() {
+			switch (state_) {
+			case FIND_STREET_NETWORK_AGENTS:
+				orderProcessorAgent_ = discoverAgent("order-processor");
+				if (orderProcessorAgent_ != null) {
+					state_ = StreetNetworkQueryStates.REQUEST_STREET_NETWORK;
+				}
+				break;
+			case REQUEST_STREET_NETWORK:
+				// Send the request to the street network
+				String conversationID = "LocationQuery";
+				ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+				request.addReceiver(orderProcessorAgent_);
+				request.setContent(isCurrOrder_ ? currOrder_.orderID_ : nextOrder_.orderID_);
+				request.setConversationId(conversationID);
+				request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
+				baseAgent.send(request);
+				// Prepare the template to get replies
+				mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
+						MessageTemplate.MatchInReplyTo(request.getReplyWith()));
+				state_ = StreetNetworkQueryStates.WAIT_FOR_RESPONSE;
+				System.out.println(baseAgent.getAID().getLocalName() + " Query for Order info placed with order processor: "
+						+ request.getContent());
+				break;
+			case WAIT_FOR_RESPONSE:
+				// Receive response from StreetNetworkAgent
+				ACLMessage reply = baseAgent.receive(mt_);
+				if (reply != null) {
+					// Reply received
+					if (reply.getPerformative() == ACLMessage.INFORM) {
+						System.out.println(baseAgent.getAID().getLocalName()
+								+ " Response for order info received from order processor: " + reply.getContent());
+						parseNames(reply.getContent());
+						state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
+
+					} else {
+						System.out.println(baseAgent.getAID().getLocalName()
+								+ ": Querying order info from order processor failed!!");
+						state_ = StreetNetworkQueryStates.QUERY_FAILED;
+					}
+				}
+				break;
+			default:
+				break;
+			}
+		}
+
+		public boolean done() {
+			return state_ == StreetNetworkQueryStates.QUERY_COMPLETE || state_ == StreetNetworkQueryStates.QUERY_FAILED;
+		}
+	}
+
 	@SuppressWarnings("unused")
 	private class RequestBoxes extends Behaviour {
 		private String orderID_;
 		private int state_ = 0;
 		private MessageTemplate mt_;
-		
+
 		public RequestBoxes(String orderID) {
 			orderID_ = orderID;
 		}
-		
-		private String generateJsonMessage() {			
-			JSONObject jsonObj = new JSONObject();						
+
+		private String generateJsonMessage() {
+			JSONObject jsonObj = new JSONObject();
 			jsonObj.put("OrderId", orderID_);
-			
+
 			return jsonObj.toString();
 		}
-		
+
 		private void parseJSONReply(String reply) {
 			JSONObject obj = new JSONObject(reply);
 			String orderID = obj.getString("OrderID");
 			JSONArray boxList = obj.getJSONArray("Boxes");
-			
+
 			baseAgent.addBehaviour(new QueryPath(currOrder_.customerLocation_));
 			// TODO
 		}
-		
+
 		public void action() {
-			switch(state_) {
+			switch (state_) {
 			case 0:
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 				String convID = "ReadyForPickup" + orderID_;
@@ -714,35 +772,37 @@ public class TruckAgent extends BaseAgent {
 				msg.setConversationId(convID);
 				msg.setReplyWith("req" + System.currentTimeMillis());
 				baseAgent.send(msg);
-                // Prepare the template to get replies
-                mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(convID),
-                        MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
-                System.out.println(baseAgent.getAID().getLocalName() + " Requested transportAgent for boxes: " + msg.getContent());
-                state_ = 1;
+				// Prepare the template to get replies
+				mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(convID),
+						MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
+				System.out.println(
+						baseAgent.getAID().getLocalName() + " Requested transportAgent for boxes: " + msg.getContent());
+				state_ = 1;
 				break;
 			case 1:
 				// Receive response
-                ACLMessage reply = baseAgent.receive(mt_);
-                if (reply != null) {
-                    // Reply received
-                    if (reply.getPerformative() == ACLMessage.INFORM) {
-                        parseJSONReply(reply.getContent());
-                        System.out.println(baseAgent.getAID().getLocalName() + " Received boxes from transportAgent: " + reply.getContent());
-                        state_ = 2;
-                    }
-                    else {
-                    	System.out.println(baseAgent.getAID().getLocalName() + ": Receiving Boxes from TruckAgent Failed!!");
-                    	state_ = 3;
-                    }
-                } else {
-                    block();
-                }
+				ACLMessage reply = baseAgent.receive(mt_);
+				if (reply != null) {
+					// Reply received
+					if (reply.getPerformative() == ACLMessage.INFORM) {
+						parseJSONReply(reply.getContent());
+						System.out.println(baseAgent.getAID().getLocalName() + " Received boxes from transportAgent: "
+								+ reply.getContent());
+						state_ = 2;
+					} else {
+						System.out.println(
+								baseAgent.getAID().getLocalName() + ": Receiving Boxes from TruckAgent Failed!!");
+						state_ = 3;
+					}
+				} else {
+					block();
+				}
 				break;
 			default:
 				break;
 			}
 		}
-		
+
 		public boolean done() {
 			return state_ == 2 || state_ == 3;
 		}
@@ -751,25 +811,21 @@ public class TruckAgent extends BaseAgent {
 	@SuppressWarnings("unused")
 	private class PostDeliveryCompletionMessage extends OneShotBehaviour {
 		private OrderDetails orderInfo_;
-		
+
 		public PostDeliveryCompletionMessage(OrderDetails order) {
 			orderInfo_ = order;
 		}
-		
-		private String generateJsonMessage() {			
-			JSONObject jsonObj = new JSONObject();						
-			jsonObj.put("DeliveryStatus", new JSONObject()
-						.put("OrderDeliveredTo", orderInfo_.customerName_)
-          		  		.put("OrderDeliveredBy", baseAgent.getAID().getLocalName())
-          		  		.put("DayOfDelivery", orderInfo_.deliveryDate_)
-          		  		.put("TimeOfDelivery", orderInfo_.deliveryTime_)
-          		  		.put("NumOfBoxes", orderInfo_.numOfBoxes_)
-          		  		.put("ProducedBy", orderInfo_.bakeryName_));
-			
+
+		private String generateJsonMessage() {
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("DeliveryStatus", new JSONObject().put("OrderDeliveredTo", orderInfo_.customerName_)
+					.put("OrderDeliveredBy", baseAgent.getAID().getLocalName())
+					.put("DayOfDelivery", orderInfo_.deliveryDate_).put("TimeOfDelivery", orderInfo_.deliveryTime_)
+					.put("NumOfBoxes", orderInfo_.numOfBoxes_).put("ProducedBy", orderInfo_.bakeryName_));
+
 			return jsonObj.toString();
 		}
-		
-		
+
 		public void action() {
 			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 			msg.addReceiver(discoverAgent("mailbox"));
@@ -780,10 +836,11 @@ public class TruckAgent extends BaseAgent {
 			System.out.println(baseAgent.getAID().getLocalName() + " Posted message to mailbox: " + msg.getContent());
 		}
 	}
-	
-	// Taken from http://www.rickyvanrijn.nl/2017/08/29/how-to-shutdown-jade-agent-platform-programmatically/
+
+	// Taken from
+	// http://www.rickyvanrijn.nl/2017/08/29/how-to-shutdown-jade-agent-platform-programmatically/
 	@SuppressWarnings("unused")
-	private class shutdown extends OneShotBehaviour{
+	private class shutdown extends OneShotBehaviour {
 		public void action() {
 			ACLMessage shutdownMessage = new ACLMessage(ACLMessage.REQUEST);
 			Codec codec = new SLCodec();
@@ -793,11 +850,11 @@ public class TruckAgent extends BaseAgent {
 			shutdownMessage.setLanguage(FIPANames.ContentLanguage.FIPA_SL);
 			shutdownMessage.setOntology(JADEManagementOntology.getInstance().getName());
 			try {
-				baseAgent.getContentManager().fillContent(shutdownMessage,new Action(baseAgent.getAID(), new ShutdownPlatform()));
+				baseAgent.getContentManager().fillContent(shutdownMessage,
+						new Action(baseAgent.getAID(), new ShutdownPlatform()));
 				baseAgent.send(shutdownMessage);
-			}
-			catch (Exception e) {
-				//LOGGER.error(e);
+			} catch (Exception e) {
+				// LOGGER.error(e);
 			}
 
 		}

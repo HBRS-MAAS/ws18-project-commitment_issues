@@ -171,6 +171,40 @@ public class StreetNetworkAgent extends BaseAgent {
 		}
 	}
 	
+	private class NodeLocationServer extends CyclicBehaviour {
+		private MessageTemplate mt;
+
+		public void action() {
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("LocationQuery"),
+					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+			ACLMessage msg = myAgent.receive(mt);
+								
+			
+			if (msg != null) {
+				// DEBUG:
+				System.out.println("["+getAID().getLocalName()+"]: Received node location request from "+msg.getSender().getLocalName());
+				
+				String truckNodeQuery = msg.getContent();
+				ACLMessage reply = msg.createReply();
+				
+				String JSONNodeLocation = findLocationFromNode(truckNodeQuery);
+
+
+				reply.setPerformative(ACLMessage.INFORM);
+				reply.setContent(String.valueOf(JSONNodeLocation));
+				myAgent.send(reply);
+				
+				// DEBUG:
+				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName()+" is "+time);
+				
+			}
+
+			else {
+				block();
+			}
+		}
+	}
+	
 	protected String createVisualizerMessage() {
 		JSONObject JSONVisData = new JSONObject();
 		JSONArray JSONVisNodes = new JSONArray();

@@ -78,6 +78,7 @@ public class DummyOrderProcessor extends Agent {
        for (int i = 0; i < orders.length();i++) {
          if (orders.getJSONObject(i).getString("OrderID").equals(orderID)) {
            reply.setContent(orders.getJSONObject(i).toString());
+           System.out.println("Order processor has sent order"+orders.getJSONObject(i).toString());
            break;
          }
        }

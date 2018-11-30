@@ -1,7 +1,7 @@
 [
   {
     "OrderID": "order-001",
-    "CustName": "customer-001",
+    "CustName": "Customer-001",
     "Bakery": "bakery-001",
     "delivery_date": {
       "day": 2,
@@ -9,46 +9,26 @@
     },
     "Products": [
       {
-        "Bread": 10
+        "Bread": 18
       },
       {
-        "Muffin": 2
-      },
-      {
-        "Berliner": 2
-      },
-      {
-        "Bagel": 6
-      },
-      {
-        "Donut": 7
+        "Donut": 5
       }
     ]
   },
   {
     "OrderID": "order-002",
     "CustName": "customer-001",
-    "Bakery": "bakery-002",
+    "Bakery": "bakery-001",
     "delivery_date": {
-      "day": 2,
+      "day": 3,
       "hour": 18
     },
     "Products": [
       {
-        "Bread": 6
+        "Pretzel": 10
       },
-      {
-        "Muffin": 8
-      },
-      {
-        "Berliner": 1
-      },
-      {
-        "Bagel": 6
-      },
-      {
-        "Donut": 8
-      }
+      
     ]
   },
   {

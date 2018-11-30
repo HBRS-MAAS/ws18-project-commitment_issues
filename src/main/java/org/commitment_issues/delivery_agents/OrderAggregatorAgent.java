@@ -82,9 +82,7 @@ public class OrderAggregatorAgent extends BaseAgent {
       ACLMessage msg = baseAgent.receive(mt);
       if (msg != null) {
         finished();
-      } else {
-        block();
-      }
+      } 
     }
   }
   private class LoadingBayParser extends CyclicBehaviour{
@@ -173,16 +171,14 @@ public class OrderAggregatorAgent extends BaseAgent {
         state++;
         mt = MessageTemplate.MatchConversationId("order-details"+testOrder.getOrderID());
 
-    } catch (FIPAException fe) {
+    } catch (Exception fe) {
         fe.printStackTrace();
     }
     case 1:// receive the order details from the order processor
-      if(orderDetails == null) {
-        orderDetails = myAgent.receive(mt);
-      }
+      orderDetails = myAgent.receive(mt);
       
       if (orderDetails != null) {
-        
+        System.out.println(orderDetails.getContent());
         ArrayList<String> productTypes = new ArrayList<String>();
         JSONObject orderDetailsJSON = new JSONObject(orderDetails.getContent());
         JSONArray productsJSON = orderDetailsJSON.getJSONArray("Products");
@@ -218,7 +214,7 @@ public class OrderAggregatorAgent extends BaseAgent {
     @Override
     public boolean done() {
       
-      if (this.state == 2) {
+      if (this.state > 1) {
         return true;
       }
       else {
@@ -244,6 +240,8 @@ public class OrderAggregatorAgent extends BaseAgent {
       JSONArray boxesJSON = new JSONArray();
       JSONObject orderJSON = new JSONObject();
       orderJSON.put("OrderId",order.getOrderID());
+      orderJSON.put("CustId", order.getCustID());
+      orderJSON.put("BackId", order.getBakID());
       for (int i = 0; i < order.getBoxes().size(); i++) {
         JSONObject box = new JSONObject();
         box.put("BoxID", order.getBoxes().get(i).getBoxID());

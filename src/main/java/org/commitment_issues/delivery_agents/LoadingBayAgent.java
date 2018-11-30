@@ -24,6 +24,7 @@ import jade.lang.acl.MessageTemplate;
 public class LoadingBayAgent extends BaseAgent {
 //	private JSONArray orderDetailsArray = new JSONArray();
 	private JSONArray orderDetailsArray = null;
+	private String readyOrderID = null;
 	
 	private HashMap<String, HashMap<String, Integer>> productDatabase = 
 			new HashMap<>();
@@ -110,34 +111,44 @@ public class LoadingBayAgent extends BaseAgent {
 		public void action() {
 			findReceiver();			
 			
-			ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-
-			msg1.addReceiver(receivingAgent); 
-			msg1.setContent(getMessageData("LoadingBayMessageExample_1"));
-			msg1.setConversationId("packaged-orders");
-			msg1.setPostTimeStamp(System.currentTimeMillis());
+//			ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
+//
+//			msg1.addReceiver(receivingAgent); 
+//			msg1.setContent(getMessageData("LoadingBayMessageExample_1"));
+//			msg1.setConversationId("packaged-orders");
+//			msg1.setPostTimeStamp(System.currentTimeMillis());
+//			
+//			myAgent.send(msg1);
+//			
+//			System.out.println("["+getAID().getLocalName()+"]: Order sent to OrderAggregator:\n"+msg1.toString());
+//			
+//			try {
+//	 			Thread.sleep(3000);
+//	 		} catch (InterruptedException e) {
+//	 			//e.printStackTrace();
+//	 		}
+//			
+//			ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
+//			
+//			msg2.addReceiver(receivingAgent); 
+//			msg2.setContent(getMessageData("LoadingBayMessageExample_2"));
+//			msg2.setConversationId("packaged-orders");
+//			msg2.setPostTimeStamp(System.currentTimeMillis());
+//			
+//			myAgent.send(msg2);
+//			
+//			System.out.println("["+getAID().getLocalName()+"]: Order sent to OrderAggregator:\n"+msg2.toString());
+//           
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 			
-			myAgent.send(msg1);
+			msg.addReceiver(receivingAgent); 
+			msg.setContent(createOrderBoxesJSONMessage(readyOrderID));
+			msg.setConversationId("packaged-orders");
+			msg.setPostTimeStamp(System.currentTimeMillis());
 			
-			System.out.println("["+getAID().getLocalName()+"]: Order sent to OrderAggregator:\n"+msg1.toString());
+			myAgent.send(msg);
 			
-			try {
-	 			Thread.sleep(3000);
-	 		} catch (InterruptedException e) {
-	 			//e.printStackTrace();
-	 		}
-			
-			ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
-			
-			msg2.addReceiver(receivingAgent); 
-			msg2.setContent(getMessageData("LoadingBayMessageExample_2"));
-			msg2.setConversationId("packaged-orders");
-			msg2.setPostTimeStamp(System.currentTimeMillis());
-			
-			myAgent.send(msg2);
-			
-			System.out.println("["+getAID().getLocalName()+"]: Order sent to OrderAggregator:\n"+msg2.toString());
-           
+			System.out.println("["+getAID().getLocalName()+"]: Order details sent to OrderAggregator:\n"+msg);
 		}
 	}
 	

@@ -53,7 +53,8 @@ public class Start {
 					agents.add(companyName + ":org.commitment_issues.delivery_agents.TransportAgent");
 					for (int t = 0; t < truckList.length(); t++) {
 						String truckID = truckList.getJSONObject(t).getString("guid");
-						agents.add(companyName + "-" + truckID + ":org.commitment_issues.delivery_agents.TruckAgent");
+						int capacity = (int)truckList.getJSONObject(t).getFloat("load_capacity");
+						agents.add(companyName + "_" + truckID + ":org.commitment_issues.delivery_agents.TruckAgent(" + capacity + ")");
 					}
 				}
 				else {

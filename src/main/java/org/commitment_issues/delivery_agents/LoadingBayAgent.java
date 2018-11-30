@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Hashtable;
 
 import org.json.JSONArray;
 import org.yourteamname.agents.BaseAgent;
@@ -22,6 +24,9 @@ public class LoadingBayAgent extends BaseAgent {
 //	private JSONArray orderDetailsArray = new JSONArray();
 	private JSONArray orderDetailsArray = null;
 	
+	private HashMap<String, HashMap<String, Integer>> productDatabase = 
+			new HashMap<>();
+	
 	protected void setup() {
 		System.out.println("Hello! LoadingBay-agent "+getAID().getName()+" is ready.");
 		
@@ -34,6 +39,24 @@ public class LoadingBayAgent extends BaseAgent {
 	protected void takeDown() {
 		deRegister();
 		System.out.println(getAID().getLocalName() + ": Terminating.");
+	}
+	
+//	protected void addCustomerOrder (String customerID) {
+//		HashMap <String, Integer> temp = new HashMap<String, Integer>();
+//		temp.put(product, quantity);
+//		productDatabase.put(orderID, temp);
+//	}
+	
+	protected void addCustomerProduct (String orderID, String product, int quantity) {
+		HashMap <String, Integer> temp = new HashMap<String, Integer>();
+		temp.put(product, quantity);
+		productDatabase.put(orderID, temp);
+	}
+	
+	protected void UpdateCustomerProductQuantity (String orderID, String product, int addedQuantity) {
+		int oldQuantity = productDatabase.get("order1").get("bread");
+		int newQuantity = oldQuantity + addedQuantity;
+		productDatabase.get(orderID).replace(product, newQuantity);
 	}
 	
 	protected String getMessageData(String fileName) {

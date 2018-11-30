@@ -96,7 +96,7 @@ public class TransportAgent extends BaseAgent {
 			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
 			ACLMessage msg = baseAgent.receive(mt);
 			if (msg != null) {
-//				finished();
+				finished();
 			} else {
 				block();
 			}

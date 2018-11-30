@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.json.JSONArray;
 import org.yourteamname.agents.BaseAgent;
 
 import jade.core.AID;
@@ -18,6 +19,8 @@ import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
 public class LoadingBayAgent extends BaseAgent {
+//	private JSONArray orderDetailsArray = new JSONArray();
+	private JSONArray orderDetailsArray = null;
 	
 	protected void setup() {
 		System.out.println("Hello! LoadingBay-agent "+getAID().getName()+" is ready.");
@@ -110,6 +113,22 @@ public class LoadingBayAgent extends BaseAgent {
 			
 			System.out.println("["+getAID().getLocalName()+"]: Order sent to OrderAggregator:\n"+msg2.toString());
            
+		}
+	}
+	
+	private class OrderDetailsReceiver extends CyclicBehaviour {
+		private MessageTemplate mt;
+		
+		public void action() {
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("..........."),
+					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+			ACLMessage msg = myAgent.receive(mt);
+			
+			if (msg != null) {
+				orderDetailsArray = new JSONArray(msg.getContent());
+			} else {
+				block();
+			}
 		}
 	}
 

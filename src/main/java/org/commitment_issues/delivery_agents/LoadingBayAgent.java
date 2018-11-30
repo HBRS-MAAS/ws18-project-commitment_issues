@@ -154,5 +154,24 @@ public class LoadingBayAgent extends BaseAgent {
 			}
 		}
 	}
+	
+	private class ProductDetailsReceiver extends CyclicBehaviour {
+		private MessageTemplate mt;
+		
+		public void action() {
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("..........."),
+					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+			ACLMessage msg = myAgent.receive(mt);
+			
+			if (msg != null) {
+				System.out.println("["+getAID().getLocalName()+"]: Received product boxes from "+msg.getSender().getLocalName());
+
+				// Assumes a json object is sent
+				String boxesMessageContent = msg.getContent();
+			} else {
+				block();
+			}
+		}
+	}
 
 }

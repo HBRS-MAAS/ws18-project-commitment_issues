@@ -34,15 +34,21 @@ public class TruckAgent extends BaseAgent {
 	protected float pathStartTime_;
 	protected TruckState truckState_;
 	protected boolean autoFinish = true;
+	protected int capacity_;
 	
 	protected void setup() {
 		super.setup();
-		System.out.println("Hello! TruckAgent "+ getAID().getName() +" is ready.");
-		
+
 		currOrder_ = null;
 		nextOrder_ = null;
 		numOfBoxes_ = 0;
 		truckState_ = TruckState.IDLE;
+		capacity_ = 0;
+		
+		Object args[] = getArguments();
+		if (args != null && args.length > 0) {
+			capacity_ = Integer.parseInt(args[0].toString());
+		}
 		
 		//TODO: Load from json
 		currTruckLocation_ = new float[2];
@@ -54,6 +60,8 @@ public class TruckAgent extends BaseAgent {
 		addBehaviour(new TruckScheduleServer());
 		addBehaviour(new MoveTruck());
 		addBehaviour(new TimeUpdater());
+		
+		System.out.println("Hello! TruckAgent "+ getAID().getName() +" with capacity " + capacity_ + " is ready.");
 	}
 
 	protected void takeDown() {

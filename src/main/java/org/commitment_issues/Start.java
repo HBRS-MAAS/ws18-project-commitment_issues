@@ -22,7 +22,8 @@ public class Start {
 		agents.add("customer-001" + ":org.commitment_issues.DummyCustomer");
 		agents.add("bakery-001" + "-LoadingBayAgent:org.commitment_issues.delivery_agents.LoadingBayAgent");
 		agents.add("bakery-001" + "-OrderAggregatorAgent:org.commitment_issues.delivery_agents.OrderAggregatorAgent");
-    agents.add("bakery-001"+"-OrderProcessor:org.commitment_issues.delivery_agents.DummyOrderProcessor");
+		agents.add("bakery-001" + "-PackagingAgent:org.commitment_issues.packaging_agents.PackagingAgent(bakery-001)");
+        agents.add("bakery-001"+"-OrderProcessor:org.commitment_issues.delivery_agents.DummyOrderProcessor");
 
 		List<String> cmd = new Vector<>();
 		cmd.add("-agents");

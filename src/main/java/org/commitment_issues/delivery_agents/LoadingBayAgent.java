@@ -169,8 +169,14 @@ public class LoadingBayAgent extends BaseAgent {
 
 				// Assumes a json object is sent
 				String boxesMessageContent = msg.getContent();
+				JSONObject JSONData = new JSONObject(boxesMessageContent);
+				String orderID = JSONData.getString("OrderID");
 				
 				updateDatabase(boxesMessageContent);
+				
+				if (orderProductsReady(orderID)) {
+					// add behavior to send all boxes for that order
+				}
 			} else {
 				block();
 			}
@@ -210,6 +216,55 @@ public class LoadingBayAgent extends BaseAgent {
 				}
 			}
 		}
+	}
+	
+	protected boolean orderProductsReady (String orderID) {
+		/*
+		 * Returns true if the order details (products and their quantities) are
+		 * fulfilled in the database for that particular customer order.
+		 */
+		HashMap<String, Integer> orderProductDetails = productDatabase.get(orderID);
+		
+		JSONArray productArray = new JSONArray();
+		String IDCheckString = null;
+		
+		for (int i = 0 ; i < orderDetailsArray.length(); i++) {
+			JSONObject orderData = orderDetailsArray.getJSONObject(i);
+			
+			if (orderID.equals(orderData.getString("OrderID"))) {
+				IDCheckString = orderData.getString("OrderID");
+				productArray = orderData.getJSONArray("Products");
+				break;
+			}
+		}
+		
+		// Check if order product array was retrieved
+//		System.out.println("["+getAID().getLocalName()+"]: Product array found: "+productArray.toString());
+		if (IDCheckString.equals(null)) {
+			System.out.println("["+getAID().getLocalName()+"]: ERROR: OrderID not found in orderDetailsArray ");
+		}
+		
+		for (int j = 0 ; j < productArray.length() ; j++) {
+			String productName = null;;
+			JSONObject product = productArray.getJSONObject(j);
+			
+			// Get product name from key
+			for (String key : product.keySet()) {
+			    productName = key;
+			}
+			
+			int orderQuantity = product.getInt(productName);
+			
+			if (orderProductDetails.get(productName).equals(null)) {
+				return false;
+			}
+			else {
+				if (orderProductDetails.get(productName) != orderQuantity) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 }

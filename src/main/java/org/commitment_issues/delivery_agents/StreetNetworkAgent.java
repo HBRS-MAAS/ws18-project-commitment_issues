@@ -13,7 +13,6 @@ import java.util.List;
 
 import org.json.*;
 
-import jade.core.AID;
 import jade.core.behaviours.*;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -35,18 +34,21 @@ public class StreetNetworkAgent extends BaseAgent {
 		
 		parseStreetNetworkData(getStreetNetworkData());
 		
-		addBehaviour(new GraphVisualizerServer());
+		// Uncomment this behavior for graph visualization integration
+//		addBehaviour(new GraphVisualizerServer());
 		addBehaviour(new TimeToDeliveryServer());
 		addBehaviour(new PathServer());
+		addBehaviour(new NodeLocationServer());
+		addBehaviour(new TimeUpdater());
 	}
-
-	protected void takeDown() {
-		deRegister();
-		System.out.println(getAID().getLocalName() + ": Terminating.");
-	}
-	
+	  
+		protected void takeDown() {
+			deRegister();
+			System.out.println(getAID().getLocalName() + ": Terminating.");
+		}
+		
 	protected String getStreetNetworkData() {
-		File fileRelative = new File("src/main/resources/config/sample/clients.json");
+		File fileRelative = new File("src/main/resources/config/small/street-network.json");
 		String data = ""; 
 	    try {
 			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));
@@ -58,35 +60,53 @@ public class StreetNetworkAgent extends BaseAgent {
 		return data;
 	}
 	
-	// TODO: This behavior still requires the identity of the visualization agent
-	private class GraphVisualizerServer extends CyclicBehaviour {
-		private MessageTemplate mt;
-
-		public void action() {			
-			ACLMessage SNVisualizationInfo = new ACLMessage(ACLMessage.INFORM);
-			// TODO:
-			AID receivingAgent = null;
-			String messageContent = createVisualizerMessage();
-			
-			SNVisualizationInfo.addReceiver(receivingAgent);
-			SNVisualizationInfo.setContent(messageContent);
-			SNVisualizationInfo.setConversationId("graph-visualization");
-			
-			myAgent.send(SNVisualizationInfo);
+	private class TimeUpdater extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+			ACLMessage msg = baseAgent.receive(mt);
+			if (msg != null) {
+				finished();
+			} else {
+				block();
+			}
 		}
 	}
+	
+	// TODO: This behavior still requires the identity of the visualization agent
+//	private class GraphVisualizerServer extends CyclicBehaviour {
+//		private MessageTemplate mt;
+//
+//		public void action() {			
+//			ACLMessage SNVisualizationInfo = new ACLMessage(ACLMessage.INFORM);
+//			// TODO:
+//			AID receivingAgent = null;
+//			String messageContent = createVisualizerMessage();
+//			
+//			SNVisualizationInfo.addReceiver(receivingAgent);
+//			SNVisualizationInfo.setContent(messageContent);
+//			SNVisualizationInfo.setConversationId("graph-visualization");
+//			
+//			myAgent.send(SNVisualizationInfo);
+//		}
+//	}
 	
 	private class TimeToDeliveryServer extends CyclicBehaviour {
 		private MessageTemplate mt;
 
 		public void action() {
 			
-			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+//			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+//			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("TimeQuery"),
+//					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("TimeQuery"),
-					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
-			msg = myAgent.receive(mt);
+					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+			ACLMessage msg = myAgent.receive(mt);
+								
 			
 			if (msg != null) {
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Received time request from "+msg.getSender().getLocalName());
+				
 				String truckMessageContent = msg.getContent();
 				ACLMessage reply = msg.createReply();
 				
@@ -96,9 +116,14 @@ public class StreetNetworkAgent extends BaseAgent {
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(time));
 				myAgent.send(reply);
+				
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Returned journey time for "+msg.getSender().getLocalName()+" is "+time);
+				
 			}
 
 			else {
+//				System.out.println("["+getAID().getLocalName()+"]: Waiting for time request messages.");
 				block();
 			}
 		}
@@ -110,12 +135,20 @@ public class StreetNetworkAgent extends BaseAgent {
 
 		public void action() {
 			
-			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
-					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
-			msg = myAgent.receive(mt);
+//			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+//			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
+//					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
+//			msg = myAgent.receive(mt);
 			
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
+					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+			ACLMessage msg = myAgent.receive(mt);
+			
+					
 			if (msg != null) {
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Received path request from "+msg.getSender().getLocalName());
+				
 				String truckMessageContent = msg.getContent();
 				ACLMessage reply = msg.createReply();
 				
@@ -125,8 +158,46 @@ public class StreetNetworkAgent extends BaseAgent {
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(JSONPath));
 				myAgent.send(reply);
+				
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Returned journey path for "+msg.getSender().getLocalName()+":\n"+JSONPath);
+				
 			}
 
+			else {
+				// +++
+//				System.out.println("["+getAID().getLocalName()+"]: Waiting for path requests.");
+				block();
+			}
+		}
+	}
+	
+	private class NodeLocationServer extends CyclicBehaviour {
+		private MessageTemplate mt;
+
+		public void action() {
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("LocationQuery"),
+					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+			ACLMessage msg = myAgent.receive(mt);
+								
+			
+			if (msg != null) {
+				// DEBUG:
+				System.out.println("["+getAID().getLocalName()+"]: Received node location request from "+msg.getSender().getLocalName());
+				
+				String truckNodeQuery = msg.getContent();
+				ACLMessage reply = msg.createReply();
+				
+				String JSONNodeLocation = findLocationFromNode(truckNodeQuery);
+
+
+				reply.setPerformative(ACLMessage.INFORM);
+				reply.setContent(String.valueOf(JSONNodeLocation));
+				myAgent.send(reply);
+				
+				// DEBUG:
+				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName()+" are "+JSONNodeLocation);
+			}
 			else {
 				block();
 			}
@@ -207,15 +278,15 @@ public class StreetNetworkAgent extends BaseAgent {
 	protected LinkedList<Vertex> getShortestPath(String truckMessageData) {
 		Vertex sourceNode = null;
 		Vertex targetNode = null;
-		LinkedList<Vertex> fullPath = null;
+		LinkedList<Vertex> fullPath = new LinkedList<Vertex>();
 		
 		JSONArray JSONTruckMessage = new JSONArray(truckMessageData);
 		
 		for (int i = 0; i < JSONTruckMessage.length()-1; i++) {
 			JSONObject sourceInfo = JSONTruckMessage.getJSONObject(i);
 			JSONObject nextInfo = JSONTruckMessage.getJSONObject(i+1);
-			String sourceID = findNodeFromLocation(sourceInfo.getDouble("X"), sourceInfo.getDouble("Y"));
-			String targetID = findNodeFromLocation(nextInfo.getDouble("X"), nextInfo.getDouble("Y"));
+			String sourceID = findNodeFromLocation(sourceInfo.getInt("X"), sourceInfo.getInt("Y"));
+			String targetID = findNodeFromLocation(nextInfo.getInt("X"), nextInfo.getInt("Y"));
 			
 			for (int j = 0; j < nodes.size(); j++) {
 				if (nodes.get(j).getId().equals(sourceID)) {
@@ -226,8 +297,24 @@ public class StreetNetworkAgent extends BaseAgent {
 				}
 			}
 			
+			// ++++
+			if (sourceNode == null) {
+				System.out.println("["+getAID().getLocalName()+"]: Source location invalid (not found in graph network) ");
+			}
+			if (targetNode == null) {
+				System.out.println("["+getAID().getLocalName()+"]: target location invalid (not found in graph network) ");
+			}
+			
+//			graph = new Graph(nodes, edges);
+//	        dijkstra = new DijkstraAlgorithm(graph);
+			
 			dijkstra.execute(sourceNode);
 	        LinkedList<Vertex> path = dijkstra.getPath(targetNode);
+	        
+	     // ++++
+	     if (path.size() == 0) {
+	     	System.out.println("["+getAID().getLocalName()+"]: No valid path found!! ");
+	     }
 	        
 	        for (int k = 0; k < path.size(); k++) {
 	        	fullPath.add(path.get(k));
@@ -238,17 +325,20 @@ public class StreetNetworkAgent extends BaseAgent {
     }
 	
 
-	protected String findNodeFromLocation(double x, double y) {
-		String roundedX = Double.toString(Math.round(x*100.0) / 100.0);
-		String roundedY = Double.toString(Math.round(y*100.0) / 100.0);
+	protected String findNodeFromLocation(int x, int y) {
+//		protected String findNodeFromLocation(double x, double y) {
+//			String roundedX = Double.toString(Math.round(x*100.0) / 100.0);
+//			String roundedY = Double.toString(Math.round(y*100.0) / 100.0);
+		String roundedX = Integer.toString(x);
+		String roundedY = Integer.toString(y);
 		String nodeID = null;
 		
 		int numNodes = nodesJSONArray.length();
 		for (int i = 0; i < numNodes; i++) {
 			JSONObject nodeInfo = nodesJSONArray.getJSONObject(i);
 
-			String roundedNodeX = Double.toString(Math.round(nodeInfo.getJSONObject("location").getDouble("x")*100.0) / 100.0);
-			String roundedNodeY = Double.toString(Math.round(nodeInfo.getJSONObject("location").getDouble("y")*100.0) / 100.0);
+			String roundedNodeX = Integer.toString(nodeInfo.getJSONObject("location").getInt("x"));
+			String roundedNodeY = Integer.toString(nodeInfo.getJSONObject("location").getInt("y"));
 			
 			if (roundedX.equals(roundedNodeX) && roundedY.equals(roundedNodeY)) {
 				nodeID = nodeInfo.getString("guid");
@@ -256,6 +346,28 @@ public class StreetNetworkAgent extends BaseAgent {
 		}
 		
 		return nodeID;
+	}
+	
+	protected String findLocationFromNode(String queryID) {
+		JSONObject nodeLocation = new JSONObject();
+		String nodeID = null;
+		
+		int numNodes = nodesJSONArray.length();
+		
+		for (int i = 0; i < numNodes; i++) {
+			JSONObject nodeInfo = nodesJSONArray.getJSONObject(i);
+			
+			try {
+				nodeID = nodeInfo.getString("company");
+			} catch (Exception e) {
+				continue;
+			}
+			
+			if (nodeID.equals(queryID)) {
+				nodeLocation = nodeInfo.getJSONObject("location");
+			}
+		}
+		return nodeLocation.toString();
 	}
 	
 	protected double getPathTime(LinkedList<Vertex> fullPath) {
@@ -285,41 +397,78 @@ public class StreetNetworkAgent extends BaseAgent {
 	
 	protected String getJSONPath(LinkedList<Vertex> fullPath) {
 		double time = 0.0;
+		double edgeTime = 0.0;
 		double speedFactor = 1.0;
 		double x = 0.0;
 		double y = 0.0;
+		
 		JSONArray pathInfoArray = new JSONArray();
 		
-		for (int i = 0; i < fullPath.size()-1; i++) {
-			String graphSourceID = fullPath.get(i).getId();
-			String graphTargetID = fullPath.get(i+1).getId();
-			
-			for (int k = 0; k < nodesJSONArray.length(); k++) {
-				String nodeID = nodesJSONArray.getJSONObject(k).getString("guid");
-				if (nodeID.equals(graphSourceID)) {
-					x = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("x");
-					y = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("y");
-				}
-			}
-			
+//		String graphSourceID = fullPath.get(0).getId();
+//		String graphTargetID = fullPath.get(1).getId();
+//		
+//		for (int k = 0; k < nodesJSONArray.length(); k++) {
+//			String nodeID = nodesJSONArray.getJSONObject(k).getString("guid");
+//			if (nodeID.equals(graphSourceID)) {
+//				x = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("x");
+//				y = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("y");
+//			}
+//		}
+//		
+//		JSONObject nodeInfo = new JSONObject();
+//		nodeInfo.put("X", x);
+//		nodeInfo.put("Y", y);
+		
+		for (int i = 0; i < fullPath.size(); i++) {
 			JSONObject nodeInfo = new JSONObject();
-			nodeInfo.put("X", x);
-			nodeInfo.put("Y", y);
 			
-			for (int j = 0; j < linksJSONArray.length(); j++) {
-				String edgeSourceID = linksJSONArray.getJSONObject(j).getString("source");
-				String edgeTargetID = linksJSONArray.getJSONObject(j).getString("target");
+			if (i == 0) {
+				String graphSourceID = fullPath.get(i).getId();
 				
-				if (edgeSourceID.equals(graphSourceID) && edgeTargetID.equals(graphTargetID)) {
-					time = linksJSONArray.getJSONObject(j).getDouble("dist") / speedFactor;
-					nodeInfo.put("time", time);
+				for (int k = 0; k < nodesJSONArray.length(); k++) {
+					String nodeID = nodesJSONArray.getJSONObject(k).getString("guid");
+					if (nodeID.equals(graphSourceID)) {
+						x = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("x");
+						y = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("y");
+					}
 				}
+				
+				nodeInfo.put("X", x);
+				nodeInfo.put("Y", y);
+				
+				nodeInfo.put("time", time);
 			}
 			
+			else {
+				String graphSourceID = fullPath.get(i-1).getId();
+				String graphTargetID = fullPath.get(i).getId();
+				
+				for (int k = 0; k < nodesJSONArray.length(); k++) {
+					String nodeID = nodesJSONArray.getJSONObject(k).getString("guid");
+					if (nodeID.equals(graphSourceID)) {
+						x = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("x");
+						y = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("y");
+					}
+				}
+				
+//				JSONObject nodeInfo = new JSONObject();
+				nodeInfo.put("X", x);
+				nodeInfo.put("Y", y);
+				
+				for (int j = 0; j < linksJSONArray.length(); j++) {
+					String edgeSourceID = linksJSONArray.getJSONObject(j).getString("source");
+					String edgeTargetID = linksJSONArray.getJSONObject(j).getString("target");
+					
+					if (edgeSourceID.equals(graphSourceID) && edgeTargetID.equals(graphTargetID)) {
+						edgeTime = linksJSONArray.getJSONObject(j).getDouble("dist") / speedFactor;
+						time = time + edgeTime;
+						
+						nodeInfo.put("time", time);
+					}
+				}
+			}
 			pathInfoArray.put(nodeInfo);
 		}
 		return pathInfoArray.toString();    	
     }
-
-
 }

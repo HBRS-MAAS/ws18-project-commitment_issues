@@ -23,13 +23,13 @@ public class MailboxAgent extends BaseAgent {
 		register("mailbox", "mailbox");
 		
 		addBehaviour(new truckDeliveryCompletionProcessor());
-		
+		addBehaviour(new TimeUpdater());
 	}
-
-	protected void takeDown() {
-		deRegister();
-		System.out.println(getAID().getLocalName() + ": Terminating.");
-	}
+	  
+		protected void takeDown() {
+			deRegister();
+			System.out.println(getAID().getLocalName() + ": Terminating.");
+		}
 	
 	protected DeliveryStatus parseTruckConfirmationMessage(String truckMessage) {		
 		DeliveryStatus status = new DeliveryStatus();
@@ -45,6 +45,19 @@ public class MailboxAgent extends BaseAgent {
 		status.producedBy = deliveryStatus.getString("ProducedBy");
 		
 		return status;		
+	}
+	
+	private class TimeUpdater extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+			ACLMessage msg = baseAgent.receive(mt);
+			if (msg != null) {
+				finished();
+			} 
+//			else {
+//				block();
+//			}
+		}
 	}
 	
 	private class truckDeliveryCompletionProcessor extends CyclicBehaviour {
@@ -69,13 +82,18 @@ public class MailboxAgent extends BaseAgent {
         }
 
 		public void action() {
-			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("DeliveryConfirmation"),
-					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
-			msg = myAgent.receive(mt);
+					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			ACLMessage msg = myAgent.receive(mt);
+			
+//			System.out.println("["+getAID().getLocalName()+"]: Waiting for order completion messages.");
 			
 			if (msg != null) {
 				String truckMessageContent = msg.getContent();
+				
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Received order completion message from "+msg.getSender().getLocalName()+":\n"+truckMessageContent);
+				
 				
 				// At the moment, this list includes all customers as well.
 				// TODO: Send the message only to the specific customer
@@ -90,14 +108,15 @@ public class MailboxAgent extends BaseAgent {
 				orderConfirmation.setConversationId("order-confirmation");
 				orderConfirmation.setPostTimeStamp(System.currentTimeMillis());
 				myAgent.send(orderConfirmation);
+				
+				// +++
+				System.out.println("["+getAID().getLocalName()+"]: Relayed order completion message to all concerned agents");
+				
 			}
 
 			else {
 				block();
 			}
-			
-			// This is called unconditionally since the agent does not depend on time
-			finished();
 		}
 	}
 }

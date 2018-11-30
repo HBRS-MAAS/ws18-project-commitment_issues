@@ -27,7 +27,6 @@ public class OrderAggregatorAgent extends BaseAgent {
       findTransportAgent();
     }
     addBehaviour(new LoadingBayParser());
-    addBehaviour(new LoadingBayParser());
     addBehaviour(new TimeUpdater());
 
   }
@@ -90,9 +89,30 @@ public class OrderAggregatorAgent extends BaseAgent {
     public void action() {
       MessageTemplate mt = MessageTemplate.MatchConversationId("packaged-orders");
       ACLMessage msg = myAgent.receive(mt);
+      String msgID = "orderToTransport";//conversationID for communicating with the aggregator
+      msg = new ACLMessage();
       
+      JSONObject orderr = new JSONObject();
+      orderr.put("CustId", "customer-001");
+      JSONArray boxess = new JSONArray();
+      JSONObject boxx = new JSONObject();
+      boxx.put("BoxID", "001");
+      boxx.put("ProductType", "Donuts");
+      boxx.put("Quantity", 5);
+      boxess.put(boxx);
+      boxx.put("BoxID", "002");
+      boxx.put("ProductType", "Bread");
+      boxx.put("Quantity", 10);
+      boxess.put(boxx);
+      boxx.put("BoxID", "003");
+      boxx.put("ProductType", "Weed");
+      boxx.put("Quantity", 15);
+      boxess.put(boxx);
+      orderr.put("BackId", "bakery-001");
+      orderr.put("OrderID", "order-1");
+      orderr.put("Boxes", boxess);
       
-      
+      msg.setContent(orderr.toString());
       if (msg != null) {
         JSONObject recieved = new JSONObject(msg.getContent());
         JSONArray boxesJSON = recieved.getJSONArray("Boxes");
@@ -101,7 +121,7 @@ public class OrderAggregatorAgent extends BaseAgent {
         if (((OrderAggregatorAgent)myAgent).orders.size()==0) {
           order.setOrderID(recieved.getString("OrderID"));
           System.out.println(order.getOrderID());
-          
+          break;
         }for (int k = 0; k < ((OrderAggregatorAgent)myAgent).orders.size();k++) {
           if (((OrderAggregatorAgent)myAgent).orders.size()==0) {
             order.setOrderID(recieved.getString("OrderID"));

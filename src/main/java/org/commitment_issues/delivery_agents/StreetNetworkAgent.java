@@ -195,10 +195,8 @@ public class StreetNetworkAgent extends BaseAgent {
 				myAgent.send(reply);
 				
 				// DEBUG:
-				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName()+" is "+time);
-				
+				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName()+" are "+JSONNodeLocation);
 			}
-
 			else {
 				block();
 			}
@@ -349,7 +347,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		return nodeID;
 	}
 	
-	protected JSONObject findLocationFromNode(String queryID) {
+	protected String findLocationFromNode(String queryID) {
 		JSONObject nodeLocation = new JSONObject();
 		
 		int numNodes = nodesJSONArray.length();
@@ -364,7 +362,7 @@ public class StreetNetworkAgent extends BaseAgent {
 			}
 		}
 		
-		return nodeLocation;
+		return nodeLocation.toString();
 	}
 	
 	protected double getPathTime(LinkedList<Vertex> fullPath) {

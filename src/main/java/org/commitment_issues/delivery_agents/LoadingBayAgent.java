@@ -35,7 +35,8 @@ public class LoadingBayAgent extends BaseAgent {
 		
 		register("loading-bay", "loading-bay");	
 		
-		addBehaviour(new PackagingPhaseMessageSender());	
+		addBehaviour(new OrderDetailsReceiver());
+		addBehaviour(new ProductDetailsReceiver());
 		addBehaviour(new TimeUpdater());
 	}
 	
@@ -188,7 +189,8 @@ public class LoadingBayAgent extends BaseAgent {
 				updateProductDatabase(boxesMessageContent);
 				
 				if (orderProductsReady(orderID)) {
-					// add behavior to send all boxes for that order
+					readyOrderID = orderID;
+					addBehaviour(new PackagingPhaseMessageSender());
 				}
 			} else {
 				block();

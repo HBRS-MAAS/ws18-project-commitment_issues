@@ -1,4 +1,5 @@
-package org.yourteamname.agents;
+
+package org.maas.agents;
 
 import jade.core.Agent;
 import jade.core.AID;

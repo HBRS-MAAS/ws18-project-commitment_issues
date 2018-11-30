@@ -5,10 +5,8 @@ import java.io.File;
 import java.util.ArrayList;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -101,10 +99,11 @@ public class TransportAgent extends BaseAgent {
 		}
 	}
   
-  private class OrderParser extends OneShotBehaviour{
+  private class OrderParser extends CyclicBehaviour{
     // Periodically updates the pending orders list by the data it takes from order aggregator
     public void action() {
 //      ACLMessage msg = myAgent.receive();
+
       MessageTemplate mt = MessageTemplate.MatchConversationId("transport-order");
       ACLMessage msg = myAgent.receive(mt);
       if (msg != null) {// && msg.getConversationId().equals(msgID)
@@ -162,6 +161,9 @@ public class TransportAgent extends BaseAgent {
       bestTime = 9999;
     }
     @Override
+<<<<<<< HEAD
+    public void action() {        
+=======
     public void action() {
       System.out.println(getAID().getName()+"rec");
 
@@ -170,6 +172,7 @@ public class TransportAgent extends BaseAgent {
             //return;
         }
         
+>>>>>>> 449d1509d6913be8ca633f0f622305a9c009d5ff
       // Creating a JSON object to send it to all the trucks
       JSONObject assignmentToTrucks = new JSONObject();
       assignmentToTrucks.put("OrderID", this.order.getOrderID());

@@ -315,6 +315,24 @@ public class StreetNetworkAgent extends BaseAgent {
 		return nodeID;
 	}
 	
+	protected JSONObject findLocationFromNode(String queryID) {
+		JSONObject nodeLocation = new JSONObject();
+		
+		int numNodes = nodesJSONArray.length();
+		
+		for (int i = 0; i < numNodes; i++) {
+			JSONObject nodeInfo = nodesJSONArray.getJSONObject(i);
+			
+			String nodeID = nodeInfo.getString("guid");
+			
+			if (nodeID.equals(queryID)) {
+				nodeLocation = nodeInfo.getJSONObject("location");
+			}
+		}
+		
+		return nodeLocation;
+	}
+	
 	protected double getPathTime(LinkedList<Vertex> fullPath) {
 		double time = 0.0;
 		double speedFactor = 1.0;

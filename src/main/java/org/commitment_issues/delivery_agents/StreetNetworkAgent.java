@@ -38,6 +38,7 @@ public class StreetNetworkAgent extends BaseAgent {
 //		addBehaviour(new GraphVisualizerServer());
 		addBehaviour(new TimeToDeliveryServer());
 		addBehaviour(new PathServer());
+		addBehaviour(new NodeLocationServer());
 		addBehaviour(new TimeUpdater());
 	}
 	  
@@ -166,6 +167,38 @@ public class StreetNetworkAgent extends BaseAgent {
 			else {
 				// +++
 //				System.out.println("["+getAID().getLocalName()+"]: Waiting for path requests.");
+				block();
+			}
+		}
+	}
+	
+	private class NodeLocationServer extends CyclicBehaviour {
+		private MessageTemplate mt;
+
+		public void action() {
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("LocationQuery"),
+					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+			ACLMessage msg = myAgent.receive(mt);
+								
+			
+			if (msg != null) {
+				// DEBUG:
+				System.out.println("["+getAID().getLocalName()+"]: Received node location request from "+msg.getSender().getLocalName());
+				
+				String truckNodeQuery = msg.getContent();
+				ACLMessage reply = msg.createReply();
+				
+				String JSONNodeLocation = findLocationFromNode(truckNodeQuery);
+
+
+				reply.setPerformative(ACLMessage.INFORM);
+				reply.setContent(String.valueOf(JSONNodeLocation));
+				myAgent.send(reply);
+				
+				// DEBUG:
+				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName()+" are "+JSONNodeLocation);
+			}
+			else {
 				block();
 			}
 		}
@@ -313,6 +346,28 @@ public class StreetNetworkAgent extends BaseAgent {
 		}
 		
 		return nodeID;
+	}
+	
+	protected String findLocationFromNode(String queryID) {
+		JSONObject nodeLocation = new JSONObject();
+		String nodeID = null;
+		
+		int numNodes = nodesJSONArray.length();
+		
+		for (int i = 0; i < numNodes; i++) {
+			JSONObject nodeInfo = nodesJSONArray.getJSONObject(i);
+			
+			try {
+				nodeID = nodeInfo.getString("company");
+			} catch (Exception e) {
+				continue;
+			}
+			
+			if (nodeID.equals(queryID)) {
+				nodeLocation = nodeInfo.getJSONObject("location");
+			}
+		}
+		return nodeLocation.toString();
 	}
 	
 	protected double getPathTime(LinkedList<Vertex> fullPath) {

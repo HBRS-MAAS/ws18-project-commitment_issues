@@ -185,6 +185,23 @@ public class LoadingBayAgent extends BaseAgent {
 		}
 	}
 	
+	protected String createOrderBoxesJSONMessage (String orderID) {
+		JSONObject message = new JSONObject();
+		message.put("OrderID", orderID);
+		
+		JSONArray boxesArray = new JSONArray();
+		
+		for (String key : boxDatabase.keySet()) {
+			if (key.equals(orderID)) {
+				boxesArray.put(boxDatabase.get(key));
+			}
+		}
+		
+		message.put("Boxes", boxesArray);
+		
+		return message.toString();
+	}
+	
 	protected void updateBoxDatabase (String orderBoxesDetails) {
 		JSONObject JSONData = new JSONObject(orderBoxesDetails);
 		

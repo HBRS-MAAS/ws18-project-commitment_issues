@@ -187,6 +187,8 @@ public class OrderAggregatorAgent extends BaseAgent {
         JSONObject orderDetailsJSON = new JSONObject(orderDetails.getContent());
         JSONArray productsJSON = orderDetailsJSON.getJSONArray("Products");
         int productCount = 0;
+        testOrder.setBakID(orderDetailsJSON.getString("Bakery"));
+        testOrder.setCustID((orderDetailsJSON.getString("CustName")));
         for (int i = 0; i < productsJSON.length(); i++) {
           if (((JSONObject)productsJSON.getJSONObject(i)).getInt(((JSONObject)productsJSON.getJSONObject(i)).names().getString(0)) > 0) {
             productCount++;
@@ -241,8 +243,6 @@ public class OrderAggregatorAgent extends BaseAgent {
       JSONArray msgJSON = new JSONArray();
       JSONArray boxesJSON = new JSONArray();
       JSONObject orderJSON = new JSONObject();
-      orderJSON.put("CustId", "customer-001");
-      orderJSON.put("BackId", "bakery-001");
       orderJSON.put("OrderId",order.getOrderID());
       for (int i = 0; i < order.getBoxes().size(); i++) {
         JSONObject box = new JSONObject();

@@ -37,7 +37,7 @@ public class DummyOrderProcessor extends Agent {
     return ordersJSON;
 
   }
-  
+    
   protected void register(String type, String name){
     DFAgentDescription dfd = new DFAgentDescription();
     dfd.setName(getAID());

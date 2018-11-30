@@ -27,6 +27,7 @@ public class LoadingBayAgent extends BaseAgent {
 	
 	private HashMap<String, HashMap<String, Integer>> productDatabase = 
 			new HashMap<>();
+	private HashMap<String, JSONArray> boxDatabase = new HashMap<>();
 	
 	protected void setup() {
 		System.out.println("Hello! LoadingBay-agent "+getAID().getName()+" is ready.");
@@ -172,7 +173,8 @@ public class LoadingBayAgent extends BaseAgent {
 				JSONObject JSONData = new JSONObject(boxesMessageContent);
 				String orderID = JSONData.getString("OrderID");
 				
-				updateDatabase(boxesMessageContent);
+				updateBoxDatabase(boxesMessageContent);
+				updateProductDatabase(boxesMessageContent);
 				
 				if (orderProductsReady(orderID)) {
 					// add behavior to send all boxes for that order
@@ -183,7 +185,16 @@ public class LoadingBayAgent extends BaseAgent {
 		}
 	}
 	
-	protected void updateDatabase (String orderBoxesDetails) {
+	protected void updateBoxDatabase (String orderBoxesDetails) {
+		JSONObject JSONData = new JSONObject(orderBoxesDetails);
+		
+		String orderID = JSONData.getString("OrderID");
+		JSONArray boxes = JSONData.getJSONArray("Boxes");
+		
+		boxDatabase.put(orderID, boxes);
+	}
+	
+	protected void updateProductDatabase (String orderBoxesDetails) {
 		JSONObject JSONData = new JSONObject(orderBoxesDetails);
 		
 		String orderID = JSONData.getString("OrderID");

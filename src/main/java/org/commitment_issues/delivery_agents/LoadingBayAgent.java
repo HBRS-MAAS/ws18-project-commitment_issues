@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.yourteamname.agents.BaseAgent;
 
 import jade.core.AID;
@@ -168,8 +169,45 @@ public class LoadingBayAgent extends BaseAgent {
 
 				// Assumes a json object is sent
 				String boxesMessageContent = msg.getContent();
+				
+				updateDatabase(boxesMessageContent);
 			} else {
 				block();
+			}
+		}
+	}
+	
+	protected void updateDatabase (String orderBoxesDetails) {
+		JSONObject JSONData = new JSONObject(orderBoxesDetails);
+		
+		String orderID = JSONData.getString("OrderID");
+		JSONArray boxes = JSONData.getJSONArray("Boxes");
+		
+		// Check if the database does not contain this order's details
+		if (!productDatabase.containsKey(orderID)) {
+			for (int i = 0 ; i < boxes.length(); i++) {
+				JSONObject boxDetails = boxes.getJSONObject(i);
+				addCustomerProduct (orderID, boxDetails.getString("ProductType"), boxDetails.getInt("Quantity"));
+			}
+		}
+		// In the event that it does:
+		else {
+			// Get the product details currently associated with and stored for this orderID
+			HashMap<String, Integer> orderProductDetails = productDatabase.get("orderID");
+			
+			for (int i = 0 ; i < boxes.length(); i++) {
+				JSONObject boxDetails = boxes.getJSONObject(i);
+				String productType = boxDetails.getString("ProductType");
+				
+				// If the order entry in the database already has this product in a certain quantity:
+				if (orderProductDetails.containsKey(productType)) {
+					// Update that entry with the additional quantity of that product
+					UpdateCustomerProductQuantity (orderID, productType, boxDetails.getInt("Quantity"));
+				}
+				// if it doesn't, simply add it to that order entry's product list:
+				else {
+					addCustomerProduct (orderID, productType, boxDetails.getInt("Quantity"));
+				}
 			}
 		}
 	}

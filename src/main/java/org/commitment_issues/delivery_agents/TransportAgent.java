@@ -130,7 +130,7 @@ public class TransportAgent extends BaseAgent {
 						String boxID = box.getString("BoxID");
 						String productType = box.getString("ProductType");
 						int quantity = box.getInt("Quantity");
-						Box boxObject = new Box(boxID, productType, quantity);
+						Box boxObject = new Box(boxID, productType, quantity, 0);
 						order.addBoxes(boxObject);
 					}
 					TransportAgent.orders.add(order);

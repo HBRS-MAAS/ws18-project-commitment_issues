@@ -57,6 +57,7 @@ public class PackagingAgent extends BaseAgent {
 		}
 
 		addBehaviour(new TimeUpdater());
+		addBehaviour(new ProductsReceiver());
 	}
 
 	protected void takeDown() {
@@ -233,6 +234,41 @@ public class PackagingAgent extends BaseAgent {
 				finished();
 			} else {
 				block();
+	private class ProductsReceiver extends CyclicBehaviour {
+
+		protected void addProductsToOrders(String jsonString) {
+			JSONObject obj = new JSONObject(jsonString);
+			Iterator<String> keyItr = obj.keys();
+			while (keyItr.hasNext()) {
+				String product = keyItr.next();
+				int quantity = obj.getInt(product);
+
+				while (quantity > 0) {
+					Iterator<OrderInfo> itr = orderQueue_.iterator();
+					while (itr.hasNext()) {
+						OrderInfo order = itr.next();
+						if (order.requiresProduct(product)) {
+							quantity = order.takeAsRequired(product, quantity);
+							if (quantity <= 0) {
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		@Override
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchConversationId("items-to-pack");
+			ACLMessage msg = myAgent.receive(mt);
+
+			if (msg != null) {
+				addProductsToOrders(msg.getContent());
+				baseAgent.addBehaviour(new SendBoxes());
+			}
+		}
+	}
 			}
 		}
 	}

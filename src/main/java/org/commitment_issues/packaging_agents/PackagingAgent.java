@@ -269,8 +269,71 @@ public class PackagingAgent extends BaseAgent {
 			}
 		}
 	}
+
+	private class SendBoxes extends OneShotBehaviour {
+
+		protected ArrayList<String> generateMessages() {
+			ArrayList<String> messages = new ArrayList<String>();
+
+			Iterator<OrderInfo> itr = orderQueue_.iterator();
+			while (itr.hasNext()) {
+				OrderInfo order = itr.next();
+				ArrayList<Box> boxes = order.extractBoxes();
+				JSONArray boxArray = new JSONArray();
+				for (Box box : boxes) {
+					boxArray.put(box.getAsJSONObject());
+				}
+
+				JSONObject msgObject = new JSONObject();
+				msgObject.put("OrderID", order.orderID_);
+				msgObject.put("Boxes", boxArray);
+				messages.add(msgObject.toString());
+			}
+
+			return messages;
+		}
+
+		protected AID discoverAgent(String serviceType) {
+			// Find the an agent for given service type
+			DFAgentDescription template = new DFAgentDescription();
+			ServiceDescription sd = new ServiceDescription();
+			sd.setType(serviceType);
+			template.addServices(sd);
+
+			AID loadingBayAgent = null;
+
+			try {
+				DFAgentDescription[] result = DFService.search(baseAgent, template);
+				if (result.length > 0) {
+					loadingBayAgent = result[0].getName();
+				} else {
+					loadingBayAgent = null;
+					System.out.println(
+							getAID().getLocalName() + ": No agent with Service type (" + serviceType + ") found!");
+				}
+			} catch (FIPAException fe) {
+				fe.printStackTrace();
+			}
+
+			return loadingBayAgent;
+		}
+
+		public void action() {
+			ArrayList<String> messageList = generateMessages();
+			for (int i = 0; i < messageList.size(); i++) {
+				String message = messageList.get(i);
+				if ((message != null) && !message.isEmpty()) {
+					ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+					msg.addReceiver(discoverAgent("loading-bay"));
+					msg.setContent(message);
+					msg.setConversationId("boxes-ready");
+					msg.setPostTimeStamp(System.currentTimeMillis());
+					baseAgent.send(msg);
+					System.out.println(baseAgent.getAID().getLocalName() + " Sent following boxes to loading bay:\n"
+							+ msg.getContent());
+				}
 			}
 		}
-	}
 
+	}
 }

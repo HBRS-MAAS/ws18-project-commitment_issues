@@ -233,7 +233,11 @@ public class PackagingAgent extends BaseAgent {
 			if (msg != null) {
 				finished();
 			} else {
-				block();
+				// block();
+			}
+		}
+	}
+
 	private class ProductsReceiver extends CyclicBehaviour {
 
 		protected void addProductsToOrders(String jsonString) {

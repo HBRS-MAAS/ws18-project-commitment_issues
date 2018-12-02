@@ -9,8 +9,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.PriorityQueue;
-import java.util.Set;
-
+import org.commitment_issues.delivery_agents.Box;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.yourteamname.agents.BaseAgent;
@@ -31,6 +30,7 @@ public class PackagingAgent extends BaseAgent {
 	private AID loadingBayAgent_ = null;
 	private HashMap<String, Integer> itemsPerBox_ = new HashMap<String, Integer>();
 	private String bakeryName_;
+	private int boxCount_ = 0;
 
 	protected void setup() {
 		super.setup();
@@ -124,6 +124,7 @@ public class PackagingAgent extends BaseAgent {
 	private class OrderInfo {
 		public int deliveryTime_;
 		public HashMap<String, Integer> pendingProducts_ = new HashMap<String, Integer>();
+		public HashMap<String, ArrayList<Box>> boxes_ = new HashMap<String, ArrayList<Box>>();
 		public String orderID_;
 
 		public OrderInfo(String jsonString) {
@@ -150,6 +151,64 @@ public class PackagingAgent extends BaseAgent {
 			}
 			System.out.println("**********************************");
 
+		}
+
+		public boolean requiresProduct(String productID) {
+			return pendingProducts_.containsKey(productID) && (pendingProducts_.get(productID) > 0);
+		}
+
+		public int takeAsRequired(String productID, int quantity) {
+			if (pendingProducts_.containsKey(productID)) {
+				int requirement = pendingProducts_.get(productID);
+				int acceptedItemCount = 0;
+				if (requirement >= quantity) {
+					acceptedItemCount = quantity;
+					requirement -= quantity;
+					quantity = 0;
+				} else {
+					acceptedItemCount = requirement;
+					quantity = quantity - requirement;
+					requirement = 0;
+				}
+				pendingProducts_.put(productID, requirement);
+
+				while (acceptedItemCount > 0) {
+					Box box = getFreeBox(productID);
+					acceptedItemCount = box.addItems(acceptedItemCount);
+				}
+			}
+			return quantity;
+		}
+
+		private Box getFreeBox(String productID) {
+			ArrayList<Box> boxList = boxes_.get(productID);
+
+			if (boxList == null || boxList.size() == 0) {
+				boxList = new ArrayList<Box>();
+				boxList.add(getNewBox(productID));
+				boxes_.put(productID, boxList);
+			} else if (boxList.get(boxList.size() - 1).getFreeSpace() <= 0) {
+				boxList.add(getNewBox(productID));
+			}
+
+			return boxList.get(boxList.size() - 1);
+
+		}
+
+		private Box getNewBox(String productID) {
+			String boxID = bakeryName_ + "_Box_" + Integer.toString(boxCount_);
+			return new Box(boxID, productID, 0, itemsPerBox_.get(productID));
+		}
+
+		public ArrayList<Box> extractBoxes() {
+			ArrayList<Box> boxList = new ArrayList<Box>();
+			Iterator<String> it = boxes_.keySet().iterator();
+			while (it.hasNext()) {
+				String productID = it.next();
+				boxList.addAll(boxes_.get(productID));
+				boxes_.get(productID).clear();
+			}
+			return boxList;
 		}
 	}
 

@@ -107,7 +107,7 @@ public class TransportAgent extends BaseAgent {
 			ACLMessage msg = myAgent.receive(mt);
 			if (msg != null) {// && msg.getConversationId().equals(msgID)
 				JSONArray JSONOrdersBoxes = new JSONArray(msg.getContent());// a list of all the orders with their boxes
-				System.out.println(getAID().getLocalName() + " Received transport order: \n" + msg.getContent());
+				System.out.println(getAID().getLocalName() + " Received transport order");
 				for (int i = 0; i < JSONOrdersBoxes.length(); i++) {
 					JSONObject wholeOrder = JSONOrdersBoxes.getJSONObject(i);
           String cutID = wholeOrder.getString("CustId");//This is assuming that the aggregator will also pass the customerID
@@ -203,7 +203,7 @@ public class TransportAgent extends BaseAgent {
 							// This is the best offer at present
 							bestTime = time;
 							fastestTruck = reply.getSender();
-							System.out.println("Received new best time: " + time);
+							//System.out.println("Received new best time: " + time);
 						}
 					}
 					rpliesCount++;

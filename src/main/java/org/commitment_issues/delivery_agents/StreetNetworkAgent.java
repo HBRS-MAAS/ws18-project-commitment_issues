@@ -102,7 +102,7 @@ public class StreetNetworkAgent extends BaseAgent {
 			
 			if (msg != null) {
 				// +++
-				System.out.println("["+getAID().getLocalName()+"]: Received time request from "+msg.getSender().getLocalName());
+				//System.out.println("["+getAID().getLocalName()+"]: Received time request from "+msg.getSender().getLocalName());
 				
 				String truckMessageContent = msg.getContent();
 				ACLMessage reply = msg.createReply();
@@ -144,7 +144,7 @@ public class StreetNetworkAgent extends BaseAgent {
 					
 			if (msg != null) {
 				// +++
-				System.out.println("["+getAID().getLocalName()+"]: Received path request from "+msg.getSender().getLocalName());
+				//System.out.println("["+getAID().getLocalName()+"]: Received path request from "+msg.getSender().getLocalName());
 				
 				String truckMessageContent = msg.getContent();
 				ACLMessage reply = msg.createReply();
@@ -157,7 +157,7 @@ public class StreetNetworkAgent extends BaseAgent {
 				myAgent.send(reply);
 				
 				// +++
-				System.out.println("["+getAID().getLocalName()+"]: Returned journey path for "+msg.getSender().getLocalName()+":\n"+JSONPath);
+				System.out.println("["+getAID().getLocalName()+"]: Returned journey path for "+msg.getSender().getLocalName());
 				
 			}
 
@@ -180,7 +180,7 @@ public class StreetNetworkAgent extends BaseAgent {
 			
 			if (msg != null) {
 				// DEBUG:
-				System.out.println("["+getAID().getLocalName()+"]: Received node location request from "+msg.getSender().getLocalName());
+				//System.out.println("["+getAID().getLocalName()+"]: Received node location request from "+msg.getSender().getLocalName());
 				
 				String truckNodeQuery = msg.getContent();
 				ACLMessage reply = msg.createReply();
@@ -193,7 +193,7 @@ public class StreetNetworkAgent extends BaseAgent {
 				myAgent.send(reply);
 				
 				// DEBUG:
-				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName()+" are "+JSONNodeLocation);
+				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName());
 			}
 			else {
 				block();

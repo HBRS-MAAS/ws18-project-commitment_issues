@@ -4,6 +4,24 @@ import java.util.ArrayList;
 
 public class Order {
   private String orderID;
+  private String custID;
+  private String bakID;
+  public String getCustID() {
+    return custID;
+  }
+
+  public void setCustID(String custID) {
+    this.custID = custID;
+  }
+
+  public String getBakID() {
+    return bakID;
+  }
+
+  public void setBakID(String bakID) {
+    this.bakID = bakID;
+  }
+
   private ArrayList<Box> boxes = new ArrayList<Box>();
   private float[] location = new float[2];
   private float[] destination = new float[2];
@@ -35,7 +53,7 @@ public class Order {
     super();
   }
   public String getOrderID() {
-    return orderID;
+    return this.orderID;
   }
 
   public void setOrderID(String orderID) {

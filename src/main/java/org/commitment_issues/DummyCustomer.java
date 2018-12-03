@@ -36,13 +36,14 @@ public class DummyCustomer extends BaseAgent {
 	
 	private class TimeUpdater extends CyclicBehaviour {
 		public void action() {
-			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
-			ACLMessage msg = baseAgent.receive(mt);
-			if (msg != null) {
+//			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+//			ACLMessage msg = baseAgent.receive(mt);
+			if (getAllowAction()) {
 				finished();
-			} else {
-				block();
-			}
+			} 
+//			else {
+//				block();
+//			}
 		}
 	}
 	

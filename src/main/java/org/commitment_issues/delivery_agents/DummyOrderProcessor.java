@@ -30,9 +30,7 @@ public class DummyOrderProcessor extends BaseAgent {
   }
   private class TimeUpdater extends CyclicBehaviour {
     public void action() {
-      MessageTemplate mt = MessageTemplate.MatchPerformative(55);
-      ACLMessage msg = baseAgent.receive(mt);
-      if (msg != null) {
+      if (getAllowAction()) {
         finished();
       } 
     }

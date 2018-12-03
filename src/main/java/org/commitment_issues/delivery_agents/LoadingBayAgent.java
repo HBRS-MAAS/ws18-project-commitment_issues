@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Hashtable;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -99,10 +98,12 @@ public class LoadingBayAgent extends BaseAgent {
             template.addServices(sd);
             try {
                 DFAgentDescription[] result = DFService.search(myAgent, template);
-                receivingAgent = result[0].getName();
-                
+                                
                 if (receivingAgent == null) {
                 	System.out.println("["+getAID().getLocalName()+"]: No OrderAggregator agent found.");
+                }
+                else {
+                	receivingAgent = result[0].getName();
                 }
             } catch (FIPAException fe) {
                 fe.printStackTrace();
@@ -184,10 +185,12 @@ public class LoadingBayAgent extends BaseAgent {
             template.addServices(sd);
             try {
                 DFAgentDescription[] result = DFService.search(myAgent, template);
-                orderProcessor = result[0].getName();
-                
+                                
                 if (orderProcessor == null) {
                 	System.out.println("["+getAID().getLocalName()+"]: No OrderProcessor agent found.");
+                }
+                else {
+                	orderProcessor = result[0].getName();
                 }
             } catch (FIPAException fe) {
                 fe.printStackTrace();

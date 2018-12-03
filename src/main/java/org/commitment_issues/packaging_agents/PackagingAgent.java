@@ -50,16 +50,18 @@ public class PackagingAgent extends BaseAgent {
 		determineItemsPerBox();
 		loadOrderInfoFromFile();
 
-		System.out.println("All Loaded orders:");
-		Iterator<OrderInfo> itr = orderQueue_.iterator();
-		while (itr.hasNext()) {
-			OrderInfo order = itr.next();
-			order.printOrderInfo();
-		}
+//		System.out.println("All Loaded orders:");
+//		Iterator<OrderInfo> itr = orderQueue_.iterator();
+//		while (itr.hasNext()) {
+//			OrderInfo order = itr.next();
+//			order.printOrderInfo();
+//		}
 
 		addBehaviour(new ProductsReceiver());
 		addBehaviour(new Simulator());
 		addBehaviour(new TimeUpdater());
+		
+		System.out.println("Hello! PackagingAgent " + getAID().getLocalName() + " is ready.");
 	}
 
 	protected void takeDown() {
@@ -111,7 +113,7 @@ public class PackagingAgent extends BaseAgent {
 			}
 		}
 
-		System.out.println("Initialized Packaging agent with " + itemsPerBox_.size() + " product types");
+		//System.out.println("Initialized Packaging agent with " + itemsPerBox_.size() + " product types");
 	}
 
 	private void loadOrderInfoFromFile() {
@@ -377,8 +379,7 @@ public class PackagingAgent extends BaseAgent {
 					msg.setConversationId("boxes-ready");
 					msg.setPostTimeStamp(System.currentTimeMillis());
 					baseAgent.send(msg);
-					System.out.println(baseAgent.getAID().getLocalName() + " Sent following boxes to loading bay:\n"
-							+ msg.getContent() + "\n");
+					System.out.println(baseAgent.getAID().getLocalName() + " Sent boxes to loading bay");
 				}
 			}
 		}

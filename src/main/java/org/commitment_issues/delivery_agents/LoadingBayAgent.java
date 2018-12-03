@@ -34,7 +34,8 @@ public class LoadingBayAgent extends BaseAgent {
 		
 		register("loading-bay", "loading-bay");	
 		
-		addBehaviour(new OrderDetailsReceiver());
+//		addBehaviour(new OrderDetailsReceiver());
+		orderDetailsArray = getDummyOrderData();
 		addBehaviour(new ProductDetailsReceiver());
 		addBehaviour(new TimeUpdater());
 	}
@@ -238,12 +239,27 @@ public class LoadingBayAgent extends BaseAgent {
 		}
 	}
 	
+	protected JSONArray getDummyOrderData() {
+		File fileRelative = new File("src/main/resources/config/small/orderprocessor.json");
+		String data = ""; 
+	    try {
+			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+	    JSONArray orderArray = new JSONArray(data);
+	    
+		return orderArray;
+	}
+	
 	private class ProductDetailsReceiver extends CyclicBehaviour {
 		private MessageTemplate mt;
 		
 		public void action() {
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("..........."),
-					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 			ACLMessage msg = myAgent.receive(mt);
 			
 			if (msg != null) {

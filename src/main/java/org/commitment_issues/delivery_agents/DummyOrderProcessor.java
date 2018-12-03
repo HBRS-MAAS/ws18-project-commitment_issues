@@ -21,6 +21,7 @@ public class DummyOrderProcessor extends BaseAgent {
   private JSONArray orders;
   
   protected void setup() {
+	super.setup();
     System.out.println("Hello! DummyOrderProcessor-agent "+getAID().getName()+" is ready.");
     orders = parseOrders();
     register("order-processor", "order-processor");
@@ -30,9 +31,7 @@ public class DummyOrderProcessor extends BaseAgent {
   }
   private class TimeUpdater extends CyclicBehaviour {
     public void action() {
-      MessageTemplate mt = MessageTemplate.MatchPerformative(55);
-      ACLMessage msg = baseAgent.receive(mt);
-      if (msg != null) {
+      if (getAllowAction()) {
         finished();
       } 
     }

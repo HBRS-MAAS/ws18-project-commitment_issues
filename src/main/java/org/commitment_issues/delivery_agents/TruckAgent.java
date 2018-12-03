@@ -59,9 +59,10 @@ public class TruckAgent extends BaseAgent {
 		addBehaviour(new TimeQuotationServer());
 		addBehaviour(new TruckScheduleServer());
 		addBehaviour(new MoveTruck());
-		addBehaviour(new TimeUpdater());
+		
 		
 		addBehaviour(new QueryNodePosition(getLocalName().split("_")[0]));
+		addBehaviour(new TimeUpdater());
 		System.out.println("Hello! TruckAgent "+ getAID().getName() +" with capacity " + capacity_ + " is ready.");
 	}
 
@@ -185,12 +186,12 @@ public class TruckAgent extends BaseAgent {
 	
 	private class TimeUpdater extends CyclicBehaviour {
 		public void action() {
-			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
-			ACLMessage msg = baseAgent.receive(mt);
-			if (msg != null && autoFinish) {
+//			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+//			ACLMessage msg = baseAgent.receive(mt);
+			if (getAllowAction() && truckState_.equals(TruckState.IDLE)) {
 				finished();
 			} else {
-				block();
+//				block();
 			}
 		}
 	}

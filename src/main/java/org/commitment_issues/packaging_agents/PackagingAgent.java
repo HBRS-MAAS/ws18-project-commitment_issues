@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import org.yourteamname.agents.BaseAgent;
 
 import jade.core.AID;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
@@ -57,6 +58,7 @@ public class PackagingAgent extends BaseAgent {
 		}
 
 		addBehaviour(new ProductsReceiver());
+		addBehaviour(new Simulator());
 		addBehaviour(new TimeUpdater());
 	}
 
@@ -158,6 +160,16 @@ public class PackagingAgent extends BaseAgent {
 			return pendingProducts_.containsKey(productID) && (pendingProducts_.get(productID) > 0);
 		}
 
+		public boolean isFulfilled() {
+			Iterator<String> it = pendingProducts_.keySet().iterator();
+			while (it.hasNext()) {
+				if (requiresProduct(it.next())) {
+					return false;
+				}
+			}
+			return true;
+		}
+
 		public int takeAsRequired(String productID, int quantity) {
 			if (pendingProducts_.containsKey(productID)) {
 				int requirement = pendingProducts_.get(productID);
@@ -211,6 +223,19 @@ public class PackagingAgent extends BaseAgent {
 			}
 			return boxList;
 		}
+
+		public void simulateRecievedOrders() {
+			Iterator<String> it = pendingProducts_.keySet().iterator();
+			while (it.hasNext()) {
+				String product = it.next();
+				int quantity = pendingProducts_.get(product);
+				if (quantity > 5) {
+					quantity = 5;
+				}
+
+				takeAsRequired(product, quantity);
+			}
+		}
 	}
 
 	private class OrderComparator implements Comparator<OrderInfo> {
@@ -228,10 +253,31 @@ public class PackagingAgent extends BaseAgent {
 
 	private class TimeUpdater extends CyclicBehaviour {
 		public void action() {
-		      if (getAllowAction()) {
-		        finished();
-		      } 
-		    }
+			if (getAllowAction()) {
+				finished();
+			}
+		}
+	}
+
+	private class Simulator extends Behaviour {
+		boolean allOrdersFulfilled = false;
+
+		public void action() {
+			allOrdersFulfilled = true;
+			Iterator<OrderInfo> itr = orderQueue_.iterator();
+			while (itr.hasNext()) {
+				OrderInfo order = itr.next();
+				if (!order.isFulfilled()) {
+					order.simulateRecievedOrders();
+					allOrdersFulfilled = allOrdersFulfilled && order.isFulfilled();
+				}
+			}
+			addBehaviour(new SendBoxes());
+		}
+
+		public boolean done() {
+			return allOrdersFulfilled;
+		}
 	}
 
 	private class ProductsReceiver extends CyclicBehaviour {
@@ -279,15 +325,17 @@ public class PackagingAgent extends BaseAgent {
 			while (itr.hasNext()) {
 				OrderInfo order = itr.next();
 				ArrayList<Box> boxes = order.extractBoxes();
-				JSONArray boxArray = new JSONArray();
-				for (Box box : boxes) {
-					boxArray.put(box.getAsJSONObject());
-				}
+				if (!boxes.isEmpty()) {
+					JSONArray boxArray = new JSONArray();
+					for (Box box : boxes) {
+						boxArray.put(box.getAsJSONObject());
+					}
 
-				JSONObject msgObject = new JSONObject();
-				msgObject.put("OrderID", order.orderID_);
-				msgObject.put("Boxes", boxArray);
-				messages.add(msgObject.toString());
+					JSONObject msgObject = new JSONObject();
+					msgObject.put("OrderID", order.orderID_);
+					msgObject.put("Boxes", boxArray);
+					messages.add(msgObject.toString());
+				}
 			}
 
 			return messages;
@@ -330,7 +378,7 @@ public class PackagingAgent extends BaseAgent {
 					msg.setPostTimeStamp(System.currentTimeMillis());
 					baseAgent.send(msg);
 					System.out.println(baseAgent.getAID().getLocalName() + " Sent following boxes to loading bay:\n"
-							+ msg.getContent());
+							+ msg.getContent() + "\n");
 				}
 			}
 		}

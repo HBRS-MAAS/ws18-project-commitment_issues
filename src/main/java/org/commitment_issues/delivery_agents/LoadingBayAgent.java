@@ -47,20 +47,21 @@ public class LoadingBayAgent extends BaseAgent {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 	
-//	protected void addCustomerOrder (String customerID) {
-//		HashMap <String, Integer> temp = new HashMap<String, Integer>();
-//		temp.put(product, quantity);
-//		productDatabase.put(orderID, temp);
-//	}
-	
-	protected void addCustomerProduct (String orderID, String product, int quantity) {
+	protected void addCustomerOrder (String orderID, String product, int quantity) {
 		HashMap <String, Integer> temp = new HashMap<String, Integer>();
 		temp.put(product, quantity);
 		productDatabase.put(orderID, temp);
 	}
 	
+	protected void addCustomerProduct (String orderID, String product, int quantity) {
+		HashMap <String, Integer> temp = new HashMap<String, Integer>();
+		temp.put(product, quantity);
+//		productDatabase.put(orderID, temp);
+		productDatabase.get(orderID).put(product, quantity);
+	}
+	
 	protected void UpdateCustomerProductQuantity (String orderID, String product, int addedQuantity) {
-		int oldQuantity = productDatabase.get("order1").get("bread");
+		int oldQuantity = productDatabase.get(orderID).get(product);
 		int newQuantity = oldQuantity + addedQuantity;
 		productDatabase.get(orderID).replace(product, newQuantity);
 	}
@@ -150,7 +151,7 @@ public class LoadingBayAgent extends BaseAgent {
 			
 			myAgent.send(msg);
 			
-			System.out.println("["+getAID().getLocalName()+"]: Order details sent to OrderAggregator:\n"+msg);
+			System.out.println("["+getAID().getLocalName()+"]: Order details sent to OrderAggregator:\n"+msg.getContent());
 		}
 	}
 	
@@ -287,17 +288,8 @@ public class LoadingBayAgent extends BaseAgent {
 	
 	protected String createOrderBoxesJSONMessage (String orderID) {
 		JSONObject message = new JSONObject();
-		message.put("OrderID", orderID);
-		
-		JSONArray boxesArray = new JSONArray();
-		
-		for (String key : boxDatabase.keySet()) {
-			if (key.equals(orderID)) {
-				boxesArray.put(boxDatabase.get(key));
-			}
-		}
-		
-		message.put("Boxes", boxesArray);
+		message.put("OrderID", orderID);		
+		message.put("Boxes", boxDatabase.get(orderID));
 		
 		return message.toString();
 	}
@@ -321,13 +313,22 @@ public class LoadingBayAgent extends BaseAgent {
 		if (!productDatabase.containsKey(orderID)) {
 			for (int i = 0 ; i < boxes.length(); i++) {
 				JSONObject boxDetails = boxes.getJSONObject(i);
-				addCustomerProduct (orderID, boxDetails.getString("ProductType"), boxDetails.getInt("Quantity"));
+				if (i == 0)
+				{
+					addCustomerOrder(orderID, boxDetails.getString("ProductType"), boxDetails.getInt("Quantity"));
+				}
+				else 
+				{
+					addCustomerProduct(orderID, boxDetails.getString("ProductType"), boxDetails.getInt("Quantity"));
+				}
 			}
 		}
 		// In the event that it does:
 		else {
 			// Get the product details currently associated with and stored for this orderID
-			HashMap<String, Integer> orderProductDetails = productDatabase.get("orderID");
+			HashMap<String, Integer> orderProductDetails = productDatabase.get(orderID);
+//			System.out.println("********************["+getAID().getLocalName()+"]: orderProductDetails"+orderProductDetails.toString());
+
 			
 			for (int i = 0 ; i < boxes.length(); i++) {
 				JSONObject boxDetails = boxes.getJSONObject(i);
@@ -340,7 +341,7 @@ public class LoadingBayAgent extends BaseAgent {
 				}
 				// if it doesn't, simply add it to that order entry's product list:
 				else {
-					addCustomerProduct (orderID, productType, boxDetails.getInt("Quantity"));
+					addCustomerProduct(orderID, productType, boxDetails.getInt("Quantity"));
 				}
 			}
 		}
@@ -351,7 +352,9 @@ public class LoadingBayAgent extends BaseAgent {
 		 * Returns true if the order details (products and their quantities) are
 		 * fulfilled in the database for that particular customer order.
 		 */
+		int productQuantity = 0;
 		HashMap<String, Integer> orderProductDetails = productDatabase.get(orderID);
+		System.out.println(productDatabase.toString());
 		
 		JSONArray productArray = new JSONArray();
 		String IDCheckString = null;
@@ -383,14 +386,19 @@ public class LoadingBayAgent extends BaseAgent {
 			
 			int orderQuantity = product.getInt(productName);
 			
-			if (orderProductDetails.get(productName).equals(null)) {
+			try {
+				productQuantity = orderProductDetails.get(productName);
+			} catch (NullPointerException e) {
 				return false;
 			}
-			else {
-				if (orderProductDetails.get(productName) != orderQuantity) {
-					return false;
-				}
+//			if (orderProductDetails.get(productName).equals(null)) {
+//				return false;
+//			}
+//			else {
+			if (productQuantity != orderQuantity) {
+				return false;
 			}
+//			}
 		}
 		return true;
 	}

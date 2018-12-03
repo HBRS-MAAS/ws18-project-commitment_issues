@@ -34,6 +34,13 @@ public class LoadingBayAgent extends BaseAgent {
 		
 		register("loading-bay", "loading-bay");	
 		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		addBehaviour(new OrderDetailsReceiver());
 		addBehaviour(new ProductDetailsReceiver());
 		addBehaviour(new TimeUpdater());
@@ -98,13 +105,14 @@ public class LoadingBayAgent extends BaseAgent {
             template.addServices(sd);
             try {
                 DFAgentDescription[] result = DFService.search(myAgent, template);
-                                
+                receivingAgent = result[0].getName();
+                
                 if (receivingAgent == null) {
                 	System.out.println("["+getAID().getLocalName()+"]: No OrderAggregator agent found.");
                 }
-                else {
-                	receivingAgent = result[0].getName();
-                }
+//                else {
+//                	receivingAgent = result[0].getName();
+//                }
             } catch (FIPAException fe) {
                 fe.printStackTrace();
             }
@@ -185,13 +193,14 @@ public class LoadingBayAgent extends BaseAgent {
             template.addServices(sd);
             try {
                 DFAgentDescription[] result = DFService.search(myAgent, template);
-                                
+                orderProcessor = result[0].getName();
+                
                 if (orderProcessor == null) {
                 	System.out.println("["+getAID().getLocalName()+"]: No OrderProcessor agent found.");
                 }
-                else {
-                	orderProcessor = result[0].getName();
-                }
+//                else {
+//                	orderProcessor = result[0].getName();
+//                }
             } catch (FIPAException fe) {
                 fe.printStackTrace();
             }

@@ -344,7 +344,7 @@ public class TruckAgent extends BaseAgent {
 					System.out.println("Truck moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
 				}
 			}
-//			finished();
+			finished();
 			return retval;
 		}
 		
@@ -399,7 +399,6 @@ public class TruckAgent extends BaseAgent {
 	            			System.out.println(baseAgent.getAID().getLocalName() + " Reached customer. Truck is Idle as there is no next order");
 	            		}
 	            	}
-	            	finished();
 	            	
 //	                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 //	                msg.addReceiver(discoverAgent("transport-visualization"));

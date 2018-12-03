@@ -18,7 +18,7 @@ public class MailboxAgent extends BaseAgent {
 
 	protected void setup() {
 		super.setup();
-		System.out.println("Hello! Mailbox-agent "+getAID().getName()+" is ready.");
+		System.out.println("Hello! MailboxAgent "+getAID().getName()+" is ready.");
 		
 		register("mailbox", "mailbox");
 		
@@ -87,7 +87,7 @@ public class MailboxAgent extends BaseAgent {
 				String truckMessageContent = msg.getContent();
 				
 				// +++
-				System.out.println("["+getAID().getLocalName()+"]: Received order completion message from "+msg.getSender().getLocalName()+":\n"+truckMessageContent);
+				System.out.println("["+getAID().getLocalName()+"]: Received order completion message from "+msg.getSender().getLocalName());
 				
 				
 				// At the moment, this list includes all customers as well.

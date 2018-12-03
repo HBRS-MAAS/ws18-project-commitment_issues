@@ -77,13 +77,11 @@ public class OrderAggregatorAgent extends BaseAgent {
     
   }
   private class TimeUpdater extends CyclicBehaviour {
-    public void action() {
-      MessageTemplate mt = MessageTemplate.MatchPerformative(55);
-      ACLMessage msg = baseAgent.receive(mt);
-      if (msg != null) {
-        finished();
-      } 
-    }
+	  public void action() {
+	      if (getAllowAction()) {
+	        finished();
+	      } 
+	    }
   }
   private class LoadingBayParser extends CyclicBehaviour{
 

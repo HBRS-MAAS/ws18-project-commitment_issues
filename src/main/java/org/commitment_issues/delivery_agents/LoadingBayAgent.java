@@ -260,7 +260,7 @@ public class LoadingBayAgent extends BaseAgent {
 		private MessageTemplate mt;
 		
 		public void action() {
-			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("..........."),
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("boxes-ready"),
 					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 			ACLMessage msg = myAgent.receive(mt);
 			

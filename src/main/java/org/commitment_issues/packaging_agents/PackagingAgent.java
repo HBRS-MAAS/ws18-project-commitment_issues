@@ -56,8 +56,8 @@ public class PackagingAgent extends BaseAgent {
 			order.printOrderInfo();
 		}
 
-		addBehaviour(new TimeUpdater());
 		addBehaviour(new ProductsReceiver());
+		addBehaviour(new TimeUpdater());
 	}
 
 	protected void takeDown() {

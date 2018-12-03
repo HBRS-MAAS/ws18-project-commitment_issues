@@ -70,8 +70,8 @@ public class OrderAggregatorAgent extends BaseAgent {
       DFAgentDescription[] result = DFService.search(this, template);
       this.transportAgent = result[0].getName();
      
-  } catch (FIPAException fe) {
-      fe.printStackTrace();
+  } catch (Exception fe) {
+      //fe.printStackTrace();
   }
     
     

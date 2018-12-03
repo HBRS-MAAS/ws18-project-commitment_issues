@@ -5,10 +5,8 @@ import java.io.File;
 
 import org.commitment_issues.agents.CustomerAgent;
 import org.json.JSONArray;
+import org.yourteamname.agents.BaseAgent;
 
-
-
-import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -18,7 +16,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
-public class DummyOrderProcessor extends Agent {
+public class DummyOrderProcessor extends BaseAgent {
   
   private JSONArray orders;
   
@@ -27,9 +25,18 @@ public class DummyOrderProcessor extends Agent {
     orders = parseOrders();
     register("order-processor", "order-processor");
     addBehaviour(new OrderProcessorServer());
+    addBehaviour(new TimeUpdater());
 
   }
-  
+  private class TimeUpdater extends CyclicBehaviour {
+    public void action() {
+      MessageTemplate mt = MessageTemplate.MatchPerformative(55);
+      ACLMessage msg = baseAgent.receive(mt);
+      if (msg != null) {
+        finished();
+      } 
+    }
+  }
   protected  JSONArray parseOrders() {
     File relativePath = new File("src/main/resources/config/small/orderprocessor.json");
     String read = CustomerAgent.readFileAsString(relativePath.getAbsolutePath());

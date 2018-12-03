@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.yourteamname.agents.BaseAgent;
 
 import jade.core.AID;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
@@ -100,7 +101,7 @@ public class GenericItemProcessor extends BaseAgent {
     JSONArray products = bakery.getJSONArray("products");
     for(int i = 0; i < products.length();i++) {
       Product p = new Product();
-      p.setName(products.getJSONObject(i).getString("guide"));
+      p.setName(products.getJSONObject(i).getString("guid"));
       JSONObject recipieJSON = products.getJSONObject(i).getJSONObject("recipe");
       JSONArray processes = recipieJSON.getJSONArray("steps");
       boolean add = false;
@@ -129,6 +130,8 @@ public class GenericItemProcessor extends BaseAgent {
 
       ordersToPrepare = myAgent.receive(mt);
       if(ordersToPrepare != null) {
+        System.out.println(ordersToPrepare.getContent());
+
         if(isCoolingRack) {
           System.out.println("Cooling Rack has recieved products");
         }
@@ -185,10 +188,11 @@ public class GenericItemProcessor extends BaseAgent {
     }
     
   }
-  private class CoolingTask extends CyclicBehaviour{
+  private class CoolingTask extends Behaviour{
     private Product p;
     private int time;
     private int startTime;
+    private boolean complete = false;
     public CoolingTask(Product p) {
       this.p = p;
       this.time = p.getProcesses().get(0).getDuration();
@@ -206,21 +210,27 @@ public class GenericItemProcessor extends BaseAgent {
         y.put("Name", p.getName());
         y.put("Quantity", p.getAmount());
         x.put(y);
-        msg.setContent(y.toString());
+        msg.setContent(x.toString());
         myAgent.send(msg);
         System.out.println("Cooling of "+p.getName()+"is done and sent to the next stage"); 
-        block();
+        complete = true;
       }
       
+    }
+    @Override
+    public boolean done() {
+      // TODO Auto-generated method stub
+      return complete;
     }
     
   }
   
-  private class GenericTask extends CyclicBehaviour{
+  private class GenericTask extends Behaviour{
     private Product p;
     private int step;
     private int time;
     private int startTime;
+    private boolean complete = false;
     public GenericTask(Product product, int step) {
       this.p = product;
       this.step = step;
@@ -244,15 +254,21 @@ public class GenericItemProcessor extends BaseAgent {
           msg.setContent(y.toString());
           myAgent.send(msg);
           System.out.println(p.getProcesses().get(step).getName()+" of "+p.getName()+"is done and sent to the packaging"); 
-          block();
+          complete = true;
         }else {
           this.step++;
           System.out.println(p.getProcesses().get(step-1).getName()+" of "+p.getName()+"is done and sent to the packaging"); 
           myAgent.addBehaviour(new GenericTask(p, step));
-
+          complete = true;
         }
       } 
       
+    }
+
+    @Override
+    public boolean done() {
+      // TODO Auto-generated method stub
+      return complete;
     }
     
   }
@@ -276,6 +292,7 @@ public class GenericItemProcessor extends BaseAgent {
 
     public Product() {
       super();
+      this.processes =new ArrayList<Task>();
     }
     
     

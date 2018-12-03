@@ -59,7 +59,7 @@ public class Start {
 						String truckID = truckList.getJSONObject(t).getString("guid");
 						int capacity = (int)truckList.getJSONObject(t).getFloat("load_capacity");
 						agents.add(companyName + "_" + truckID + ":org.commitment_issues.delivery_agents.TruckAgent(" + capacity + ")");
-						break;
+//						break;
 					}
 				}
 				else {

@@ -28,6 +28,7 @@ public class StreetNetworkAgent extends BaseAgent {
     public DijkstraAlgorithm dijkstra;
 
 	protected void setup() {
+		super.setup();
 		System.out.println("Hello! StreetNetwork-agent "+getAID().getName()+" is ready.");
 		
 		register("street-network", "street-network");
@@ -62,14 +63,10 @@ public class StreetNetworkAgent extends BaseAgent {
 	
 	private class TimeUpdater extends CyclicBehaviour {
 		public void action() {
-			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
-			ACLMessage msg = baseAgent.receive(mt);
-			if (msg != null) {
-				finished();
-			} else {
-				block();
-			}
-		}
+		      if (getAllowAction()) {
+		        finished();
+		      } 
+		    }
 	}
 	
 	// TODO: This behavior still requires the identity of the visualization agent

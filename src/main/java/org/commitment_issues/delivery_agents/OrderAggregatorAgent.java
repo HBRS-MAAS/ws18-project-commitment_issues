@@ -2,11 +2,13 @@ package org.commitment_issues.delivery_agents;
 
 import java.util.ArrayList;
 
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.yourteamname.agents.BaseAgent;
 
 import jade.core.AID;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
@@ -19,6 +21,7 @@ import jade.lang.acl.MessageTemplate;
 @SuppressWarnings("serial")
 public class OrderAggregatorAgent extends BaseAgent {
   private ArrayList<Order> orders = new ArrayList<Order>(); //list of all the orders
+
   private AID transportAgent = null;
   protected void setup() {
     
@@ -30,6 +33,7 @@ public class OrderAggregatorAgent extends BaseAgent {
     addBehaviour(new TimeUpdater());
 
   }
+
   protected void register(String type, String name){
     DFAgentDescription dfd = new DFAgentDescription();
     dfd.setName(getAID());
@@ -66,8 +70,8 @@ public class OrderAggregatorAgent extends BaseAgent {
       DFAgentDescription[] result = DFService.search(this, template);
       this.transportAgent = result[0].getName();
      
-  } catch (FIPAException fe) {
-      fe.printStackTrace();
+  } catch (Exception fe) {
+      //fe.printStackTrace();
   }
     
     
@@ -78,13 +82,11 @@ public class OrderAggregatorAgent extends BaseAgent {
       ACLMessage msg = baseAgent.receive(mt);
       if (msg != null) {
         finished();
-      } else {
-        block();
-      }
+      } 
     }
   }
   private class LoadingBayParser extends CyclicBehaviour{
-    private boolean flag = false;
+
     @Override
     public void action() {
       MessageTemplate mt = MessageTemplate.MatchConversationId("packaged-orders");
@@ -111,7 +113,7 @@ public class OrderAggregatorAgent extends BaseAgent {
             System.out.println((((OrderAggregatorAgent)myAgent).orders.get(k).getOrderID()));
           if ((((OrderAggregatorAgent)myAgent).orders.get(k).getOrderID()).equals(recieved.getString("OrderID"))) {
             order = orders.get(k);
-            flag = true;
+            
             break;
           }
           else {
@@ -133,94 +135,95 @@ public class OrderAggregatorAgent extends BaseAgent {
         
         ((OrderAggregatorAgent)myAgent).orders.add(order);
         System.out.println(getAID().getName()+"recieved an order");
-        if (flag) {
-          myAgent.addBehaviour(new SendOrderToTransport(order));
-        }
+        myAgent.addBehaviour(new CheckOrder(order));
+        
       }
       
     }
     
   }
   
-//  private class CheckOrderComplete extends OneShotBehaviour {
-//    // This class is now implemented this way for the purpose of simulating the scenario
-//    // The actual implementation is partially done in the commented class below this class
-//    // It is not fully implemented because the order processor is not known yet
-//    private Order order; 
-//    private Order fullOrder;
-//    public CheckOrderComplete(Order order) {
-//      this.order = order;
-//    }
-//
-//    @Override
-//    public void action() {
-//      if(((OrderAggregatorAgent)myAgent).orders.size()==2) {
-//       for(int i = 0; i< ((OrderAggregatorAgent)myAgent).orders.size();i++) {
-//         Order partialOrder = ((OrderAggregatorAgent)myAgent).orders.get(i);
-//         for (int k = 0; k < partialOrder.getBoxes().size(); k++) {
-//           fullOrder.addBoxes(partialOrder.getBoxes().get(k));
-//         }
-//       }
-//       fullOrder.setOrderID(order.getOrderID());
-//       fullOrder.setDestination(order.getDestination());
-//       fullOrder.setLocation(order.getLocation());
-//       myAgent.addBehaviour(new SendOrderToTransport(fullOrder));
-//    } 
-//    
-//  }
-//  }
-  
-//  private class CheckOrderComplete extends CyclicBehaviour {
-//    private int state = 0;
-//    private Order order;
-//    //private Order receivedOrder;
-//    ACLMessage orderDetails = null;
-//    private MessageTemplate mt;
-//    public CheckOrderComplete(Order order) {
-//      this.order = order;
-//    }
-//    public void action() {
-//      //Searching for the order processor to ask it about the order
-//      
-//      switch(state) {
-//      case 0://Search for the order processor and send it a request
-//        DFAgentDescription template = new DFAgentDescription();
-//        ServiceDescription sd = new ServiceDescription();
-//        sd.setType("order-processor");// assuming that the order processor will provide a service with this name
-//        template.addServices(sd);
-//        
-//        try {
-//          DFAgentDescription[] result = DFService.search(myAgent, template);
-//          AID orderProcessor = result[0].getName();
-//          ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
-//          request.setConversationId("order-details"+order.getOrderID());
-//          request.setContent(order.getOrderID());
-//          request.addReceiver(orderProcessor);
-//          myAgent.send(request);
-//          state++;
-//          mt = MessageTemplate.MatchConversationId("order-details"+order.getOrderID());
-//
-//      } catch (FIPAException fe) {
-//          fe.printStackTrace();
-//      }
-//      case 1:// receive the order details from the order processor
-//        if(orderDetails == null) {
-//          orderDetails = myAgent.receive(mt);
-//          // assume it is an array of boxes
-//          if (orderDetails != null) {
-//           //JSONArray boxesOfOriginal =  new JSONArray(orderDetails.getContent());
-//           
-//          }
-//        }
-//        else {
-//          state++;
-//        }
-//      }
-//      
-//      
-//    }
-//    
-//  }
+  private class CheckOrder extends Behaviour {
+    private int state = 0;
+    ACLMessage orderDetails = null;
+    private MessageTemplate mt;
+    Order testOrder;
+    public CheckOrder(Order checkOrder) {
+      this.testOrder = checkOrder;
+    }
+    @Override
+    public void action() {
+      switch(state) {
+    case 0://Search for the order processor and send it a request
+      DFAgentDescription template = new DFAgentDescription();
+      ServiceDescription sd = new ServiceDescription();
+      sd.setType("order-processor");// assuming that the order processor will provide a service with this name
+      template.addServices(sd);
+      
+      try {
+        DFAgentDescription[] result = DFService.search(myAgent, template);
+        AID orderProcessor = result[0].getName();
+        ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+        request.setConversationId("order-details"+testOrder.getOrderID());
+        request.setContent(testOrder.getOrderID());
+        request.addReceiver(orderProcessor);
+        myAgent.send(request);
+        state++;
+        mt = MessageTemplate.MatchConversationId("order-details"+testOrder.getOrderID());
+
+    } catch (Exception fe) {
+        fe.printStackTrace();
+    }
+    case 1:// receive the order details from the order processor
+      orderDetails = myAgent.receive(mt);
+      
+      if (orderDetails != null) {
+        System.out.println(orderDetails.getContent());
+        ArrayList<String> productTypes = new ArrayList<String>();
+        JSONObject orderDetailsJSON = new JSONObject(orderDetails.getContent());
+        JSONArray productsJSON = orderDetailsJSON.getJSONArray("Products");
+        int productCount = 0;
+        testOrder.setBakID(orderDetailsJSON.getString("Bakery"));
+        testOrder.setCustID((orderDetailsJSON.getString("CustName")));
+        for (int i = 0; i < productsJSON.length(); i++) {
+          if (((JSONObject)productsJSON.getJSONObject(i)).getInt(((JSONObject)productsJSON.getJSONObject(i)).names().getString(0)) > 0) {
+            productCount++;
+          }
+        }
+      
+        for (int k = 0; k < this.testOrder.getBoxes().size(); k++) {
+          if(k == 0) {
+            productTypes.add(this.testOrder.getBoxes().get(k).getProductType());
+          }
+          else {
+            if (!productTypes.contains(this.testOrder.getBoxes().get(k).getProductType())) {
+              productTypes.add(this.testOrder.getBoxes().get(k).getProductType());
+
+            }
+          }
+        }
+        if (productCount == productTypes.size()) {
+          myAgent.addBehaviour(new SendOrderToTransport(testOrder));
+        }
+        state++;
+      }
+    default: break;
+    }
+      
+    }
+    @Override
+    public boolean done() {
+      
+      if (this.state > 1) {
+        return true;
+      }
+      else {
+        return false;
+      }
+    }
+    
+  }
+
   
   private class SendOrderToTransport extends OneShotBehaviour {
     private Order order;
@@ -236,9 +239,9 @@ public class OrderAggregatorAgent extends BaseAgent {
       JSONArray msgJSON = new JSONArray();
       JSONArray boxesJSON = new JSONArray();
       JSONObject orderJSON = new JSONObject();
-      orderJSON.put("CustId", "customer-001");
-      orderJSON.put("BackId", "bakery-001");
       orderJSON.put("OrderId",order.getOrderID());
+      orderJSON.put("CustId", order.getCustID());
+      orderJSON.put("BackId", order.getBakID());
       for (int i = 0; i < order.getBoxes().size(); i++) {
         JSONObject box = new JSONObject();
         box.put("BoxID", order.getBoxes().get(i).getBoxID());

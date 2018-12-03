@@ -1,0 +1,86 @@
+[
+  {
+    "OrderID": "order-001",
+    "CustName": "Customer-001",
+    "Bakery": "bakery-001",
+    "delivery_date": {
+      "day": 2,
+      "hour": 18
+    },
+    "Products": [
+      {
+        "Bread": 18
+      },
+      {
+        "Donut": 5
+      }
+    ]
+  },
+  {
+    "OrderID": "order-002",
+    "CustName": "customer-001",
+    "Bakery": "bakery-001",
+    "delivery_date": {
+      "day": 3,
+      "hour": 18
+    },
+    "Products": [
+      {
+        "Baguette": 10
+      },
+      
+    ]
+  },
+  {
+    "OrderID": "order-003",
+    "CustName": "customer-003",
+    "Bakery": "bakery-001",
+    "delivery_date": {
+      "day": 4,
+      "hour": 16
+    },
+    "Products": [
+      {
+        "Bread": 0
+      },
+      {
+        "Breadstick": 2
+      },
+      {
+        "Brezel": 0
+      },
+      {
+        "Waffles": 5
+      },
+      {
+        "Donut": 9
+      }
+    ]
+  },
+  {
+    "OrderID": "order-004",
+    "CustName": "customer-002",
+    "Bakery": "bakery-001",
+    "delivery_date": {
+      "day": 3,
+      "hour": 17
+    },
+    "Products": [
+      {
+        "Bread": 0
+      },
+      {
+        "Rosinenschnecke": 2
+      },
+      {
+        "Focaccia": 0
+      },
+      {
+        "Arepa": 5
+      },
+      {
+        "Donut": 9
+      }
+    ]
+  }
+]

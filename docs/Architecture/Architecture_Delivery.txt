@@ -2,11 +2,10 @@
 skinparam classAttributeIconSize 0
 
 == Delivery ==
-LoadingBay --> OrderTracker : BoxesReadyToDeliver (INFORM)
+LoadingBay --> OrderAggregator : BoxesReadyToDeliver (INFORM)
 
-OrderTracker --> Order : OrderProgress (INFORM)
-Order --> OrderTracker : OrderFulfilled (CONFIRM)
-OrderTracker --> TransportAgent : RequestOrderTransport (REQUEST)
+
+OrderAggregator --> TransportAgent : RequestOrderTransport (REQUEST)
 
 TransportAgent --> Truck : RequestTimeToDelivery (CFP)
 Truck --> StreetNetwork : queryTimeToDelivery (REQUEST)
@@ -15,7 +14,12 @@ Truck --> TransportAgent : ReplyToRequest (PROPOSE / REFUSE)
 TransportAgent --> Truck : AssignDelivery (ACCEPT_PROPOSAL)
 Truck --> TransportAgent : ConfirmAssignment (INFORM)
 
+Truck --> StreetNetwork : GetPath (REQUEST)
+StreetNetwork --> Truck : ReturnPath (INFORM)
+
 Truck --> Mailbox : OrderSuccessfullyDelivered (INFORM)
 
+
+Mailbox
 
 @enduml

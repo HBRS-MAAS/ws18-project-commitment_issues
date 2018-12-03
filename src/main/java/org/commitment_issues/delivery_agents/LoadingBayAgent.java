@@ -30,6 +30,8 @@ public class LoadingBayAgent extends BaseAgent {
 	private HashMap<String, JSONArray> boxDatabase = new HashMap<>();
 	
 	protected void setup() {
+		
+		super.setup();
 		System.out.println("Hello! LoadingBay-agent "+getAID().getName()+" is ready.");
 		
 		register("loading-bay", "loading-bay");	

@@ -34,13 +34,6 @@ public class LoadingBayAgent extends BaseAgent {
 		
 		register("loading-bay", "loading-bay");	
 		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		addBehaviour(new OrderDetailsReceiver());
 		addBehaviour(new ProductDetailsReceiver());
 		addBehaviour(new TimeUpdater());
@@ -84,14 +77,10 @@ public class LoadingBayAgent extends BaseAgent {
 	
 	private class TimeUpdater extends CyclicBehaviour {
 		public void action() {
-			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
-			ACLMessage msg = baseAgent.receive(mt);
-			if (msg != null) {
-				finished();
-			} else {
-				block();
-			}
-		}
+		      if (getAllowAction()) {
+		        finished();
+		      } 
+		    }
 	}
 	
 	private class PackagingPhaseMessageSender extends OneShotBehaviour {

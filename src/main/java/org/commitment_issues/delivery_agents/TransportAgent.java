@@ -93,14 +93,10 @@ public class TransportAgent extends BaseAgent {
   
 	private class TimeUpdater extends CyclicBehaviour {
 		public void action() {
-			MessageTemplate mt = MessageTemplate.MatchPerformative(55);
-			ACLMessage msg = baseAgent.receive(mt);
-			if (msg != null) {
-				finished();
-			} else {
-				block();
-			}
-		}
+		      if (getAllowAction()) {
+		        finished();
+		      } 
+		    }
 	}
 
   private class OrderParser extends CyclicBehaviour{

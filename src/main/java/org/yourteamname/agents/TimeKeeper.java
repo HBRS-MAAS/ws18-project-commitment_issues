@@ -64,10 +64,12 @@ public class TimeKeeper extends Agent{
             currentTimeStep++;
             countAgentsReplied = agents.size();
             System.out.println(">>>>> " + currentTimeStep + " <<<<<");
+            System.out.println("\n\nSent time update to following agents and waiting on them:");
             for (DFAgentDescription agent : agents) {
                 ACLMessage timeMessage = new ACLMessage(55);
                 timeMessage.addReceiver(agent.getName());
                 timeMessage.setContent(Integer.toString(currentTimeStep));
+                System.out.println(agent.getName());
                 myAgent.send(timeMessage);
             } 
 		}
@@ -94,6 +96,10 @@ public class TimeKeeper extends Agent{
                         myAgent.addBehaviour(new SendTimeStep());
                         this.agents.clear();
                     }
+                	System.out.println("\n\nWaiting for" + countAgentsReplied + " agents to respond. Time Replies received from:");
+                	for (AID a : this.agents) {
+                		System.out.println(a.getLocalName());
+                	}
                 }
 			}
 			else {

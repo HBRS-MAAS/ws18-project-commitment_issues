@@ -151,7 +151,7 @@ public class LoadingBayAgent extends BaseAgent {
 			
 			myAgent.send(msg);
 			
-			System.out.println("["+getAID().getLocalName()+"]: Order details sent to OrderAggregator:\n"+msg.getContent());
+			System.out.println("["+getAID().getLocalName()+"]: Order details sent to OrderAggregator");
 		}
 	}
 	
@@ -354,7 +354,6 @@ public class LoadingBayAgent extends BaseAgent {
 		 */
 		int productQuantity = 0;
 		HashMap<String, Integer> orderProductDetails = productDatabase.get(orderID);
-		System.out.println(productDatabase.toString());
 		
 		JSONArray productArray = new JSONArray();
 		String IDCheckString = null;

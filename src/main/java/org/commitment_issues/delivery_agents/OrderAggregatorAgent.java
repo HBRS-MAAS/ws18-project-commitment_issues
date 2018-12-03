@@ -25,13 +25,13 @@ public class OrderAggregatorAgent extends BaseAgent {
   private AID transportAgent = null;
   protected void setup() {
 	super.setup();
+	System.out.println("Hello! OrderAggregatorAgent " + getAID().getLocalName() + " is ready.");
     this.register("order-aggregator","order-aggregator");
     while(this.transportAgent == null) {
       findTransportAgent();
     }
     addBehaviour(new LoadingBayParser());
     addBehaviour(new TimeUpdater());
-
   }
 
   protected void register(String type, String name){
@@ -99,16 +99,16 @@ public class OrderAggregatorAgent extends BaseAgent {
         
         if (((OrderAggregatorAgent)myAgent).orders.size()==0) {
           order.setOrderID(recieved.getString("OrderID"));
-          System.out.println(order.getOrderID());
+          //System.out.println(order.getOrderID());
           
         }for (int k = 0; k < ((OrderAggregatorAgent)myAgent).orders.size();k++) {
           if (((OrderAggregatorAgent)myAgent).orders.size()==0) {
             order.setOrderID(recieved.getString("OrderID"));
-            System.out.println(order.getOrderID());
+            //System.out.println(order.getOrderID());
             break;
           }
           else {
-            System.out.println((((OrderAggregatorAgent)myAgent).orders.get(k).getOrderID()));
+            //System.out.println((((OrderAggregatorAgent)myAgent).orders.get(k).getOrderID()));
           if ((((OrderAggregatorAgent)myAgent).orders.get(k).getOrderID()).equals(recieved.getString("OrderID"))) {
             order = orders.get(k);
             
@@ -132,7 +132,7 @@ public class OrderAggregatorAgent extends BaseAgent {
         
         
         ((OrderAggregatorAgent)myAgent).orders.add(order);
-        System.out.println(getAID().getName()+"recieved an order");
+        System.out.println(getAID().getName()+" recieved an order");
         myAgent.addBehaviour(new CheckOrder(order));
         
       }
@@ -176,7 +176,7 @@ public class OrderAggregatorAgent extends BaseAgent {
       orderDetails = myAgent.receive(mt);
       
       if (orderDetails != null) {
-        System.out.println(orderDetails.getContent());
+        //System.out.println(orderDetails.getContent());
         ArrayList<String> productTypes = new ArrayList<String>();
         JSONObject orderDetailsJSON = new JSONObject(orderDetails.getContent());
         JSONArray productsJSON = orderDetailsJSON.getJSONArray("Products");
@@ -251,7 +251,7 @@ public class OrderAggregatorAgent extends BaseAgent {
       msgJSON.put(orderJSON);
       finalOrder.setContent(msgJSON.toString());
       myAgent.send(finalOrder);
-      System.out.println(getAID().getName()+"sent order to transport agent");
+      System.out.println(getAID().getName()+" sent order to transport agent");
 
     }
     

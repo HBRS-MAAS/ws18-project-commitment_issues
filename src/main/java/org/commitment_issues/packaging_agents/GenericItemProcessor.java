@@ -7,6 +7,8 @@ import org.commitment_issues.agents.CustomerAgent;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.yourteamname.agents.BaseAgent;
+
+import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
@@ -20,6 +22,7 @@ import jade.lang.acl.MessageTemplate;
 public class GenericItemProcessor extends BaseAgent {
   private ArrayList<Product> allProducts = new ArrayList<Product>();
   private boolean isCoolingRack;
+  AID targetAgent;
   protected void setup() {
     super.setup();
     System.out.println("Hello! GenericItemProcessor "+ getAID().getName() +" is ready.");
@@ -32,10 +35,25 @@ public class GenericItemProcessor extends BaseAgent {
     }
     if (isCoolingRack) {
       register("cooling-rack", "cooling-rack");
+      findTargetAgent("generic-rack");
     }else {
       register("generic-rack", "generic-rack");
+      findTargetAgent("cooling-rack");
     }
     addBehaviour(new ProductsToProcess());
+  }
+  private void findTargetAgent(String service) {
+    DFAgentDescription template = new DFAgentDescription();
+    ServiceDescription sd = new ServiceDescription();
+    sd.setType(service);
+    template.addServices(sd);
+    try {
+      DFAgentDescription[] result = DFService.search(this, template);
+      this.targetAgent = result[0].getName();
+     
+    } catch (FIPAException fe) {
+      fe.printStackTrace();
+    }
   }
   protected void register(String type, String name){
     DFAgentDescription dfd = new DFAgentDescription();
@@ -135,9 +153,42 @@ public class GenericItemProcessor extends BaseAgent {
     @Override
     public void action() {
       if (isCoolingRack) {
-        
+        for (int i = 0; i < this.products.size();i++) {
+          myAgent.addBehaviour(new CoolingTask(products.get(i)));
+        }
       }
       else {
+        for (int i = 0; i < this.products.size();i++) {
+          myAgent.addBehaviour(new GenericTask(products.get(i)));
+        }
+      }
+      
+    }
+    
+  }
+  private class CoolingTask extends CyclicBehaviour{
+    private Product p;
+    private int time;
+    private int startTime;
+    public CoolingTask(Product p) {
+      this.p = p;
+      this.time = p.getProcesses().get(0).getDuration();
+      this.startTime = getCurrentHour()+getCurrentDay()*24;
+    }
+    @Override
+    public void action() {
+      int timeDiff = getCurrentHour()+getCurrentDay()*24-this.startTime;
+      if (timeDiff >= this.time) {
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(targetAgent);
+        JSONArray x = new JSONArray();
+        JSONObject y = new JSONObject();
+        y.put("Name", p.getName());
+        y.put("Quantity", p.getAmount());
+        x.put(y);
+        msg.setContent(y.toString());
+        myAgent.send(msg);
+      }else {
         
       }
       

@@ -23,6 +23,7 @@ import jade.lang.acl.MessageTemplate;
 public class LoadingBayAgent extends BaseAgent {
 //	private JSONArray orderDetailsArray = new JSONArray();
 	private JSONArray orderDetailsArray = null;
+	private JSONArray orderDetailsObject = null;
 	private String readyOrderID = null;
 	
 	private HashMap<String, HashMap<String, Integer>> productDatabase = 
@@ -36,8 +37,9 @@ public class LoadingBayAgent extends BaseAgent {
 		
 		register("loading-bay", "loading-bay");	
 		
-//		addBehaviour(new OrderDetailsReceiver());
-		orderDetailsArray = getDummyOrderData();
+		addBehaviour(new OrderDetailsReceiver());
+		// For testing dummy OrderProcessor messages:
+		// orderDetailsArray = getDummyOrderData();
 		addBehaviour(new ProductDetailsReceiver());
 		addBehaviour(new TimeUpdater());
 	}
@@ -155,35 +157,16 @@ public class LoadingBayAgent extends BaseAgent {
 		}
 	}
 	
-//	private class OrderDetailsReceiver extends CyclicBehaviour {
-//		private MessageTemplate mt;
-//		
-//		public void action() {
-//			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("..........."),
-//					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-//			ACLMessage msg = myAgent.receive(mt);
-//			
-//			if (msg != null) {
-//				orderDetailsArray = new JSONArray(msg.getContent());
-//			} else {
-//				block();
-//			}
-//		}
-//	}
-	
-	// Later change to generic behavior with a limiting condition, to avoid having to keep it being
-	// called indefinitely (for this test case).
-	private class OrderDetailsReceiver extends Behaviour {
+	private class OrderDetailsReceiver extends CyclicBehaviour {
 		private String orderProcessorServiceType;
 		private AID orderProcessor = null;;
 		private MessageTemplate mt;
-		private int step = 0;
 		
 		protected void findOrderProcessor() {
             DFAgentDescription template = new DFAgentDescription();
             ServiceDescription sd = new ServiceDescription();
-            orderProcessorServiceType = "order-processor";
-//            orderProcessorServiceType = "OrderProcessing";
+            // orderProcessorServiceType = "order-processor";
+            orderProcessorServiceType = "OrderProcessing";
 
             sd.setType(orderProcessorServiceType);
             template.addServices(sd);
@@ -197,49 +180,25 @@ public class LoadingBayAgent extends BaseAgent {
             }
         }
 
+		
 		public void action() {
 			findOrderProcessor();
 			
-			switch (step) {
-			case 0:
-				ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
-
-				cfp.addReceiver(orderProcessor);
-				String convID = "loading-bay";
-				cfp.setContent(convID);
-				cfp.setConversationId(convID);
-				cfp.setPostTimeStamp(System.currentTimeMillis());
-				
-				myAgent.send(cfp);
-				
-				mt = MessageTemplate.MatchConversationId(convID);
-				
-				step = 1;
-				break;
-				
-			case 1:
-				ACLMessage reply = myAgent.receive(mt);
-				
-				if (reply != null) {
-					orderDetailsArray = new JSONArray(reply.getContent());					
-				}
-				else {
-					block();
-				}
-				
-				step = 2;
-				break;
-				
-			default:
-				break;
+			mt = MessageTemplate.and(MessageTemplate.MatchSender(orderProcessor),
+					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			ACLMessage msg = myAgent.receive(mt);
+			
+			if (msg != null) {
+				// If a single order is provided, in a message:
+				orderDetailsObject = new JSONArray(msg.getContent());
+				// Use this instead, if a list of orders is provided
+				// orderDetailsArray = new JSONArray(msg.getContent());
+			} else {
+				block();
 			}
 		}
-		
-		public boolean done() {
-			return (step == 2);
-		}
 	}
-	
+		
 	protected JSONArray getDummyOrderData() {
 		File fileRelative = new File("src/main/resources/config/small/orderprocessor.json");
 		String data = ""; 

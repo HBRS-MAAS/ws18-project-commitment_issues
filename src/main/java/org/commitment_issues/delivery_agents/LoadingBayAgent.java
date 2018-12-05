@@ -21,9 +21,7 @@ import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
 public class LoadingBayAgent extends BaseAgent {
-//	private JSONArray orderDetailsArray = new JSONArray();
 	private JSONArray orderDetailsArray = null;
-	private JSONArray orderDetailsObject = null;
 	private String readyOrderID = null;
 	
 	private HashMap<String, HashMap<String, Integer>> productDatabase = 
@@ -38,8 +36,6 @@ public class LoadingBayAgent extends BaseAgent {
 		register("loading-bay", "loading-bay");	
 		
 		addBehaviour(new OrderDetailsReceiver());
-		// For testing dummy OrderProcessor messages:
-		// orderDetailsArray = getDummyOrderData();
 		addBehaviour(new ProductDetailsReceiver());
 		addBehaviour(new TimeUpdater());
 	}
@@ -58,7 +54,6 @@ public class LoadingBayAgent extends BaseAgent {
 	protected void addCustomerProduct (String orderID, String product, int quantity) {
 		HashMap <String, Integer> temp = new HashMap<String, Integer>();
 		temp.put(product, quantity);
-//		productDatabase.put(orderID, temp);
 		productDatabase.get(orderID).put(product, quantity);
 	}
 	
@@ -74,7 +69,6 @@ public class LoadingBayAgent extends BaseAgent {
 	    try {
 			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	    
@@ -95,7 +89,6 @@ public class LoadingBayAgent extends BaseAgent {
 		protected void findReceiver() {
             DFAgentDescription template = new DFAgentDescription();
             ServiceDescription sd = new ServiceDescription();
-            // SERVICE TYPE FOR RECEIVING ORDER CONFIRMATIONS:
             sd.setType("order-aggregator");
             template.addServices(sd);
             try {
@@ -109,36 +102,8 @@ public class LoadingBayAgent extends BaseAgent {
         }
 		
 		public void action() {
-			findReceiver();			
+			findReceiver();
 			
-//			ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-//
-//			msg1.addReceiver(receivingAgent); 
-//			msg1.setContent(getMessageData("LoadingBayMessageExample_1"));
-//			msg1.setConversationId("packaged-orders");
-//			msg1.setPostTimeStamp(System.currentTimeMillis());
-//			
-//			myAgent.send(msg1);
-//			
-//			System.out.println("["+getAID().getLocalName()+"]: Order sent to OrderAggregator:\n"+msg1.toString());
-//			
-//			try {
-//	 			Thread.sleep(3000);
-//	 		} catch (InterruptedException e) {
-//	 			//e.printStackTrace();
-//	 		}
-//			
-//			ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
-//			
-//			msg2.addReceiver(receivingAgent); 
-//			msg2.setContent(getMessageData("LoadingBayMessageExample_2"));
-//			msg2.setConversationId("packaged-orders");
-//			msg2.setPostTimeStamp(System.currentTimeMillis());
-//			
-//			myAgent.send(msg2);
-//			
-//			System.out.println("["+getAID().getLocalName()+"]: Order sent to OrderAggregator:\n"+msg2.toString());
-//           
 			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 			
 			msg.addReceiver(receivingAgent); 
@@ -160,7 +125,6 @@ public class LoadingBayAgent extends BaseAgent {
 		protected void findOrderProcessor() {
             DFAgentDescription template = new DFAgentDescription();
             ServiceDescription sd = new ServiceDescription();
-            // orderProcessorServiceType = "order-processor";
             orderProcessorServiceType = "OrderProcessing";
 
             sd.setType(orderProcessorServiceType);
@@ -185,10 +149,9 @@ public class LoadingBayAgent extends BaseAgent {
 			
 			if (msg != null) {
 				// If a single order is provided, in a message:
-				orderDetailsObject = new JSONArray(msg.getContent());
-				orderDetailsArray.put(orderDetailsObject);
+				orderDetailsArray.put(new JSONObject(msg.getContent()));
 				
-				// Use this instead, if a list of orders is provided:
+				// Enable this instead, if a list of orders is provided:
 				/*
 				 JSONArray messageOrderDetailsArray = new JSONArray(msg.getContent());
 				 for (int i = 0 ; i < messageOrderDetailsArray.length() ; i++) {
@@ -199,21 +162,6 @@ public class LoadingBayAgent extends BaseAgent {
 				block();
 			}
 		}
-	}
-		
-	protected JSONArray getDummyOrderData() {
-		File fileRelative = new File("src/main/resources/config/small/orderprocessor.json");
-		String data = ""; 
-	    try {
-			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		
-	    JSONArray orderArray = new JSONArray(data);
-	    
-		return orderArray;
 	}
 	
 	private class ProductDetailsReceiver extends CyclicBehaviour {
@@ -227,7 +175,7 @@ public class LoadingBayAgent extends BaseAgent {
 			if (msg != null) {
 				System.out.println("["+getAID().getLocalName()+"]: Received product boxes from "+msg.getSender().getLocalName());
 
-				// Assumes a json object is sent
+				// This assumes a JSON object is sent by the preceding agent
 				String boxesMessageContent = msg.getContent();
 				JSONObject JSONData = new JSONObject(boxesMessageContent);
 				String orderIDKey = "OrderID";
@@ -287,8 +235,6 @@ public class LoadingBayAgent extends BaseAgent {
 		else {
 			// Get the product details currently associated with and stored for this orderID
 			HashMap<String, Integer> orderProductDetails = productDatabase.get(orderID);
-//			System.out.println("********************["+getAID().getLocalName()+"]: orderProductDetails"+orderProductDetails.toString());
-
 			
 			for (int i = 0 ; i < boxes.length(); i++) {
 				JSONObject boxDetails = boxes.getJSONObject(i);
@@ -315,7 +261,6 @@ public class LoadingBayAgent extends BaseAgent {
 		int productQuantity = 0;
 		HashMap<String, Integer> orderProductDetails = productDatabase.get(orderID);
 		
-		// JSONArray productArray = new JSONArray();
 		JSONObject productsObject = new JSONObject();
 		String IDCheckString = null;
 		
@@ -324,14 +269,11 @@ public class LoadingBayAgent extends BaseAgent {
 			
 			if (orderID.equals(orderData.getString("OrderID"))) {
 				IDCheckString = orderData.getString("OrderID");
-				// productArray = orderData.getJSONArray("Products");
 				productsObject = orderData.getJSONObject("Products");
 				break;
 			}
 		}
-		
-		// Check if order product array was retrieved
-//		System.out.println("["+getAID().getLocalName()+"]: Product array found: "+productArray.toString());
+
 		if (IDCheckString.equals(null)) {
 			System.out.println("["+getAID().getLocalName()+"]: ERROR: OrderID not found in orderDetailsArray ");
 		}

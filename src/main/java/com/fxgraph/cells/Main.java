@@ -22,9 +22,7 @@ public class Main extends Application {
   @Override
   public void start(Stage primaryStage) throws InterruptedException{
       BorderPane root = new BorderPane();
-
-
-      root.setCenter(graph.getScrollPane());
+      root.setCenter(this.graph.getScrollPane());
 
       Scene scene = new Scene(root, 2000, 2000);
       primaryStage.setScene(scene);

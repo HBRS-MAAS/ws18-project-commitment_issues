@@ -24,9 +24,10 @@ import jade.lang.acl.ACLMessage;
 
 @SuppressWarnings("serial")
 public class GraphVisualizationAgent extends BaseAgent {
-  protected Main m = new Main();
+  
   protected Graph graph = new Graph();
   protected Model model = graph.getModel();
+  protected Main m;
   protected ArrayList <String> trucksID = new ArrayList<String>();// list of trucks ids for easy tracking
   protected ArrayList <Cell> textNodes = new ArrayList<Cell>(); // list of all text nodes to track them easily
   
@@ -64,6 +65,7 @@ public class GraphVisualizationAgent extends BaseAgent {
       Thread thread = new Thread(() -> {
         
         try {
+          m = new Main(graph);
           m.main();
         } catch (InterruptedException e) {
           // TODO Auto-generated catch block
@@ -144,6 +146,9 @@ public class GraphVisualizationAgent extends BaseAgent {
     public void action() {
       ACLMessage recieve = myAgent.receive();
       CellType shape = CellType.BALL;
+      graph.beginUpdate();
+      model.addCell("t", shape);
+      graph.endUpdate();
       if (recieve != null && recieve.getConversationId().equals("truck-location")) {
         String content = recieve.getContent();
         

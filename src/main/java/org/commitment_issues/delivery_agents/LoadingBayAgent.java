@@ -174,27 +174,25 @@ public class LoadingBayAgent extends BaseAgent {
 	// Later change to generic behavior with a limiting condition, to avoid having to keep it being
 	// called indefinitely (for this test case).
 	private class OrderDetailsReceiver extends Behaviour {
-		private AID orderProcessor;
+		private String orderProcessorServiceType;
+		private AID orderProcessor = null;;
 		private MessageTemplate mt;
 		private int step = 0;
 		
 		protected void findOrderProcessor() {
             DFAgentDescription template = new DFAgentDescription();
             ServiceDescription sd = new ServiceDescription();
-            // SERVICE TYPE FOR RECEIVING ORDER CONFIRMATIONS:
-            sd.setType("order-processor");
+            orderProcessorServiceType = "order-processor";
+//            orderProcessorServiceType = "OrderProcessing";
+
+            sd.setType(orderProcessorServiceType);
             template.addServices(sd);
             try {
                 DFAgentDescription[] result = DFService.search(myAgent, template);
                 orderProcessor = result[0].getName();
                 
-                if (orderProcessor == null) {
-                	System.out.println("["+getAID().getLocalName()+"]: No OrderProcessor agent found.");
-                }
-//                else {
-//                	orderProcessor = result[0].getName();
-//                }
             } catch (FIPAException fe) {
+            	System.out.println("["+getAID().getLocalName()+"]: No OrderProcessor agent found.");
                 fe.printStackTrace();
             }
         }

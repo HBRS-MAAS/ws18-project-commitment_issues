@@ -102,13 +102,8 @@ public class LoadingBayAgent extends BaseAgent {
                 DFAgentDescription[] result = DFService.search(myAgent, template);
                 receivingAgent = result[0].getName();
                 
-                if (receivingAgent == null) {
-                	System.out.println("["+getAID().getLocalName()+"]: No OrderAggregator agent found.");
-                }
-//                else {
-//                	receivingAgent = result[0].getName();
-//                }
             } catch (FIPAException fe) {
+            	System.out.println("["+getAID().getLocalName()+"]: No OrderAggregator agent found.");
                 fe.printStackTrace();
             }
         }
@@ -191,8 +186,15 @@ public class LoadingBayAgent extends BaseAgent {
 			if (msg != null) {
 				// If a single order is provided, in a message:
 				orderDetailsObject = new JSONArray(msg.getContent());
-				// Use this instead, if a list of orders is provided
-				// orderDetailsArray = new JSONArray(msg.getContent());
+				orderDetailsArray.put(orderDetailsObject);
+				
+				// Use this instead, if a list of orders is provided:
+				/*
+				 JSONArray messageOrderDetailsArray = new JSONArray(msg.getContent());
+				 for (int i = 0 ; i < messageOrderDetailsArray.length() ; i++) {
+					orderDetailsArray.put(messageOrderDetailsArray.get(i));
+				 }
+				 */
 			} else {
 				block();
 			}

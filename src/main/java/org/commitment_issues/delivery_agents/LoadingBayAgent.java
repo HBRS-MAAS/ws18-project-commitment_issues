@@ -230,7 +230,8 @@ public class LoadingBayAgent extends BaseAgent {
 				// Assumes a json object is sent
 				String boxesMessageContent = msg.getContent();
 				JSONObject JSONData = new JSONObject(boxesMessageContent);
-				String orderID = JSONData.getString("OrderID");
+				String orderIDKey = "OrderID";
+				String orderID = JSONData.getString(orderIDKey);
 				
 				updateBoxDatabase(boxesMessageContent);
 				updateProductDatabase(boxesMessageContent);
@@ -314,7 +315,8 @@ public class LoadingBayAgent extends BaseAgent {
 		int productQuantity = 0;
 		HashMap<String, Integer> orderProductDetails = productDatabase.get(orderID);
 		
-		JSONArray productArray = new JSONArray();
+		// JSONArray productArray = new JSONArray();
+		JSONObject productsObject = new JSONObject();
 		String IDCheckString = null;
 		
 		for (int i = 0 ; i < orderDetailsArray.length(); i++) {
@@ -322,7 +324,8 @@ public class LoadingBayAgent extends BaseAgent {
 			
 			if (orderID.equals(orderData.getString("OrderID"))) {
 				IDCheckString = orderData.getString("OrderID");
-				productArray = orderData.getJSONArray("Products");
+				// productArray = orderData.getJSONArray("Products");
+				productsObject = orderData.getJSONObject("Products");
 				break;
 			}
 		}
@@ -333,30 +336,18 @@ public class LoadingBayAgent extends BaseAgent {
 			System.out.println("["+getAID().getLocalName()+"]: ERROR: OrderID not found in orderDetailsArray ");
 		}
 		
-		for (int j = 0 ; j < productArray.length() ; j++) {
-			String productName = null;;
-			JSONObject product = productArray.getJSONObject(j);
-			
-			// Get product name from key
-			for (String key : product.keySet()) {
-			    productName = key;
-			}
-			
-			int orderQuantity = product.getInt(productName);
+		for (String productName : productsObject.keySet()) {
+			int orderQuantity = productsObject.getInt(productName);
 			
 			try {
 				productQuantity = orderProductDetails.get(productName);
 			} catch (NullPointerException e) {
 				return false;
 			}
-//			if (orderProductDetails.get(productName).equals(null)) {
-//				return false;
-//			}
-//			else {
+			
 			if (productQuantity != orderQuantity) {
 				return false;
 			}
-//			}
 		}
 		return true;
 	}

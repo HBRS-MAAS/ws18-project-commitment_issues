@@ -36,9 +36,9 @@ public class GraphVisualizationAgent extends BaseAgent {
     yellowPageRegister();
     
     addBehaviour(new GraphBuilder());
-    addBehaviour(new JFXStart());
-    addBehaviour(new TruckTracker());
     
+    addBehaviour(new TruckTracker());
+    addBehaviour(new JFXStart());
    }
   
   private void yellowPageRegister() {

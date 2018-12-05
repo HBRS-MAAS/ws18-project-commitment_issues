@@ -50,7 +50,9 @@ public class Start {
         	agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-CoolingRacksAgent:org.commitment_issues.agents.CoolingRacksAgent");
         	agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-LoadingBayAgentAgent:org.commitment_issues.agents.LoadingBayAgent");
         	agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-MailboxAgent:org.commitment_issues.agents.MailboxAgent");
-		}
+          agents.add(bakeriesDetailsJSONArray.getJSONObject(i).getString("guid")+"-visualization:org.commitment_issues.delivery_agents.GraphVisualizationAgent");
+
+    	}
 
     	List<String> cmd = new Vector<>();
     	cmd.add("-agents");

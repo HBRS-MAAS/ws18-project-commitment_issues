@@ -43,25 +43,25 @@ public class LoadingBayAgent extends BaseAgent {
 	protected void addCustomerOrder (String orderID, String product, int quantity) {
 		HashMap <String, Integer> temp = new HashMap<String, Integer>();
 		temp.put(product, quantity);
-		productDatabase.put(orderID, temp);
+		this.productDatabase.put(orderID, temp);
 	}
 
 	protected void addCustomerProduct (String orderID, String product, int quantity) {
 		HashMap <String, Integer> temp = new HashMap<String, Integer>();
 		temp.put(product, quantity);
-		productDatabase.get(orderID).put(product, quantity);
+		this.productDatabase.get(orderID).put(product, quantity);
 	}
 
 	protected void UpdateCustomerProductQuantity (String orderID, String product, int addedQuantity) {
-		int oldQuantity = productDatabase.get(orderID).get(product);
+		int oldQuantity = this.productDatabase.get(orderID).get(product);
 		int newQuantity = oldQuantity + addedQuantity;
-		productDatabase.get(orderID).replace(product, newQuantity);
+		this.productDatabase.get(orderID).replace(product, newQuantity);
 	}
 
 	protected String createOrderBoxesJSONMessage (String orderID) {
 		JSONObject message = new JSONObject();
 		message.put("OrderID", orderID);		
-		message.put("Boxes", boxDatabase.get(orderID));
+		message.put("Boxes", this.boxDatabase.get(orderID));
 
 		return message.toString();
 	}
@@ -72,7 +72,7 @@ public class LoadingBayAgent extends BaseAgent {
 		String orderID = JSONData.getString("OrderID");
 		JSONArray boxes = JSONData.getJSONArray("Boxes");
 
-		boxDatabase.put(orderID, boxes);
+		this.boxDatabase.put(orderID, boxes);
 	}
 
 	protected void updateProductDatabase (String orderBoxesDetails) {
@@ -82,7 +82,7 @@ public class LoadingBayAgent extends BaseAgent {
 		JSONArray boxes = JSONData.getJSONArray("Boxes");
 
 		// Check if the database does not contain this order's details
-		if (!productDatabase.containsKey(orderID)) {
+		if (!this.productDatabase.containsKey(orderID)) {
 			for (int i = 0 ; i < boxes.length(); i++) {
 				JSONObject boxDetails = boxes.getJSONObject(i);
 				if (i == 0) {
@@ -96,7 +96,7 @@ public class LoadingBayAgent extends BaseAgent {
 		// In the event that it does:
 		else {
 			// Get the product details currently associated with and stored for this orderID
-			HashMap<String, Integer> orderProductDetails = productDatabase.get(orderID);
+			HashMap<String, Integer> orderProductDetails = this.productDatabase.get(orderID);
 
 			for (int i = 0 ; i < boxes.length(); i++) {
 				JSONObject boxDetails = boxes.getJSONObject(i);
@@ -121,13 +121,13 @@ public class LoadingBayAgent extends BaseAgent {
 		 * fulfilled in the database for that particular customer order.
 		 */
 		int productQuantity = 0;
-		HashMap<String, Integer> orderProductDetails = productDatabase.get(orderID);
+		HashMap<String, Integer> orderProductDetails = this.productDatabase.get(orderID);
 
 		JSONObject productsObject = new JSONObject();
 		String IDCheckString = null;
 
-		for (int i = 0 ; i < orderDetailsArray.length(); i++) {
-			JSONObject orderData = orderDetailsArray.getJSONObject(i);
+		for (int i = 0 ; i < this.orderDetailsArray.length(); i++) {
+			JSONObject orderData = this.orderDetailsArray.getJSONObject(i);
 
 			if (orderID.equals(orderData.getString("OrderID"))) {
 				IDCheckString = orderData.getString("OrderID");
@@ -137,7 +137,7 @@ public class LoadingBayAgent extends BaseAgent {
 		}
 
 		if (IDCheckString.equals(null)) {
-			System.out.println("["+getAID().getLocalName()+"]: ERROR: OrderID not found in orderDetailsArray ");
+			System.out.println("["+getAID().getLocalName()+"]: ERROR: OrderID not found in this.orderDetailsArray ");
 		}
 
 		for (String productName : productsObject.keySet()) {
@@ -188,7 +188,7 @@ public class LoadingBayAgent extends BaseAgent {
 			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 
 			msg.addReceiver(receivingAgent); 
-			msg.setContent(createOrderBoxesJSONMessage(readyOrderID));
+			msg.setContent(createOrderBoxesJSONMessage(((LoadingBayAgent)baseAgent).readyOrderID));
 			msg.setConversationId("packaged-orders");
 			msg.setPostTimeStamp(System.currentTimeMillis());
 
@@ -230,13 +230,13 @@ public class LoadingBayAgent extends BaseAgent {
 
 			if (msg != null) {
 				// If a single order is provided, in a message:
-				orderDetailsArray.put(new JSONObject(msg.getContent()));
+				((LoadingBayAgent)baseAgent).orderDetailsArray.put(new JSONObject(msg.getContent()));
 
 				// Enable this instead, if a list of orders is provided:
 				/*
-				 JSONArray messageOrderDetailsArray = new JSONArray(msg.getContent());
-				 for (int i = 0 ; i < messageOrderDetailsArray.length() ; i++) {
-					orderDetailsArray.put(messageOrderDetailsArray.get(i));
+				 JSONArray messagethis.orderDetailsArray = new JSONArray(msg.getContent());
+				 for (int i = 0 ; i < messagethis.orderDetailsArray.length() ; i++) {
+					this.orderDetailsArray.put(messagethis.orderDetailsArray.get(i));
 				 }
 				 */
 			} else {
@@ -266,7 +266,7 @@ public class LoadingBayAgent extends BaseAgent {
 				updateProductDatabase(boxesMessageContent);
 
 				if (orderProductsReady(orderID)) {
-					readyOrderID = orderID;
+					((LoadingBayAgent)baseAgent).readyOrderID = orderID;
 					addBehaviour(new PackagingPhaseMessageSender());
 				}
 			} else {

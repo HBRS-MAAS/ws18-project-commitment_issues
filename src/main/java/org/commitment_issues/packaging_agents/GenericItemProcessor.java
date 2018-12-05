@@ -126,11 +126,9 @@ public class GenericItemProcessor extends BaseAgent {
     private ArrayList<Product> products = new ArrayList<Product>();
     @Override
     public void action() {
-      MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
-
+      MessageTemplate mt = MessageTemplate.MatchConversationId("bake");
       ordersToPrepare = myAgent.receive(mt);
       if(ordersToPrepare != null) {
-        System.out.println(ordersToPrepare.getContent());
 
         if(isCoolingRack) {
           System.out.println("Cooling Rack has recieved products");
@@ -139,7 +137,7 @@ public class GenericItemProcessor extends BaseAgent {
           System.out.println("Items Preperation agent has recieved products");
 
         }
-        
+        System.out.println(ordersToPrepare.getContent());
         JSONArray productsJSON = new JSONArray(ordersToPrepare.getContent());
         for (int i = 0; i < productsJSON.length(); i++) {
           JSONObject product = productsJSON.getJSONObject(i);
@@ -203,14 +201,16 @@ public class GenericItemProcessor extends BaseAgent {
     public void action() {
       int timeDiff = getCurrentHour()+getCurrentDay()*24-this.startTime;
       if (timeDiff >= this.time) {
-        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        ACLMessage msg = new ACLMessage(234);
         msg.addReceiver(targetAgent);
         JSONArray x = new JSONArray();
         JSONObject y = new JSONObject();
         y.put("Name", p.getName());
         y.put("Quantity", p.getAmount());
         x.put(y);
+        
         msg.setContent(x.toString());
+        System.out.println(msg.getContent());
         myAgent.send(msg);
         System.out.println("Cooling of "+p.getName()+"is done and sent to the next stage"); 
         complete = true;
@@ -245,7 +245,7 @@ public class GenericItemProcessor extends BaseAgent {
       if (timeDiff >= this.time) {
         
         
-        if (this.step == this.p.getProcesses().size()) {
+        if (this.step == this.p.getProcesses().size()-1) {
           ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
           msg.addReceiver(targetAgent);
           msg.setConversationId("itemss-to-pack");

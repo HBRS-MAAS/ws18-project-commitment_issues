@@ -85,8 +85,12 @@ public class GraphVisualizationAgent extends BaseAgent {
       ((GraphVisualizationAgent)myAgent).graph.beginUpdate();
       ((GraphVisualizationAgent)myAgent).model.addCell("bakery-001", CellType.RECTANGLE);
       ((GraphVisualizationAgent)myAgent).model.addCell("customer-001", CellType.TRIANGLE);
-      //TextCell name = new TextCell("Name: bakery-001", "bakery-001", "bakery-001");
-      //((GraphVisualizationAgent)myAgent).model.addCell(name);
+      TextCell name = new TextCell("Name: bakery-001", "bakery-001", "bakery-001");
+      TextCell name2 = new TextCell("Name: customer-001", "customer-001", "customer-001");
+
+      ((GraphVisualizationAgent)myAgent).model.addCell(name);
+      ((GraphVisualizationAgent)myAgent).model.addCell(name2);
+      //((GraphVisualizationAgent)myAgent).model.addCell("bakery-002", CellType.RECTANGLE);
       ((GraphVisualizationAgent)myAgent).graph.endUpdate();
       ((GraphVisualizationAgent)myAgent).model.getAllCells().get(0).relocate( 10.0 ,100);
       ((GraphVisualizationAgent)myAgent).model.getAllCells().get(1).relocate(400 ,200);
@@ -94,7 +98,8 @@ public class GraphVisualizationAgent extends BaseAgent {
       graph.beginUpdate();
       model.addEdge("bakery-001", "customer-001");
       graph.endUpdate();
-      //((GraphVisualizationAgent)myAgent).model.getAllCells().get(1).relocate(10.0 ,100+50);
+      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(2).relocate(10.0 ,100-25);
+      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(3).relocate(400.0 ,200-25);
       ((GraphVisualizationAgent)myAgent).m.setGraph(((GraphVisualizationAgent)myAgent).graph);
       if (recieve != null && recieve.getConversationId().equals("initial-state")) {
         

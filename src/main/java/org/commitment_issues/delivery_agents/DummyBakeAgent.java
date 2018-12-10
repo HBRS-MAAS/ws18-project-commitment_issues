@@ -38,6 +38,7 @@ public class DummyBakeAgent extends BaseAgent {
     JSONObject g2 = new JSONObject();
     g2.put("products", group2);
     ms2.setContent(g2.toString());
+    products.add(ms2);
     System.out.println("Hello! BakeAgent "+ getAID().getName() +" is ready.");
     while (findTargetAgent("cooling-rack")) {
       

@@ -23,7 +23,7 @@ import jade.lang.acl.MessageTemplate;
 public class GenericItemProcessor extends BaseAgent {
   private ArrayList<Product> allProducts = new ArrayList<Product>();
   private boolean isCoolingRack;
-  AID targetAgent;
+  private AID targetAgent;
   protected void setup() {
     super.setup();
     System.out.println("Hello! GenericItemProcessor "+ getAID().getName() +" is ready.");
@@ -120,7 +120,7 @@ public class GenericItemProcessor extends BaseAgent {
     }
   }
   private class ProductsToProcess extends CyclicBehaviour{
-    ACLMessage ordersToPrepare;
+    private ACLMessage ordersToPrepare;
     private ArrayList<Product> products = new ArrayList<Product>();
     @Override
     public void action() {
@@ -164,7 +164,7 @@ public class GenericItemProcessor extends BaseAgent {
   }
   
   private class ProductListHandler extends OneShotBehaviour{
-    ArrayList<Product> products = new ArrayList<Product>();
+    private ArrayList<Product> products = new ArrayList<Product>();
     
     public ProductListHandler(ArrayList<Product> products) {
      this.products = products;
@@ -279,9 +279,9 @@ public class GenericItemProcessor extends BaseAgent {
   
   // A helper class to represent the products with there amounts after recieving them
   private class Product{
-    String name;
-    int amount;
-    ArrayList<Task> processes;
+    private String name;
+    private int amount;
+    private ArrayList<Task> processes;
     public ArrayList<Task> getProcesses() {
       return processes;
     }
@@ -315,8 +315,8 @@ public class GenericItemProcessor extends BaseAgent {
     }
   }
   private class Task{
-    String name;
-    int duration;
+    private String name;
+    private int duration;
     
     public String getName() {
       return name;
@@ -334,10 +334,10 @@ public class GenericItemProcessor extends BaseAgent {
       this.duration = duration;
     }
 
-    public Task() {
-      super();
-      // TODO Auto-generated constructor stub
-    }
+//    public Task() {
+//      super();
+//      // TODO Auto-generated constructor stub
+//    }
 
 //    public Task(String name, int duration) {
 //      super();

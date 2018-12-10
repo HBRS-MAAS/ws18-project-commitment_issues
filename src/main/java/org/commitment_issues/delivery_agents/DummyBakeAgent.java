@@ -2,7 +2,6 @@ package org.commitment_issues.delivery_agents;
 
 import java.util.ArrayList;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.yourteamname.agents.BaseAgent;
 
@@ -16,7 +15,7 @@ import jade.lang.acl.ACLMessage;
 
 @SuppressWarnings("serial")
 public class DummyBakeAgent extends BaseAgent {
-  AID targetAgent;
+  private AID targetAgent;
   private ArrayList<ACLMessage> products = new ArrayList<ACLMessage>();
   protected void setup() {
     super.setup();
@@ -98,8 +97,8 @@ public class DummyBakeAgent extends BaseAgent {
       }
   }
   private class Bake extends CyclicBehaviour{
-    int count;
-    ACLMessage send;
+    private int count;
+    private ACLMessage send;
     public Bake() {
       this.count = 0;
     }

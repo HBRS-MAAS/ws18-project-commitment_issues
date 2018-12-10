@@ -36,10 +36,8 @@ public class GenericItemProcessor extends BaseAgent {
     }
     if (isCoolingRack) {
       register("cooling-rack", "cooling-rack");
-      findTargetAgent("generic-rack");
     }else {
       register("generic-rack", "generic-rack");
-      findTargetAgent("packaging");
     }
     addBehaviour(new ProductsToProcess());
     addBehaviour(new TimeUpdater());
@@ -126,6 +124,7 @@ public class GenericItemProcessor extends BaseAgent {
     private ArrayList<Product> products = new ArrayList<Product>();
     @Override
     public void action() {
+     
       MessageTemplate mt = MessageTemplate.MatchConversationId("bake");
       ordersToPrepare = myAgent.receive(mt);
       if(ordersToPrepare != null) {
@@ -202,6 +201,7 @@ public class GenericItemProcessor extends BaseAgent {
     }
     @Override
     public void action() {
+      findTargetAgent("generic-rack");
       int timeDiff = getCurrentHour()+getCurrentDay()*24-this.startTime;
       if (timeDiff >= this.time) {
         ACLMessage msg = new ACLMessage(234);
@@ -248,6 +248,7 @@ public class GenericItemProcessor extends BaseAgent {
         
         
         if (this.step == this.p.getProcesses().size()-1) {
+          findTargetAgent("packaging");
           ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
           msg.addReceiver(targetAgent);
           msg.setConversationId("items-to-pack");

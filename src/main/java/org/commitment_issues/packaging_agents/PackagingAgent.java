@@ -58,7 +58,7 @@ public class PackagingAgent extends BaseAgent {
 //		}
 
 		addBehaviour(new ProductsReceiver());
-		addBehaviour(new Simulator());
+		//addBehaviour(new Simulator());
 		addBehaviour(new TimeUpdater());
 		
 		System.out.println("Hello! PackagingAgent " + getAID().getLocalName() + " is ready.");
@@ -152,10 +152,9 @@ public class PackagingAgent extends BaseAgent {
 			Iterator<String> it = pendingProducts_.keySet().iterator();
 			while (it.hasNext()) {
 				String product = it.next();
-				System.out.println("Product: " + product + " Quantity: " + pendingProducts_.get(product));
+				System.out.println("Product: " + product + " Pending Quantity: " + pendingProducts_.get(product));
 			}
 			System.out.println("**********************************");
-
 		}
 
 		public boolean requiresProduct(String productID) {
@@ -212,6 +211,7 @@ public class PackagingAgent extends BaseAgent {
 
 		private Box getNewBox(String productID) {
 			String boxID = bakeryName_ + "_Box_" + Integer.toString(boxCount_);
+			boxCount_ += 1;
 			return new Box(boxID, productID, 0, itemsPerBox_.get(productID));
 		}
 

@@ -111,6 +111,9 @@ public class GenericItemProcessor extends BaseAgent {
           Task t = new Task();
           t.setName(processes.getJSONObject(k).getString("action"));
           t.setDuration(processes.getJSONObject(k).getInt("duration"));
+          //System.out.println(p.getName());
+          //System.out.println(processes.getJSONObject(k).getString("action"));
+          //System.out.println(processes.getJSONObject(k).getInt("duration"));
           p.addProcess(t);
           
         }
@@ -136,14 +139,18 @@ public class GenericItemProcessor extends BaseAgent {
           System.out.println("Items Preperation agent has recieved products");
 
         }
+        products = new ArrayList<Product>();
         JSONObject productJSON = new JSONObject(ordersToPrepare.getContent());
         JSONObject productsJSON = productJSON.getJSONObject("products");
         int productsSize = productsJSON.keySet().size();
+        //System.out.println(productsSize);
         for (int i = 0; i < productsSize; i++) {
           Product p = new Product();
-          p.setAmount(productsJSON.getInt(productsJSON.keys().next()));
-          p.setName(productsJSON.keys().next());
-          productsJSON.keySet().remove(productsJSON.keys().next());
+          String key = productsJSON.keys().next();
+          //System.out.println(key);
+          p.setAmount(productsJSON.getInt(key));
+          p.setName(key);
+          productsJSON.keySet().remove(key);
           for(int k = 0; k < allProducts.size();k++) {
             if(p.getName().equals(allProducts.get(k).getName())) {
               p.setProcesses(allProducts.get(k).getProcesses());
@@ -151,8 +158,10 @@ public class GenericItemProcessor extends BaseAgent {
             }
           }
           products.add(p);
+          //System.out.println(products.size());
         }
         myAgent.addBehaviour(new ProductListHandler(products));
+        
         
       }
       else {
@@ -203,19 +212,20 @@ public class GenericItemProcessor extends BaseAgent {
     public void action() {
       findTargetAgent("generic-rack");
       int timeDiff = getCurrentHour()+getCurrentDay()*24-this.startTime;
-      if (timeDiff >= this.time) {
+      boolean done = false;
+      if (timeDiff >= this.time && !done) {
+        done = true;
         ACLMessage msg = new ACLMessage(234);
         msg.addReceiver(targetAgent);
         JSONObject x = new JSONObject();
         JSONObject y = new JSONObject();
         y.put(this.p.getName(),this.p.getAmount());
-        
         x.put("products", y);
-        
+        System.out.println("Cooling of "+p.getName()+" is done and sent to the next stage"); 
+
         msg.setContent(x.toString());
         msg.setConversationId("bake");
         myAgent.send(msg);
-        System.out.println("Cooling of "+p.getName()+" is done and sent to the next stage"); 
         complete = true;
       }
       
@@ -237,7 +247,7 @@ public class GenericItemProcessor extends BaseAgent {
     public GenericTask(Product product, int step) {
       this.p = product;
       this.step = step;
-      this.time = this.p.getProcesses().get(0).getDuration();
+      this.time = this.p.getProcesses().get(step).getDuration();
       this.startTime = getCurrentHour()+getCurrentDay()*24;
     }
 

@@ -23,7 +23,7 @@ public class DummyBakeAgent extends BaseAgent {
 
     JSONObject group1 = new JSONObject();
     group1.put("Bread", 18);
-    group1.put("Donut", 30);
+    
     JSONObject g1 = new JSONObject();
     g1.put("products", group1);
     ACLMessage ms1 = new ACLMessage(ACLMessage.INFORM);
@@ -35,6 +35,7 @@ public class DummyBakeAgent extends BaseAgent {
     group2.put("Breadstick", 2);
     group2.put("Arepa", 5);
     group2.put("Rosinenschnecke", 2);
+    group2.put("Donut", 23);
     JSONObject g2 = new JSONObject();
     g2.put("products", group2);
     ms2.setContent(g2.toString());
@@ -113,7 +114,7 @@ public class DummyBakeAgent extends BaseAgent {
         System.out.println("Baking agent has sent orders to the cooling rack");
         count++;
       }
-      else {block();}
+      
       
     }
     

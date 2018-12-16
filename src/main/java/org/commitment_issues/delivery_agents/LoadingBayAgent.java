@@ -328,7 +328,7 @@ public class LoadingBayAgent extends BaseAgent {
 					String productType = boxDetails.getString("ProductType");
 					if (productDatabase.get(orderID).containsKey(productType))
 					{
-						UpdateCustomerProductQuantity(orderID, productType, boxDetails.getInt("Quantity"));;
+						UpdateCustomerProductQuantity(orderID, productType, boxDetails.getInt("Quantity"));
 					}
 					else
 					{

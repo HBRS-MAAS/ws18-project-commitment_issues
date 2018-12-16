@@ -45,7 +45,7 @@ public class GenericItemProcessor extends BaseAgent {
   }
   private class TimeUpdater extends CyclicBehaviour {
     public void action() {
-      
+      //System.out.println(myAgent.getName()+"---------------time update");
       if (getAllowAction()) {
         finished();
       } 

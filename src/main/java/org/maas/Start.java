@@ -2,6 +2,7 @@ package org.maas;
 
 import java.util.List;
 import java.util.Vector;
+import org.maas.PackagingStageInitializer;
 import org.maas.DeliveryStageInitializer;
 
 public class Start {
@@ -65,7 +66,8 @@ public class Start {
 
         }
         if(packagingStage) {
-
+			Initializer init = new PackagingStageInitializer();
+            sb.append(init.initialize());
         }
         if(deliveryStage) {
 			Initializer init = new DeliveryStageInitializer();

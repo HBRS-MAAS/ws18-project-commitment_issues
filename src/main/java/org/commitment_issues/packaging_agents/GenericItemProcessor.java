@@ -24,6 +24,7 @@ public class GenericItemProcessor extends BaseAgent {
   private ArrayList<Product> allProducts = new ArrayList<Product>();
   private boolean isCoolingRack;
   private AID targetAgent;
+  private boolean productsToProcessBehaviorAdded = false;
   protected void setup() {
     super.setup();
     System.out.println("Hello! GenericItemProcessor "+ getAID().getName() +" is ready.");
@@ -39,14 +40,16 @@ public class GenericItemProcessor extends BaseAgent {
     }else {
       register("generic-rack", "generic-rack");
     }
-    addBehaviour(new ProductsToProcess());
     addBehaviour(new TimeUpdater());
-
   }
   private class TimeUpdater extends CyclicBehaviour {
     public void action() {
       //System.out.println(myAgent.getName()+"---------------time update");
       if (getAllowAction()) {
+    	  if (!productsToProcessBehaviorAdded) {
+    		    addBehaviour(new ProductsToProcess());
+    		    productsToProcessBehaviorAdded = true;
+    	  }
         finished();
       } 
     }

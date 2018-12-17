@@ -300,6 +300,12 @@ public class LoadingBayAgent extends BaseAgent {
 		String orderID = JSONData.getString("OrderID");
 		JSONArray boxes = JSONData.getJSONArray("Boxes");
 		
+		if (boxDatabase.get(orderID) != null) {
+			for (int i = 0; i < boxDatabase.get(orderID).length(); i++) {
+				boxes.put(boxDatabase.get(orderID).getJSONObject(i));
+			}
+		}
+		
 		boxDatabase.put(orderID, boxes);
 	}
 	
@@ -313,13 +319,21 @@ public class LoadingBayAgent extends BaseAgent {
 		if (!productDatabase.containsKey(orderID)) {
 			for (int i = 0 ; i < boxes.length(); i++) {
 				JSONObject boxDetails = boxes.getJSONObject(i);
-				if (i == 0)
+				if (!productDatabase.containsKey(orderID))
 				{
 					addCustomerOrder(orderID, boxDetails.getString("ProductType"), boxDetails.getInt("Quantity"));
 				}
 				else 
 				{
-					addCustomerProduct(orderID, boxDetails.getString("ProductType"), boxDetails.getInt("Quantity"));
+					String productType = boxDetails.getString("ProductType");
+					if (productDatabase.get(orderID).containsKey(productType))
+					{
+						UpdateCustomerProductQuantity(orderID, productType, boxDetails.getInt("Quantity"));
+					}
+					else
+					{
+						addCustomerProduct(orderID, productType, boxDetails.getInt("Quantity"));	
+					}
 				}
 			}
 		}

@@ -24,6 +24,7 @@ public class GenericItemProcessor extends BaseAgent {
   private ArrayList<Product> allProducts = new ArrayList<Product>();
   private boolean isCoolingRack;
   private AID targetAgent;
+  private boolean productsToProcessBehaviorAdded = false;
   protected void setup() {
     super.setup();
     System.out.println("Hello! GenericItemProcessor "+ getAID().getName() +" is ready.");
@@ -39,14 +40,16 @@ public class GenericItemProcessor extends BaseAgent {
     }else {
       register("generic-rack", "generic-rack");
     }
-    addBehaviour(new ProductsToProcess());
     addBehaviour(new TimeUpdater());
-
   }
   private class TimeUpdater extends CyclicBehaviour {
     public void action() {
       //System.out.println(myAgent.getName()+"---------------time update");
       if (getAllowAction()) {
+    	  if (!productsToProcessBehaviorAdded) {
+    		    addBehaviour(new ProductsToProcess());
+    		    productsToProcessBehaviorAdded = true;
+    	  }
         finished();
       } 
     }
@@ -183,14 +186,14 @@ public class GenericItemProcessor extends BaseAgent {
     public void action() {
       if (isCoolingRack) {
         for (int i = 0; i < this.products.size();i++) {
-          myAgent.addBehaviour(new CoolingTask(products.get(i),24*getCurrentDay()+getCurrentHour()));
-          System.out.println("Cooling of "+products.get(i).getName()+" started at "+Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())); 
+          myAgent.addBehaviour(new CoolingTask(products.get(i),24*60*getCurrentDay()+getCurrentHour()*60 + getCurrentMinute()));
+          System.out.println("Cooling of "+products.get(i).getName()+" started at "+Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute())); 
 
         }
       }
       else {
         for (int i = 0; i < this.products.size();i++) {
-          System.out.println(products.get(i).getProcesses().get(1).getName()+" of "+products.get(i).getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour()));
+          System.out.println(products.get(i).getProcesses().get(1).getName()+" of "+products.get(i).getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute()));
           myAgent.addBehaviour(new GenericTask(products.get(i), 1));
         }
       }
@@ -211,7 +214,7 @@ public class GenericItemProcessor extends BaseAgent {
     @Override
     public void action() {
       findTargetAgent("generic-rack");
-      int timeDiff = getCurrentHour()+getCurrentDay()*24-this.startTime;
+      int timeDiff = getCurrentMinute()+getCurrentHour()*60+getCurrentDay()*24*60-this.startTime;
       boolean done = false;
       if (timeDiff >= this.time && !done) {
         done = true;
@@ -248,12 +251,12 @@ public class GenericItemProcessor extends BaseAgent {
       this.p = product;
       this.step = step;
       this.time = this.p.getProcesses().get(step).getDuration();
-      this.startTime = getCurrentHour()+getCurrentDay()*24;
+      this.startTime = getCurrentMinute()+60*getCurrentHour()+getCurrentDay()*24*60;
     }
 
     @Override
     public void action() {
-      int timeDiff = getCurrentHour()+getCurrentDay()*24-this.startTime;
+      int timeDiff = getCurrentMinute()+60*getCurrentHour()+getCurrentDay()*24*60-this.startTime;
       if (timeDiff >= this.time) {
         
         
@@ -272,7 +275,7 @@ public class GenericItemProcessor extends BaseAgent {
           this.step++;
           System.out.println(p.getProcesses().get(step-1).getName()+" of "+p.getName()+" is done and sent to the " +p.getProcesses().get(step).getName()); 
           myAgent.addBehaviour(new GenericTask(p, step));
-          System.out.println(p.getProcesses().get(step).getName()+" of "+p.getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour()));
+          System.out.println(p.getProcesses().get(step).getName()+" of "+p.getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute()));
           complete = true;
         }
       } 

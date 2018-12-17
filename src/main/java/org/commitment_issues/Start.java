@@ -25,7 +25,10 @@ public class Start {
 
 		agents.add("bakery-001" + "-PackagingAgent:org.commitment_issues.packaging_agents.PackagingAgent(bakery-001)");
         agents.add("bakery-001"+"-OrderProcessor:org.commitment_issues.delivery_agents.DummyOrderProcessor");
-
+        agents.add("bakery-001"+"-BakingAgent:org.commitment_issues.delivery_agents.DummyBakeAgent");
+        agents.add("bakery-001"+"-ItemsProcessor:org.commitment_issues.packaging_agents.GenericItemProcessor");
+        agents.add("bakery-001"+"-CoolingRack:org.commitment_issues.packaging_agents.GenericItemProcessor(cooling)");
+ 
 		List<String> cmd = new Vector<>();
 		cmd.add("-agents");
 		StringBuilder sb = new StringBuilder();

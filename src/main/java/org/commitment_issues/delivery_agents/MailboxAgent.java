@@ -1,6 +1,6 @@
 package org.commitment_issues.delivery_agents;
 
-import org.yourteamname.agents.BaseAgent;
+import org.maas.agents.BaseAgent;
 
 import org.json.*;
 

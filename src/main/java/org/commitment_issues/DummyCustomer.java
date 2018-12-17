@@ -1,6 +1,6 @@
 package org.commitment_issues;
 
-import org.yourteamname.agents.BaseAgent;
+import org.maas.agents.BaseAgent;
 
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;

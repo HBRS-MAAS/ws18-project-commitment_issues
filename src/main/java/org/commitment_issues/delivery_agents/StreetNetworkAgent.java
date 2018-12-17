@@ -1,7 +1,7 @@
 //package org.commitment_issues.deliveryAgents;
 package org.commitment_issues.delivery_agents;
 
-import org.yourteamname.agents.BaseAgent;
+import org.maas.agents.BaseAgent;
 
 import java.io.File;
 import java.io.IOException;
@@ -395,7 +395,7 @@ public class StreetNetworkAgent extends BaseAgent {
 	protected String getJSONPath(LinkedList<Vertex> fullPath) {
 		double time = 0.0;
 		double edgeTime = 0.0;
-		double speedFactor = 1.0;
+		double speedFactor = 0.1;
 		double x = 0.0;
 		double y = 0.0;
 		
@@ -442,7 +442,7 @@ public class StreetNetworkAgent extends BaseAgent {
 				
 				for (int k = 0; k < nodesJSONArray.length(); k++) {
 					String nodeID = nodesJSONArray.getJSONObject(k).getString("guid");
-					if (nodeID.equals(graphSourceID)) {
+					if (nodeID.equals(graphTargetID)) {
 						x = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("x");
 						y = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("y");
 					}

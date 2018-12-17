@@ -20,7 +20,7 @@ import jade.lang.acl.MessageTemplate;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.yourteamname.agents.*;
+import org.maas.agents.*;
 
 import org.json.*;
 
@@ -99,7 +99,7 @@ public class TruckAgent extends BaseAgent {
 		currTruckLocation_[0] = currPath_.get(0)[0];
 		currTruckLocation_[1] = currPath_.get(0)[1];
 		
-		pathStartTime_ = (getCurrentDay() * 24) + getCurrentHour();
+		pathStartTime_ = (getCurrentDay() * 24 * 60) + (getCurrentHour() * 60) + getCurrentMinute() ;
 //		System.out.println(getAID().getLocalName() + " Truck started with new path at " + getCurrentHour() + " hrs");
 	}
 	
@@ -350,7 +350,7 @@ public class TruckAgent extends BaseAgent {
 		}
 		
 		private int getTime() {
-			return (getCurrentDay() * 24) + getCurrentHour();
+			return (getCurrentDay() * 24 * 60) + (getCurrentHour() * 60) + getCurrentMinute();
 		}
 		
 		private boolean reachedEndOfPath() {

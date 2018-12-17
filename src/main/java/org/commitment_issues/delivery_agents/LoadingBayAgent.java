@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.yourteamname.agents.BaseAgent;
+import org.maas.agents.BaseAgent;
 
 import jade.core.AID;
 import jade.core.behaviours.*;
@@ -98,7 +98,9 @@ public class LoadingBayAgent extends BaseAgent {
             template.addServices(sd);
             try {
                 DFAgentDescription[] result = DFService.search(myAgent, template);
-                receivingAgent = result[0].getName();
+                if (result.length > 0) {
+                	receivingAgent = result[0].getName();
+                }
                 
                 if (receivingAgent == null) {
                 	System.out.println("["+getAID().getLocalName()+"]: No OrderAggregator agent found.");
@@ -114,47 +116,21 @@ public class LoadingBayAgent extends BaseAgent {
 		public void action() {
 			findReceiver();			
 			
-//			ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-//
-//			msg1.addReceiver(receivingAgent); 
-//			msg1.setContent(getMessageData("LoadingBayMessageExample_1"));
-//			msg1.setConversationId("packaged-orders");
-//			msg1.setPostTimeStamp(System.currentTimeMillis());
-//			
-//			myAgent.send(msg1);
-//			
-//			System.out.println("["+getAID().getLocalName()+"]: Order sent to OrderAggregator:\n"+msg1.toString());
-//			
-//			try {
-//	 			Thread.sleep(3000);
-//	 		} catch (InterruptedException e) {
-//	 			//e.printStackTrace();
-//	 		}
-//			
-//			ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
-//			
-//			msg2.addReceiver(receivingAgent); 
-//			msg2.setContent(getMessageData("LoadingBayMessageExample_2"));
-//			msg2.setConversationId("packaged-orders");
-//			msg2.setPostTimeStamp(System.currentTimeMillis());
-//			
-//			myAgent.send(msg2);
-//			
-//			System.out.println("["+getAID().getLocalName()+"]: Order sent to OrderAggregator:\n"+msg2.toString());
-//           
-			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-			
-			msg.addReceiver(receivingAgent); 
-			msg.setContent(createOrderBoxesJSONMessage(readyOrderID));
-			msg.setConversationId("packaged-orders");
-			msg.setPostTimeStamp(System.currentTimeMillis());
-			
-			myAgent.send(msg);
-			
-			System.out.println("["+getAID().getLocalName()+"]: Order details sent to OrderAggregator");
+			if (receivingAgent != null) {
+				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+				
+				msg.addReceiver(receivingAgent); 
+				msg.setContent(createOrderBoxesJSONMessage(readyOrderID));
+				msg.setConversationId("packaged-orders");
+				msg.setPostTimeStamp(System.currentTimeMillis());
+				
+				myAgent.send(msg);
+				
+				System.out.println("["+getAID().getLocalName()+"]: Order details sent to OrderAggregator");	
+			}
 		}
 	}
-	
+
 //	private class OrderDetailsReceiver extends CyclicBehaviour {
 //		private MessageTemplate mt;
 //		
@@ -300,6 +276,12 @@ public class LoadingBayAgent extends BaseAgent {
 		String orderID = JSONData.getString("OrderID");
 		JSONArray boxes = JSONData.getJSONArray("Boxes");
 		
+		if (boxDatabase.get(orderID) != null) {
+			for (int i = 0; i < boxDatabase.get(orderID).length(); i++) {
+				boxes.put(boxDatabase.get(orderID).getJSONObject(i));
+			}
+		}
+		
 		boxDatabase.put(orderID, boxes);
 	}
 	
@@ -313,13 +295,21 @@ public class LoadingBayAgent extends BaseAgent {
 		if (!productDatabase.containsKey(orderID)) {
 			for (int i = 0 ; i < boxes.length(); i++) {
 				JSONObject boxDetails = boxes.getJSONObject(i);
-				if (i == 0)
+				if (!productDatabase.containsKey(orderID))
 				{
 					addCustomerOrder(orderID, boxDetails.getString("ProductType"), boxDetails.getInt("Quantity"));
 				}
 				else 
 				{
-					addCustomerProduct(orderID, boxDetails.getString("ProductType"), boxDetails.getInt("Quantity"));
+					String productType = boxDetails.getString("ProductType");
+					if (productDatabase.get(orderID).containsKey(productType))
+					{
+						UpdateCustomerProductQuantity(orderID, productType, boxDetails.getInt("Quantity"));
+					}
+					else
+					{
+						addCustomerProduct(orderID, productType, boxDetails.getInt("Quantity"));	
+					}
 				}
 			}
 		}

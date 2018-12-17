@@ -7,5 +7,6 @@ before_script:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
 os: linux
-script:
-  - gradle run
+script: 
+    - gradle run
+    - gradle run --args="-packaging -delivery"

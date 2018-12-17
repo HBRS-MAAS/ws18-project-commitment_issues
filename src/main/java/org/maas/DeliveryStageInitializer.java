@@ -19,6 +19,7 @@ public class DeliveryStageInitializer extends Initializer {
 		agents.add("StreetNetworkAgent:org.commitment_issues.delivery_agents.StreetNetworkAgent");
 		agents.add("MailboxAgent:org.commitment_issues.delivery_agents.MailboxAgent");
 		agents.add("OrderAggregatorAgent:org.commitment_issues.delivery_agents.OrderAggregatorAgent");
+		agents.add("customer-001" + ":org.commitment_issues.DummyCustomer");
 
         String agentInitString = String.join(";", agents);
         agentInitString += ";";

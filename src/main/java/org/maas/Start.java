@@ -75,6 +75,7 @@ public class Start {
         if(deliveryStage) {
 			Initializer init = new DeliveryStageInitializer();
             sb.append(init.initialize());
+            endTime = "005.24.00";
         }
         if(visualizationStage) {
 

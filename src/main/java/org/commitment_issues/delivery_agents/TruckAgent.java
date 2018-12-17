@@ -20,7 +20,7 @@ import jade.lang.acl.MessageTemplate;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.yourteamname.agents.*;
+import org.maas.agents.*;
 
 import org.json.*;
 

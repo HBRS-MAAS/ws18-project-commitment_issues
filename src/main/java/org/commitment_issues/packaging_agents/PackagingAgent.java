@@ -77,7 +77,9 @@ public class PackagingAgent extends BaseAgent {
 		template.addServices(sd);
 		try {
 			DFAgentDescription[] result = DFService.search(this, template);
-			this.loadingBayAgent_ = result[0].getName();
+			if (result.length > 0) {
+				this.loadingBayAgent_ = result[0].getName();	
+			}
 
 		} catch (FIPAException fe) {
 			fe.printStackTrace();

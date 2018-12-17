@@ -395,7 +395,7 @@ public class StreetNetworkAgent extends BaseAgent {
 	protected String getJSONPath(LinkedList<Vertex> fullPath) {
 		double time = 0.0;
 		double edgeTime = 0.0;
-		double speedFactor = 1.0;
+		double speedFactor = 0.1;
 		double x = 0.0;
 		double y = 0.0;
 		

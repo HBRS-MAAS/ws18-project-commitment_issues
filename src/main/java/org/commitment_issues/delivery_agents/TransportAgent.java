@@ -20,7 +20,7 @@ import jade.lang.acl.MessageTemplate;
 
 import org.commitment_issues.agents.CustomerAgent;
 import org.json.*;
-import org.yourteamname.agents.BaseAgent;
+import org.maas.agents.BaseAgent;
 
 
 @SuppressWarnings("serial")

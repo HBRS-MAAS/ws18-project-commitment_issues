@@ -98,7 +98,9 @@ public class LoadingBayAgent extends BaseAgent {
             template.addServices(sd);
             try {
                 DFAgentDescription[] result = DFService.search(myAgent, template);
-                receivingAgent = result[0].getName();
+                if (result.length > 0) {
+                	receivingAgent = result[0].getName();
+                }
                 
                 if (receivingAgent == null) {
                 	System.out.println("["+getAID().getLocalName()+"]: No OrderAggregator agent found.");
@@ -114,47 +116,21 @@ public class LoadingBayAgent extends BaseAgent {
 		public void action() {
 			findReceiver();			
 			
-//			ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-//
-//			msg1.addReceiver(receivingAgent); 
-//			msg1.setContent(getMessageData("LoadingBayMessageExample_1"));
-//			msg1.setConversationId("packaged-orders");
-//			msg1.setPostTimeStamp(System.currentTimeMillis());
-//			
-//			myAgent.send(msg1);
-//			
-//			System.out.println("["+getAID().getLocalName()+"]: Order sent to OrderAggregator:\n"+msg1.toString());
-//			
-//			try {
-//	 			Thread.sleep(3000);
-//	 		} catch (InterruptedException e) {
-//	 			//e.printStackTrace();
-//	 		}
-//			
-//			ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
-//			
-//			msg2.addReceiver(receivingAgent); 
-//			msg2.setContent(getMessageData("LoadingBayMessageExample_2"));
-//			msg2.setConversationId("packaged-orders");
-//			msg2.setPostTimeStamp(System.currentTimeMillis());
-//			
-//			myAgent.send(msg2);
-//			
-//			System.out.println("["+getAID().getLocalName()+"]: Order sent to OrderAggregator:\n"+msg2.toString());
-//           
-			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-			
-			msg.addReceiver(receivingAgent); 
-			msg.setContent(createOrderBoxesJSONMessage(readyOrderID));
-			msg.setConversationId("packaged-orders");
-			msg.setPostTimeStamp(System.currentTimeMillis());
-			
-			myAgent.send(msg);
-			
-			System.out.println("["+getAID().getLocalName()+"]: Order details sent to OrderAggregator");
+			if (receivingAgent != null) {
+				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+				
+				msg.addReceiver(receivingAgent); 
+				msg.setContent(createOrderBoxesJSONMessage(readyOrderID));
+				msg.setConversationId("packaged-orders");
+				msg.setPostTimeStamp(System.currentTimeMillis());
+				
+				myAgent.send(msg);
+				
+				System.out.println("["+getAID().getLocalName()+"]: Order details sent to OrderAggregator");	
+			}
 		}
 	}
-	
+
 //	private class OrderDetailsReceiver extends CyclicBehaviour {
 //		private MessageTemplate mt;
 //		

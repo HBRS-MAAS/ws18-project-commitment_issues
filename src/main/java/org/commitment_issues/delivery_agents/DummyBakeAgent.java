@@ -16,10 +16,10 @@ import jade.lang.acl.ACLMessage;
 @SuppressWarnings("serial")
 public class DummyBakeAgent extends BaseAgent {
   private AID targetAgent;
+  private boolean bakeBehaviourAdded = false;
   private ArrayList<ACLMessage> products = new ArrayList<ACLMessage>();
   protected void setup() {
     super.setup();
-    System.out.println("Hello! BakingAgent "+ getAID().getName() +" is ready.");
 
     JSONObject group1 = new JSONObject();
     group1.put("Bread", 18);
@@ -40,20 +40,26 @@ public class DummyBakeAgent extends BaseAgent {
     g2.put("products", group2);
     ms2.setContent(g2.toString());
     products.add(ms2);
-    System.out.println("Hello! BakeAgent "+ getAID().getName() +" is ready.");
     while (findTargetAgent("cooling-rack")) {
       
     }
-    addBehaviour(new Bake());
+    register("dummy-bake", "dummy-bake");
+    System.out.println("Hello! BakeAgent "+ getAID().getName() +" is ready.");
     addBehaviour(new TimeUpdater());
     
   }
   private class TimeUpdater extends CyclicBehaviour {
     public void action() {
-      
       if (getAllowAction()) {
+    	  if (!bakeBehaviourAdded) {
+    		  addBehaviour(new Bake());
+    		  bakeBehaviourAdded = true;
+    	  }
         finished();
       } 
+      else {
+    	  block();
+      }
     }
   }
   private boolean findTargetAgent(String service) {

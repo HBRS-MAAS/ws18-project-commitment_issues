@@ -52,28 +52,29 @@ public class Start {
         cmd.add("-agents");
 
         if(customerStage) {
-            
+			Initializer init = new CustomerInitializer();
+            sb.append(init.initialize(scenarioDirectory));
         }
         if(orderProcessingStage) {
 			Initializer init = new OrderProcessingInitializer();
-            sb.append(init.initialize());
+            sb.append(init.initialize(scenarioDirectory));
         }
         if(doughPrepStage) {
 
         }
         if(bakingStage) {
 			Initializer init = new BakingStageInitializer();
-            sb.append(init.initialize());
+            sb.append(init.initialize(scenarioDirectory));
             endTime = "000.06.00";
         }
         if(packagingStage) {
 			Initializer init = new PackagingStageInitializer();
-            sb.append(init.initialize());
+            sb.append(init.initialize(scenarioDirectory));
             endTime = "000.11.00";
         }
         if(deliveryStage) {
 			Initializer init = new DeliveryStageInitializer();
-            sb.append(init.initialize());
+            sb.append(init.initialize(scenarioDirectory));
             endTime = "005.24.00";
         }
         if(visualizationStage) {

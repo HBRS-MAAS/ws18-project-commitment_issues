@@ -11,7 +11,7 @@ import org.json.JSONObject;
 
 public class PackagingStageInitializer extends Initializer {
     @Override
-    public String initialize() {
+    public String initialize(String scenarioDirectory) {
         Vector<String> agents = new Vector<>();
         
         agents.add("OrderProcessor:org.commitment_issues.delivery_agents.DummyOrderProcessor");

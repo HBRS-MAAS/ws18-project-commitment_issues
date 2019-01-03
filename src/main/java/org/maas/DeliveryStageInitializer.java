@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 public class DeliveryStageInitializer extends Initializer {
     @Override
-    public String initialize() {
+    public String initialize(String scenarioDirectory) {
         Vector<String> agents = new Vector<>();
         
         agents = addTransportAndTruckAgents(agents);

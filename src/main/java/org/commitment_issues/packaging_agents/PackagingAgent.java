@@ -32,6 +32,7 @@ public class PackagingAgent extends BaseAgent {
 	private HashMap<String, Integer> itemsPerBox_ = new HashMap<String, Integer>();
 	private String bakeryName_;
 	private int boxCount_ = 0;
+	protected String scenarioDirectory_;
 
 	protected void setup() {
 		super.setup();
@@ -39,6 +40,10 @@ public class PackagingAgent extends BaseAgent {
 		Object args[] = getArguments();
 		if (args != null && args.length > 0) {
 			bakeryName_ = args[0].toString();
+			
+			if (args.length > 1) {
+				scenarioDirectory_ = args[1].toString();
+			}
 		}
 
 		register(getBakeryName() + "-packaging", getBakeryName() + "-packaging");
@@ -105,7 +110,7 @@ public class PackagingAgent extends BaseAgent {
 	}
 
 	private void determineItemsPerBox() {
-		String data = loadFile("src/main/resources/config/small/bakeries.json");
+		String data = loadFile("src/main/resources/config/" + scenarioDirectory_ + "/bakeries.json");
 		JSONArray bakeries = new JSONArray(data);
 		for (int b = 0; b < bakeries.length(); b++) {
 			JSONObject bakeryDetails = bakeries.getJSONObject(b);

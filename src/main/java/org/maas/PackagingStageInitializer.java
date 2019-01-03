@@ -18,7 +18,6 @@ public class PackagingStageInitializer extends Initializer {
     public String initialize(String scenarioDirectory) {
         Vector<String> agents = new Vector<>();
         Vector<String> bakeryNames = this.getBakeryNames(scenarioDirectory);
-        System.out.println(bakeryNames.toString());
         
         for (String bakeryName : bakeryNames)
         {

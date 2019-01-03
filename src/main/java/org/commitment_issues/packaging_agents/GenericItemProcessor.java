@@ -25,16 +25,24 @@ public class GenericItemProcessor extends BaseAgent {
   private boolean isCoolingRack;
   private AID targetAgent;
   private boolean productsToProcessBehaviorAdded = false;
+  protected String scenarioDirectory_;
   protected void setup() {
     super.setup();
     System.out.println("Hello! GenericItemProcessor "+ getAID().getName() +" is ready.");
-    productsStepReader();
+    
     Object[] args = getArguments();
     if (args != null && args.length > 0) {
-      isCoolingRack = true;
+    	scenarioDirectory_ = args[0].toString();
+    	
+    	if (args.length > 1) {
+    		isCoolingRack = true;
     }else {
-      isCoolingRack = false;
+    	    isCoolingRack = false;
+    	}
     }
+    
+    productsStepReader();
+    
     if (isCoolingRack) {
       register(getBakeryName() + "-cooling-rack", getBakeryName() + "-cooling-rack");
     }else {
@@ -99,7 +107,7 @@ public class GenericItemProcessor extends BaseAgent {
       }
   }
   protected void productsStepReader() {
-    File relativePath = new File("src/main/resources/config/small/bakeries.json");
+    File relativePath = new File("src/main/resources/config/" + scenarioDirectory_ + "/bakeries.json");
     String read = CustomerAgent.readFileAsString(relativePath.getAbsolutePath());
     JSONArray bakeriesJSON = new JSONArray(read);
     JSONObject bakery = bakeriesJSON.getJSONObject(0);

@@ -47,7 +47,7 @@ public class EntryAgent extends BaseAgent {
 		bakeryNames_.add(getBakeryNames(scenarioDirectory_).get(0));
 
 		// This agent also acts as a dummy order processor. Therefore this name.
-		register("entryAgent", "entryAgent");
+		register("OrderProcessing", "OrderProcessing");
 		loadAllOrders(scenarioDirectory_);
 		System.out.println("[" + getLocalName() + "]: Number of orders loaded = " + orderQueue_.size());
 

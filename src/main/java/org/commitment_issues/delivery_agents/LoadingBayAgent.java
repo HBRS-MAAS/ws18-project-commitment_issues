@@ -34,13 +34,17 @@ public class LoadingBayAgent extends BaseAgent {
 		super.setup();
 		System.out.println("Hello! LoadingBay-agent "+getAID().getName()+" is ready.");
 		
-		register("loading-bay", "loading-bay");	
+		register(getBakeryName() + "-loading-bay", getBakeryName() + "-loading-bay");	
 		
 //		addBehaviour(new OrderDetailsReceiver());
 		orderDetailsArray = getDummyOrderData();
 		addBehaviour(new ProductDetailsReceiver());
 		addBehaviour(new TimeUpdater());
 	}
+	
+	  public String getBakeryName() {
+		  return getLocalName().split("_")[0];
+	  }
 	
 	protected void takeDown() {
 		deRegister();

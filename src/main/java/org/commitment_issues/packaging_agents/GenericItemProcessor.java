@@ -36,11 +36,15 @@ public class GenericItemProcessor extends BaseAgent {
       isCoolingRack = false;
     }
     if (isCoolingRack) {
-      register("cooling-rack", "cooling-rack");
+      register(getBakeryName() + "-cooling-rack", getBakeryName() + "-cooling-rack");
     }else {
-      register("generic-rack", "generic-rack");
+      register(getBakeryName() + "-generic-rack", getBakeryName() + "-generic-rack");
     }
     addBehaviour(new TimeUpdater());
+  }
+  
+  public String getBakeryName() {
+	  return getLocalName().split("_")[0];
   }
   private class TimeUpdater extends CyclicBehaviour {
     public void action() {
@@ -207,8 +211,8 @@ public class GenericItemProcessor extends BaseAgent {
     }
     @Override
     public void action() {
-      findTargetAgent("generic-rack");
-      int timeDiff = getCurrentMinute()+getCurrentHour()*60+getCurrentDay()*24*60-this.startTime;
+      findTargetAgent(getBakeryName() + "-generic-rack");
+      int timeDiff = (getCurrentMinute()+getCurrentHour()*60+getCurrentDay()*24*60)-this.startTime;
       boolean done = false;
       if (timeDiff >= this.time && !done) {
         done = true;
@@ -255,7 +259,7 @@ public class GenericItemProcessor extends BaseAgent {
         
         
         if (this.step == this.p.getProcesses().size()-1) {
-          findTargetAgent("packaging");
+          findTargetAgent(getBakeryName() + "-packaging");
           ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
           msg.addReceiver(targetAgent);
           msg.setConversationId("items-to-pack");

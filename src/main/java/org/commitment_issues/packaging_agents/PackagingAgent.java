@@ -41,7 +41,7 @@ public class PackagingAgent extends BaseAgent {
 			bakeryName_ = args[0].toString();
 		}
 
-		register("packaging", "packaging");
+		register(getBakeryName() + "-packaging", getBakeryName() + "-packaging");
 
 		while (this.loadingBayAgent_ == null) {
 			findLoadingBayAgent();
@@ -63,6 +63,10 @@ public class PackagingAgent extends BaseAgent {
 		
 		System.out.println("Hello! PackagingAgent " + getAID().getLocalName() + " is ready.");
 	}
+	
+	  public String getBakeryName() {
+		  return getLocalName().split("_")[0];
+	  }
 
 	protected void takeDown() {
 		deRegister();
@@ -73,7 +77,7 @@ public class PackagingAgent extends BaseAgent {
 	private void findLoadingBayAgent() {
 		DFAgentDescription template = new DFAgentDescription();
 		ServiceDescription sd = new ServiceDescription();
-		sd.setType("loading-bay");
+		sd.setType(getBakeryName() + "-loading-bay");
 		template.addServices(sd);
 		try {
 			DFAgentDescription[] result = DFService.search(this, template);
@@ -376,7 +380,7 @@ public class PackagingAgent extends BaseAgent {
 				String message = messageList.get(i);
 				if ((message != null) && !message.isEmpty()) {
 					ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-					msg.addReceiver(discoverAgent("loading-bay"));
+					msg.addReceiver(discoverAgent(getBakeryName() + "-loading-bay"));
 					msg.setContent(message);
 					msg.setConversationId("boxes-ready");
 					msg.setPostTimeStamp(System.currentTimeMillis());

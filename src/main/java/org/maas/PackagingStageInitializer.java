@@ -29,6 +29,7 @@ public class PackagingStageInitializer extends Initializer {
             agents.add(bakeryName + "_ItemsProcessor:org.commitment_issues.packaging_agents.GenericItemProcessor(" + scenarioDirectory + ")");
             agents.add(bakeryName + "_PackagingAgent:org.commitment_issues.packaging_agents.PackagingAgent(bakery-001,"+ scenarioDirectory +")");
     		agents.add(bakeryName + "_LoadingBayAgent:org.commitment_issues.delivery_agents.LoadingBayAgent");
+    		break;
         }
         
         agents.add("EntryAgent:org.commitment_issues.packaging_agents.EntryAgent(" + scenarioDirectory + ")");

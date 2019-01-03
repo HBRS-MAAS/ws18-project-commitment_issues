@@ -200,7 +200,7 @@ public class StreetNetworkAgent extends BaseAgent {
 				myAgent.send(reply);
 				
 				// DEBUG:
-				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName());
+//				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName());
 			}
 			else {
 				block();

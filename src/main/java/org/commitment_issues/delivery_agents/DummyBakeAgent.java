@@ -117,7 +117,7 @@ public class DummyBakeAgent extends BaseAgent {
         send.setConversationId("bake");
         send.addReceiver(targetAgent);
         myAgent.send(send);
-        System.out.println("Baking agent has sent orders to the cooling rack");
+        System.out.println("[" + getLocalName() + "]: Sent orders to " + targetAgent.getLocalName());
         count++;
       }
       

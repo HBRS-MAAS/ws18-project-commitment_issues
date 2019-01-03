@@ -36,11 +36,15 @@ public class GenericItemProcessor extends BaseAgent {
       isCoolingRack = false;
     }
     if (isCoolingRack) {
-      register("cooling-rack", "cooling-rack");
+      register(getBakeryName() + "-cooling-rack", getBakeryName() + "-cooling-rack");
     }else {
-      register("generic-rack", "generic-rack");
+      register(getBakeryName() + "-generic-rack", getBakeryName() + "-generic-rack");
     }
     addBehaviour(new TimeUpdater());
+  }
+  
+  public String getBakeryName() {
+	  return getLocalName().split("_")[0];
   }
   private class TimeUpdater extends CyclicBehaviour {
     public void action() {
@@ -134,14 +138,8 @@ public class GenericItemProcessor extends BaseAgent {
       MessageTemplate mt = MessageTemplate.MatchConversationId("bake");
       ordersToPrepare = myAgent.receive(mt);
       if(ordersToPrepare != null) {
-
-        if(isCoolingRack) {
-          System.out.println("Cooling Rack has recieved products");
-        }
-        else {
-          System.out.println("Items Preperation agent has recieved products");
-
-        }
+    	System.out.println("[" + getLocalName() + "]: Received products from " + ordersToPrepare.getSender().getLocalName());
+    	
         products = new ArrayList<Product>();
         JSONObject productJSON = new JSONObject(ordersToPrepare.getContent());
         JSONObject productsJSON = productJSON.getJSONObject("products");
@@ -187,13 +185,13 @@ public class GenericItemProcessor extends BaseAgent {
       if (isCoolingRack) {
         for (int i = 0; i < this.products.size();i++) {
           myAgent.addBehaviour(new CoolingTask(products.get(i),24*60*getCurrentDay()+getCurrentHour()*60 + getCurrentMinute()));
-          System.out.println("Cooling of "+products.get(i).getName()+" started at "+Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute())); 
+          System.out.println("[" + getLocalName() + "]: Cooling of "+products.get(i).getName()+" started at "+Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute())); 
 
         }
       }
       else {
         for (int i = 0; i < this.products.size();i++) {
-          System.out.println(products.get(i).getProcesses().get(1).getName()+" of "+products.get(i).getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute()));
+          System.out.println("[" + getLocalName() + "]: " + products.get(i).getProcesses().get(1).getName()+" of "+products.get(i).getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute()));
           myAgent.addBehaviour(new GenericTask(products.get(i), 1));
         }
       }
@@ -213,8 +211,8 @@ public class GenericItemProcessor extends BaseAgent {
     }
     @Override
     public void action() {
-      findTargetAgent("generic-rack");
-      int timeDiff = getCurrentMinute()+getCurrentHour()*60+getCurrentDay()*24*60-this.startTime;
+      findTargetAgent(getBakeryName() + "-generic-rack");
+      int timeDiff = (getCurrentMinute()+getCurrentHour()*60+getCurrentDay()*24*60)-this.startTime;
       boolean done = false;
       if (timeDiff >= this.time && !done) {
         done = true;
@@ -224,7 +222,7 @@ public class GenericItemProcessor extends BaseAgent {
         JSONObject y = new JSONObject();
         y.put(this.p.getName(),this.p.getAmount());
         x.put("products", y);
-        System.out.println("Cooling of "+p.getName()+" is done and sent to the next stage"); 
+        System.out.println("[" + getLocalName() + "]: Cooling of "+p.getName()+" is done and sent to the next stage"); 
 
         msg.setContent(x.toString());
         msg.setConversationId("bake");
@@ -261,7 +259,7 @@ public class GenericItemProcessor extends BaseAgent {
         
         
         if (this.step == this.p.getProcesses().size()-1) {
-          findTargetAgent("packaging");
+          findTargetAgent(getBakeryName() + "-packaging");
           ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
           msg.addReceiver(targetAgent);
           msg.setConversationId("items-to-pack");
@@ -269,13 +267,13 @@ public class GenericItemProcessor extends BaseAgent {
           y.put(this.p.getName(),this.p.getAmount());
           msg.setContent(y.toString());
           myAgent.send(msg);
-          System.out.println(p.getProcesses().get(step).getName()+" of "+p.getName()+" is done and sent to the packaging"); 
+          System.out.println("[" + getLocalName() + "]: " + p.getProcesses().get(step).getName()+" of "+p.getName()+" is done and sent to the packaging"); 
           complete = true;
         }else {
           this.step++;
-          System.out.println(p.getProcesses().get(step-1).getName()+" of "+p.getName()+" is done and sent to the " +p.getProcesses().get(step).getName()); 
+          System.out.println("[" + getLocalName() + "]: " + p.getProcesses().get(step-1).getName()+" of "+p.getName()+" is done and sent to the " +p.getProcesses().get(step).getName()); 
           myAgent.addBehaviour(new GenericTask(p, step));
-          System.out.println(p.getProcesses().get(step).getName()+" of "+p.getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute()));
+          System.out.println("[" + getLocalName() + "]: " + p.getProcesses().get(step).getName()+" of "+p.getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute()));
           complete = true;
         }
       } 

@@ -87,7 +87,7 @@ public class TruckAgent extends BaseAgent {
 		currPath_ = null;
 
 		addBehaviour(new QueryPath(currOrder_.bakeryLocation_));
-		System.out.println(baseAgent.getAID().getLocalName() + " Started executing new order: " + currOrder_.orderID_);
+		System.out.println(baseAgent.getAID().getLocalName() + " Started executing new order: " + currOrder_.orderID_ + " of bakery " + currOrder_.bakeryName_);
 		
 		//TODO: Find a proper place to put the below finished command
 //		finished();
@@ -295,6 +295,7 @@ public class TruckAgent extends BaseAgent {
                 
                 if (currOrder_ == null) {
                 	currOrder_ = newOrder;
+                	currOrder_.bakeryName_ = msg.getSender().getLocalName().split("_")[0];
                 	reply.setPerformative(ACLMessage.INFORM);
                 	reply.setContent("DeliveryAccepted");
                 	System.out.println(baseAgent.getAID().getLocalName() + " Accepted new order as CURRENT order:");
@@ -302,6 +303,7 @@ public class TruckAgent extends BaseAgent {
                 }
                 else if (nextOrder_ == null) {
                 	nextOrder_ = newOrder;
+                	nextOrder_.bakeryName_ = msg.getSender().getLocalName().split("_")[0];
                 	reply.setPerformative(ACLMessage.INFORM);
                 	reply.setContent("DeliveryAccepted");
                 	System.out.println(baseAgent.getAID().getLocalName() + " Accepted new order as NEXT order:");
@@ -711,7 +713,7 @@ public class TruckAgent extends BaseAgent {
 			case 0:
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 				String convID = "ReadyForPickup" + orderID_;
-				msg.addReceiver(discoverAgent("transport-agent")); // TODO fix this services name
+				msg.addReceiver(discoverAgent(currOrder_.bakeryName_ + "-transport-agent")); // TODO fix this services name
 				msg.setContent(generateJsonMessage());
 				msg.setConversationId(convID);
 				msg.setReplyWith("req" + System.currentTimeMillis());

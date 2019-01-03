@@ -26,12 +26,16 @@ public class OrderAggregatorAgent extends BaseAgent {
   protected void setup() {
 	super.setup();
 	System.out.println("Hello! OrderAggregatorAgent " + getAID().getLocalName() + " is ready.");
-    this.register("order-aggregator","order-aggregator");
+    this.register(getBakeryName() + "-order-aggregator",getBakeryName() + "-order-aggregator");
     while(this.transportAgent == null) {
       findTransportAgent();
     }
     addBehaviour(new LoadingBayParser());
     addBehaviour(new TimeUpdater());
+  }
+  
+  public String getBakeryName() {
+	  return getLocalName().split("_")[0];
   }
 
   protected void register(String type, String name){
@@ -64,7 +68,7 @@ public class OrderAggregatorAgent extends BaseAgent {
   private void findTransportAgent() {
     DFAgentDescription template = new DFAgentDescription();
     ServiceDescription sd = new ServiceDescription();
-    sd.setType("transport-agent");
+    sd.setType(getBakeryName() + "-transport-agent");
     template.addServices(sd);
     try {
       DFAgentDescription[] result = DFService.search(this, template);

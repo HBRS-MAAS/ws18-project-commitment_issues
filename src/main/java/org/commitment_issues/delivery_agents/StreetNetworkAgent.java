@@ -26,10 +26,17 @@ public class StreetNetworkAgent extends BaseAgent {
 	public List<Edge> edges = new ArrayList<Edge>();
 	public Graph graph;
     public DijkstraAlgorithm dijkstra;
+    
+    protected String scenarioDirectory_;
 
 	protected void setup() {
 		super.setup();
 		System.out.println("Hello! StreetNetwork-agent "+getAID().getName()+" is ready.");
+		
+		Object args[] = getArguments();
+		if (args != null && args.length > 0) {
+			scenarioDirectory_ = args[0].toString();
+		}
 		
 		register("street-network", "street-network");
 		
@@ -49,7 +56,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		}
 		
 	protected String getStreetNetworkData() {
-		File fileRelative = new File("src/main/resources/config/small/street-network.json");
+		File fileRelative = new File("src/main/resources/config/" + scenarioDirectory_ + "/street-network.json");
 		String data = ""; 
 	    try {
 			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));

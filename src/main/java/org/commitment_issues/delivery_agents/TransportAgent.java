@@ -28,10 +28,17 @@ public class TransportAgent extends BaseAgent {
   // declaring the attributes static as their will be only one transport agent
   private static ArrayList<Order> orders = new ArrayList<Order>(); //list of all the orders
   private static AID[] trucks;//list of all the trucks
+  
+  protected String scenarioDirectory_;
 
 	protected void setup() {
 		super.setup();
 		System.out.println("Hello! TransportAgent-agent " + getAID().getLocalName() + " is ready.");
+		
+		Object args[] = getArguments();
+		if (args != null && args.length > 0) {
+			scenarioDirectory_ = args[0].toString();
+		}
 
 		//register("transport-agent", "transport-agent");
 		register(getBakeryName() + "-transport-agent", getBakeryName() + "-transport-agent");
@@ -56,9 +63,9 @@ public class TransportAgent extends BaseAgent {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 
-	protected static float[] getNodePosition(String guid) {
+	protected float[] getNodePosition(String guid) {
 		float location[] = new float[2];
-		File relativePath = new File("src/main/resources/config/small/street-network.json");
+		File relativePath = new File("src/main/resources/config/" + scenarioDirectory_ + "/street-network.json");
 		String streetNWContents = CustomerAgent.readFileAsString(relativePath.getAbsolutePath());
 		JSONArray nodesArray = new JSONObject(streetNWContents).getJSONArray("nodes");
 		for (int i = 0; i < nodesArray.length(); i++) {
@@ -116,9 +123,9 @@ public class TransportAgent extends BaseAgent {
 				for (int i = 0; i < JSONOrdersBoxes.length(); i++) {
 					JSONObject wholeOrder = JSONOrdersBoxes.getJSONObject(i);
           String cutID = wholeOrder.getString("CustId");//This is assuming that the aggregator will also pass the customerID
-          float [] custLocation = TransportAgent.getNodePosition(cutID);
+          float [] custLocation = getNodePosition(cutID);
           String bakID = wholeOrder.getString("BackId");//This is assuming that the aggregator will also pass the customerID
-          float [] bakLocation = TransportAgent.getNodePosition(bakID);
+          float [] bakLocation = getNodePosition(bakID);
 					String wholeOrderID = wholeOrder.getString("OrderId");
 
 					Order order = new Order();

@@ -22,10 +22,10 @@ public class DeliveryStageInitializer extends Initializer {
         
         Vector<String> bakeryNames = this.getBakeryNames(scenarioDirectory);
         for (String bakeryName : bakeryNames) {
-            agents.add(bakeryName + "_TransportAgent:org.commitment_issues.delivery_agents.TransportAgent");
+            agents.add(bakeryName + "_TransportAgent:org.commitment_issues.delivery_agents.TransportAgent(" + scenarioDirectory + ")");
     		agents.add(bakeryName + "_OrderAggregatorAgent:org.commitment_issues.delivery_agents.OrderAggregatorAgent");
         }
-        agents.add("StreetNetworkAgent:org.commitment_issues.delivery_agents.StreetNetworkAgent");
+        agents.add("StreetNetworkAgent:org.commitment_issues.delivery_agents.StreetNetworkAgent(" + scenarioDirectory + ")");
         agents.add("MailboxAgent:org.commitment_issues.delivery_agents.MailboxAgent");
 		agents.add("customer-001" + ":org.commitment_issues.DummyCustomer");
 

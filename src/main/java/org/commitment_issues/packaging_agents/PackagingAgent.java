@@ -371,17 +371,19 @@ public class PackagingAgent extends BaseAgent {
 
 			AID loadingBayAgent = null;
 
-			try {
-				DFAgentDescription[] result = DFService.search(baseAgent, template);
-				if (result.length > 0) {
-					loadingBayAgent = result[0].getName();
-				} else {
-					loadingBayAgent = null;
-					System.out.println(
-							getAID().getLocalName() + ": No agent with Service type (" + serviceType + ") found!");
+			while (loadingBayAgent == null) {
+				try {
+					DFAgentDescription[] result = DFService.search(baseAgent, template);
+					if (result.length > 0) {
+						loadingBayAgent = result[0].getName();
+					} else {
+						loadingBayAgent = null;
+						System.out.println(
+								getAID().getLocalName() + ": No agent with Service type (" + serviceType + ") found!");
+					}
+				} catch (FIPAException fe) {
+					fe.printStackTrace();
 				}
-			} catch (FIPAException fe) {
-				fe.printStackTrace();
 			}
 
 			return loadingBayAgent;

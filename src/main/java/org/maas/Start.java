@@ -23,7 +23,7 @@ public class Start {
     private static boolean noAgentStarting = true;
 
     private static String endTime = "000.03.00";
-    private static String scenarioDirectory = "small";
+    private static String scenarioDirectory = "large-30-days";
 
     public static void main(String[] args) {
         if(!decodeArguments(args)) {
@@ -71,7 +71,7 @@ public class Start {
 			Initializer init = new PackagingStageInitializer();
 
             sb.append(init.initialize(scenarioDirectory));
-            endTime = "000.11.00";
+            endTime = "005.11.00";
         }
         if(deliveryStage) {
 			Initializer init = new DeliveryStageInitializer();

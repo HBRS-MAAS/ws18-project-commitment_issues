@@ -33,7 +33,8 @@ public class TransportAgent extends BaseAgent {
 		super.setup();
 		System.out.println("Hello! TransportAgent-agent " + getAID().getLocalName() + " is ready.");
 
-		register("transport-agent", "transport-agent");
+		//register("transport-agent", "transport-agent");
+		register(getBakeryName() + "-transport-agent", getBakeryName() + "-transport-agent");
 		try {
 			Thread.sleep(3000);
 		} catch (InterruptedException e) {
@@ -45,6 +46,10 @@ public class TransportAgent extends BaseAgent {
 		addBehaviour(new truckReady());// check if trucks are ready to pick orders
 		addBehaviour(new TimeUpdater());
 	}
+	
+	  public String getBakeryName() {
+		  return getLocalName().split("_")[0];
+	  }
 
 	protected void takeDown() {
 		deRegister();

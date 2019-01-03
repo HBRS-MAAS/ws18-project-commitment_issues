@@ -98,7 +98,7 @@ public class LoadingBayAgent extends BaseAgent {
             DFAgentDescription template = new DFAgentDescription();
             ServiceDescription sd = new ServiceDescription();
             // SERVICE TYPE FOR RECEIVING ORDER CONFIRMATIONS:
-            sd.setType("order-aggregator");
+            sd.setType(getBakeryName() + "-order-aggregator");
             template.addServices(sd);
             try {
                 DFAgentDescription[] result = DFService.search(myAgent, template);

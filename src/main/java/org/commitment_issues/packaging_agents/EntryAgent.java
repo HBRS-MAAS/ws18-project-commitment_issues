@@ -19,6 +19,7 @@ import org.maas.utils.JsonConverter;
 
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -28,51 +29,38 @@ import jade.lang.acl.ACLMessage;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 @SuppressWarnings("serial")
-public class EntryAgent extends BaseAgent{
+public class EntryAgent extends BaseAgent {
 	private PriorityQueue<Order> orderQueue_ = new PriorityQueue<Order>(100000, new OrderComparator());
 	protected String scenarioDirectory_;
-	Vector<String> bakeryNames_;
+	Vector<String> bakeryNames_ = new Vector<String>();
 	int currBakery_ = 0;
-	
+
 	protected void setup() {
 		super.setup();
-		
+
 		Object args[] = getArguments();
 		if (args != null && args.length > 0) {
 			scenarioDirectory_ = args[0].toString();
 		}
-		
-		bakeryNames_ = getBakeryNames(scenarioDirectory_);
 
+//		bakeryNames_ = getBakeryNames(scenarioDirectory_);
+		bakeryNames_.add(getBakeryNames(scenarioDirectory_).get(0));
+
+		// This agent also acts as a dummy order processor. Therefore this name.
 		register("entryAgent", "entryAgent");
 		loadAllOrders(scenarioDirectory_);
 		System.out.println("[" + getLocalName() + "]: Number of orders loaded = " + orderQueue_.size());
-		
-		System.out.println("Hello! EntryAgent " + getAID().getName() + " is ready.");
-		addBehaviour(new SendOrders());
 
+		addBehaviour(new SendOrders());
+		System.out.println("Hello! EntryAgent " + getAID().getName() + " is ready.");
 	}
-	
+
 	protected void takeDown() {
 		deRegister();
 
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
-	
-	private class TimeUpdater extends CyclicBehaviour {
-		public void action() {
-			if (getAllowAction()) {
-//				if (!bakeBehaviourAdded) {
-//					addBehaviour(new Bake());
-//					bakeBehaviourAdded = true;
-//				}
-				finished();
-			} else {
-				block();
-			}
-		}
-	}
-	
+
 	protected AID discoverAgent(String serviceType) {
 		// Find the an agent for given service type
 		DFAgentDescription template = new DFAgentDescription();
@@ -88,8 +76,8 @@ public class EntryAgent extends BaseAgent{
 				loadingBayAgent = result[0].getName();
 			} else {
 				loadingBayAgent = null;
-				System.out.println("[" +
-						getAID().getLocalName() + "] : No agent with Service type (" + serviceType + ") found!");
+				System.out.println(
+						"[" + getAID().getLocalName() + "] : No agent with Service type (" + serviceType + ") found!");
 			}
 		} catch (FIPAException fe) {
 			fe.printStackTrace();
@@ -97,38 +85,39 @@ public class EntryAgent extends BaseAgent{
 
 		return loadingBayAgent;
 	}
-	
-    private Vector<String> getBakeryNames (String scenarioDirectory) {
-        String filePath = "config/" + scenarioDirectory + "/bakeries.json";
-        String fileString = this.readConfigFile(filePath);
-        TypeReference<?> type = new TypeReference<Vector<Bakery>>(){};
-        Vector<Bakery> bakeries = JsonConverter.getInstance(fileString, type);
-        Vector<String> bakeryNames = new Vector<String> (bakeries.size());
-        for (Bakery bakery : bakeries) {
-            bakeryNames.add(bakery.getGuid());
-        }
-        return bakeryNames;
-    }
-    
-    private String readConfigFile (String filePath){
-        ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource(filePath).getFile());
-        String fileString = "";
-        try (Scanner sc = new Scanner(file)) {
-            sc.useDelimiter("\\Z"); 
-            fileString = sc.next();
-            sc.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return fileString;
-    }
-	
+
+	private Vector<String> getBakeryNames(String scenarioDirectory) {
+		String filePath = "config/" + scenarioDirectory + "/bakeries.json";
+		String fileString = this.readConfigFile(filePath);
+		TypeReference<?> type = new TypeReference<Vector<Bakery>>() {
+		};
+		Vector<Bakery> bakeries = JsonConverter.getInstance(fileString, type);
+		Vector<String> bakeryNames = new Vector<String>(bakeries.size());
+		for (Bakery bakery : bakeries) {
+			bakeryNames.add(bakery.getGuid());
+		}
+		return bakeryNames;
+	}
+
+	private String readConfigFile(String filePath) {
+		ClassLoader classLoader = getClass().getClassLoader();
+		File file = new File(classLoader.getResource(filePath).getFile());
+		String fileString = "";
+		try (Scanner sc = new Scanner(file)) {
+			sc.useDelimiter("\\Z");
+			fileString = sc.next();
+			sc.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return fileString;
+	}
+
 	private void loadAllOrders(String scenarioDirectory) {
-		File relativePath = new File("src/main/resources/config/"+ scenarioDirectory + "/clients.json");
-	    String read = CustomerAgent.readFileAsString(relativePath.getAbsolutePath());
-	    JSONArray clientsArray = new JSONArray(read);
-	    
+		File relativePath = new File("src/main/resources/config/" + scenarioDirectory + "/clients.json");
+		String read = CustomerAgent.readFileAsString(relativePath.getAbsolutePath());
+		JSONArray clientsArray = new JSONArray(read);
+
 		for (int c = 0; c < clientsArray.length(); c++) {
 			JSONArray orders = clientsArray.getJSONObject(c).getJSONArray("orders");
 			for (int o = 0; o < orders.length(); o++) {
@@ -137,11 +126,11 @@ public class EntryAgent extends BaseAgent{
 			}
 		}
 	}
-	
+
 	protected int getGlobalOrderTime(int day, int hour, int minute) {
 		return minute + (hour * 60) + (day * 24 * 60);
 	}
-	
+
 	private class Order {
 		public String guid;
 		public String customerID;
@@ -183,62 +172,122 @@ public class EntryAgent extends BaseAgent{
 			return 0;
 		}
 	}
-	
+
 	private class SendOrders extends CyclicBehaviour {
 		public void action() {
+			System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 			if (getAllowAction()) {
+				System.out.println("+++++++++++++++++++++++++++++++++++++");
 				ArrayList<Order> orders = getOrdersForCurrentTimeStep();
 				if (orders.size() > 0) {
 					for (int o = 0; o < orders.size(); o++) {
+						baseAgent.addBehaviour(new BroadcastOrder(orders.get(o)));
 						String currBakery = bakeryNames_.get(currBakery_);
-						currBakery_ = (currBakery_ >= bakeryNames_.size()) ? 0 : (currBakery_+1);
+						currBakery_ = (currBakery_ >= bakeryNames_.size()-1) ? 0 : (currBakery_ + 1);
+						System.out.println("***********Looking for: "+ currBakery + "-cooling-rack");
 						AID receiver = discoverAgent(currBakery + "-cooling-rack");
 						ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 						msg.setContent(orders.get(o).products.toString());
 						msg.setConversationId("bake");
 						msg.addReceiver(receiver);
 						baseAgent.send(msg);
-						System.out.println("[" + getLocalName() + "]: Sent orders to " + receiver.getLocalName() + "\n" + msg.getContent());
+						System.out.println("[" + getLocalName() + "]: Sent orders to " + receiver.getLocalName() + "\n"
+								+ msg.getContent());
 					}
-					
+
 				}
 				finished();
 			} else {
 				block();
 			}
 		}
-		
+
 		protected ArrayList<Order> getOrdersForCurrentTimeStep() {
 			ArrayList<Order> orders = new ArrayList<Order>();
 			ArrayList<Order> ordersToRemove = new ArrayList<Order>();
-			
+			System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
+
 			int currGlobalOrderTime = getGlobalOrderTime(getCurrentDay(), getCurrentHour(), 0);
 			Iterator<Order> itr = orderQueue_.iterator();
 			while (itr.hasNext()) {
 				Order order = itr.next();
-				System.out.println("Best Order Scheduled for: " + order.orderDay +  "." + order.orderHour + "." + order.orderMinute);
+				System.out.println("Best Order Scheduled for: " + order.orderDay + "." + order.orderHour + "."
+						+ order.orderMinute);
 				if (currGlobalOrderTime == order.getOrderTime()) {
 					orders.add(order);
 					ordersToRemove.add(order);
-				}
-				else if (currGlobalOrderTime > order.getOrderTime()) {
-					System.out.println("[" + getLocalName() + "]: Discarded order " + order.guid +
-							" with order time " + order.orderDay + "." + order.orderHour + "." + order.orderMinute);
+				} else if (currGlobalOrderTime > order.getOrderTime()) {
+					System.out.println("[" + getLocalName() + "]: Discarded order " + order.guid + " with order time "
+							+ order.orderDay + "." + order.orderHour + "." + order.orderMinute);
 					ordersToRemove.add(order);
-				}
-				else {
-					// Put the extracted order back in the queue
-//					orderQueue_.add(order);
+				} else {
 					break;
 				}
 			}
-			
+
 			orderQueue_.removeAll(ordersToRemove);
-			
+
 			return orders;
 		}
 	}
-	
-	
 
+	private AID[] findAllAgents() {
+		DFAgentDescription template = new DFAgentDescription();
+		ServiceDescription sd = new ServiceDescription();
+		template.addServices(sd);
+		AID[] allAgents = null;
+		try {
+			DFAgentDescription[] result = DFService.search(this, template);
+			allAgents = new AID[result.length];
+			int counter = 0;
+			for (DFAgentDescription ad : result) {
+				allAgents[counter] = ad.getName();
+				counter++;
+			}
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
+			allAgents = new AID[0];
+		}
+
+		return allAgents;
+	}
+
+	private class BroadcastOrder extends OneShotBehaviour {
+		JSONObject orderObj;
+
+		public BroadcastOrder(Order order) {
+			super();
+			this.orderObj = getJSONObject(order);
+		}
+
+		protected JSONObject getJSONObject(Order order) {
+			JSONObject object = new JSONObject();
+
+			JSONObject orderDate = new JSONObject();
+			orderDate.put("day", order.orderDay);
+			orderDate.put("hour", order.orderHour);
+
+			JSONObject deliveryDate = new JSONObject();
+			deliveryDate.put("day", order.deliveryDay);
+			deliveryDate.put("hour", order.deliveryHour);
+
+			object.put("customerId", order.customerID);
+			object.put("guid", order.guid);
+			object.put("orderDate", orderDate);
+			object.put("deliveryDate", deliveryDate);
+			object.put("products", order.products.getJSONObject("products"));
+			return object;
+		}
+
+		@Override
+		public void action() {
+			AID[] allAgents = findAllAgents();
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			msg.setContent(orderObj.toString());
+			for (AID agent : allAgents) {
+				msg.addReceiver(agent);
+			}
+			sendMessage(msg);
+		}
+	}
 }

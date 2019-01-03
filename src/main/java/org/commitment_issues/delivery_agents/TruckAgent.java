@@ -124,7 +124,7 @@ public class TruckAgent extends BaseAgent {
             else
             {
             	streetNwAgent = null;
-            	System.out.println(getAID().getLocalName() +  ": No agent with Service type (" + serviceType + ") found!");
+//            	System.out.println(getAID().getLocalName() +  ": No agent with Service type (" + serviceType + ") found!");
             }
         } catch (FIPAException fe) {
             fe.printStackTrace();

@@ -24,6 +24,7 @@ public class DeliveryStageInitializer extends Initializer {
         for (String bakeryName : bakeryNames) {
             agents.add(bakeryName + "_TransportAgent:org.commitment_issues.delivery_agents.TransportAgent(" + scenarioDirectory + ")");
     		agents.add(bakeryName + "_OrderAggregatorAgent:org.commitment_issues.delivery_agents.OrderAggregatorAgent");
+    		break;
         }
         agents.add("StreetNetworkAgent:org.commitment_issues.delivery_agents.StreetNetworkAgent(" + scenarioDirectory + ")");
         agents.add("MailboxAgent:org.commitment_issues.delivery_agents.MailboxAgent");
@@ -63,6 +64,7 @@ public class DeliveryStageInitializer extends Initializer {
 				else {
 					System.out.println("Skipped Transport Company " + companyName + " as it has no trucks");
 				}
+				break;
 			}
 		}
 		return agents;

@@ -148,23 +148,29 @@ public class EntryAgent extends BaseAgent{
 		public int orderDay;
 		public int orderHour;
 		public int orderMinute;
+		public int deliveryDay;
+		public int deliveryHour;
+		public int deliveryMinute;
 		public JSONObject products;
-		
+
 		public Order(JSONObject object) {
 			guid = object.getString("guid");
 			customerID = object.getString("customer_id");
 			orderDay = object.getJSONObject("order_date").getInt("day");
 			orderHour = object.getJSONObject("order_date").getInt("hour");
-			orderMinute = object.getJSONObject("order_date").getInt("minute");
+//			orderMinute = object.getJSONObject("order_date").getInt("minute");
+			deliveryDay = object.getJSONObject("delivery_date").getInt("day");
+			deliveryHour = object.getJSONObject("delivery_date").getInt("hour");
+//			deliveryMinute = object.getJSONObject("delivery_date").getInt("minute");
 			products = new JSONObject();
 			products.put("products", object.getJSONObject("products"));
 		}
-		
+
 		public int getOrderTime() {
-			return getGlobalOrderTime(orderDay, orderHour, orderMinute);
+			return getGlobalOrderTime(orderDay, orderHour, 0);
 		}
 	}
-	
+
 	private class OrderComparator implements Comparator<Order> {
 		@Override
 		public int compare(Order x, Order y) {
@@ -206,9 +212,7 @@ public class EntryAgent extends BaseAgent{
 			ArrayList<Order> orders = new ArrayList<Order>();
 			ArrayList<Order> ordersToRemove = new ArrayList<Order>();
 			
-			int currGlobalOrderTime = getGlobalOrderTime(getCurrentDay(),
-														 getCurrentHour(), 
-														 getCurrentMinute());
+			int currGlobalOrderTime = getGlobalOrderTime(getCurrentDay(), getCurrentHour(), 0);
 			Iterator<Order> itr = orderQueue_.iterator();
 			while (itr.hasNext()) {
 				Order order = itr.next();

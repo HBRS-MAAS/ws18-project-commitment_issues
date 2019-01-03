@@ -43,11 +43,16 @@ public class DummyBakeAgent extends BaseAgent {
     while (findTargetAgent("cooling-rack")) {
       
     }
-    register("dummy-bake", "dummy-bake");
+    register(getBakeryName() + "-dummy-bake", getBakeryName() + "-dummy-bake");
     System.out.println("Hello! BakeAgent "+ getAID().getName() +" is ready.");
     addBehaviour(new TimeUpdater());
     
   }
+  
+  public String getBakeryName() {
+	  return getLocalName().split("_")[0];
+  }
+  
   private class TimeUpdater extends CyclicBehaviour {
     public void action() {
       if (getAllowAction()) {
@@ -65,7 +70,7 @@ public class DummyBakeAgent extends BaseAgent {
   private boolean findTargetAgent(String service) {
     DFAgentDescription template = new DFAgentDescription();
     ServiceDescription sd = new ServiceDescription();
-    sd.setType(service);
+    sd.setType(getBakeryName() + "-" + service);
     template.addServices(sd);
     try {
       DFAgentDescription[] result = DFService.search(this, template);

@@ -191,8 +191,8 @@ public class LoadingBayAgent extends BaseAgent {
 		protected void findReceiver() {
 			DFAgentDescription template = new DFAgentDescription();
 			ServiceDescription sd = new ServiceDescription();
-			sd.setType(bakeryGuid+"order-aggregator");
-			sd.setName(bakeryGuid+"-order-aggregator");
+			sd.setType(bakeryGuid+"-order-aggregator");
+//			sd.setName(bakeryGuid+"-order-aggregator");
 			template.addServices(sd);
 			try {
 				DFAgentDescription[] result = DFService.search(myAgent, template);

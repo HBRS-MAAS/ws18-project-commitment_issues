@@ -53,15 +53,7 @@ public class PackagingAgent extends BaseAgent {
 		}
 
 		determineItemsPerBox();
-		//loadOrderInfoFromFile();
 		addBehaviour(new OrderDetailsReceiver());
-
-//		System.out.println("All Loaded orders:");
-//		Iterator<OrderInfo> itr = orderQueue_.iterator();
-//		while (itr.hasNext()) {
-//			OrderInfo order = itr.next();
-//			order.printOrderInfo();
-//		}
 
 		addBehaviour(new ProductsReceiver());
 		//addBehaviour(new Simulator());
@@ -440,7 +432,7 @@ public class PackagingAgent extends BaseAgent {
 			if (msg != null) {
 				// If a single order is provided, in a message:
 				//((LoadingBayAgent) baseAgent).orderDetailsArray.put(new JSONObject(msg.getContent()));
-				System.out.println("################# Received message from order processor: \n" + msg.getContent());
+				//System.out.println("################# Received message from order processor: \n" + msg.getContent());
 				OrderInfo newOrder = new OrderInfo(msg.getContent());
 				orderQueue_.add(newOrder);
 

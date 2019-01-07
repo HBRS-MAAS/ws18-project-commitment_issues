@@ -26,15 +26,16 @@ import jade.lang.acl.ACLMessage;
 public class GraphVisualizationAgent extends BaseAgent {
   
   protected Graph graph = new Graph();
+  protected Main m = new Main(graph);
   protected Model model = graph.getModel();
-  protected Main m;
   protected ArrayList <String> trucksID = new ArrayList<String>();// list of trucks ids for easy tracking
   protected ArrayList <Cell> textNodes = new ArrayList<Cell>(); // list of all text nodes to track them easily
   
   public void setup() {
     
-    System.out.println("Hello! Visualization-agent "+getAID().getName()+" is ready each second is one hour.");
+    System.out.println("Hello! Visualization-agent "+getAID().getName()+" is ready.");
     yellowPageRegister();
+    
     
     addBehaviour(new GraphBuilder());
     
@@ -65,8 +66,9 @@ public class GraphVisualizationAgent extends BaseAgent {
       Thread thread = new Thread(() -> {
         
         try {
+
           m = new Main(graph);
-          m.main();
+          ((GraphVisualizationAgent)myAgent).m.main();
         } catch (InterruptedException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();
@@ -76,18 +78,40 @@ public class GraphVisualizationAgent extends BaseAgent {
     }
     
   }
-  private class GraphBuilder extends CyclicBehaviour{
+  private class GraphBuilder extends OneShotBehaviour{
     
     @Override
     public void action() {
       ACLMessage recieve = myAgent.receive();
       CellType shape;
+      ((GraphVisualizationAgent)myAgent).graph.beginUpdate();
+      ((GraphVisualizationAgent)myAgent).model.addCell("bakery-001", CellType.RECTANGLE);
+      ((GraphVisualizationAgent)myAgent).model.addCell("customer-001", CellType.TRIANGLE);
+      TextCell name = new TextCell("Name: bakery-001", "bakery-001", "bakery-001");
+      TextCell name2 = new TextCell("Name: customer-001", "customer-001", "customer-001");
+
+      ((GraphVisualizationAgent)myAgent).model.addCell(name);
+      ((GraphVisualizationAgent)myAgent).model.addCell(name2);
+      //((GraphVisualizationAgent)myAgent).model.addCell("bakery-002", CellType.RECTANGLE);
+      ((GraphVisualizationAgent)myAgent).graph.endUpdate();
+      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(0).relocate( 10.0 ,100);
+      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(1).relocate(400 ,200);
+
+      graph.beginUpdate();
+      model.addEdge("bakery-001", "customer-001");
+      graph.endUpdate();
+      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(2).relocate(10.0 ,100-25);
+      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(3).relocate(400.0 ,200-25);
+      ((GraphVisualizationAgent)myAgent).m.setGraph(((GraphVisualizationAgent)myAgent).graph);
       if (recieve != null && recieve.getConversationId().equals("initial-state")) {
         
         JSONObject wholeMsg = new JSONObject(recieve);
         
         JSONArray nodes = wholeMsg.getJSONArray("Nodes");
         JSONArray edges = wholeMsg.getJSONArray("Edges");
+        
+        
+        
         
         for (int i = 0; i < nodes.length(); i++) {
           
@@ -132,7 +156,7 @@ public class GraphVisualizationAgent extends BaseAgent {
       }
       else {
         
-        block();
+        //block();
       
       }
 

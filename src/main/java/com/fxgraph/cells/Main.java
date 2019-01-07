@@ -8,16 +8,16 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-  private Graph graph;
+  static Graph graph;
   public Main(Graph g) {
     super();
-    this.graph = g;
+    Main.graph = g;
   }
   public Main() {
     super();
   }
   public void setGraph(Graph g) {
-    this.graph = g;
+    Main.graph = g;
   }
   @Override
   public void start(Stage primaryStage) throws InterruptedException{

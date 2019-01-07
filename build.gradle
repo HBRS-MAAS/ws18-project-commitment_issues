@@ -5,6 +5,11 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'application'
 
+
+
+
+
+
 mainClassName = 'org.commitment_issues.Start'
 
 sourceCompatibility = 1.8

@@ -17,13 +17,19 @@ import org.maas.agents.BaseAgent;
 import org.maas.data.models.Bakery;
 import org.maas.utils.JsonConverter;
 
+import jade.content.lang.Codec;
+import jade.content.lang.sl.SLCodec;
+import jade.content.onto.basic.Action;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
+import jade.domain.FIPANames;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.JADEAgentManagement.JADEManagementOntology;
+import jade.domain.JADEAgentManagement.ShutdownPlatform;
 import jade.lang.acl.ACLMessage;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -175,16 +181,13 @@ public class EntryAgent extends BaseAgent {
 
 	private class SendOrders extends CyclicBehaviour {
 		public void action() {
-			System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 			if (getAllowAction()) {
-				System.out.println("+++++++++++++++++++++++++++++++++++++");
 				ArrayList<Order> orders = getOrdersForCurrentTimeStep();
 				if (orders.size() > 0) {
 					for (int o = 0; o < orders.size(); o++) {
 						baseAgent.addBehaviour(new BroadcastOrder(orders.get(o)));
 						String currBakery = bakeryNames_.get(currBakery_);
 						currBakery_ = (currBakery_ >= bakeryNames_.size()-1) ? 0 : (currBakery_ + 1);
-						System.out.println("***********Looking for: "+ currBakery + "-cooling-rack");
 						AID receiver = discoverAgent(currBakery + "-cooling-rack");
 						ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 						msg.setContent(orders.get(o).products.toString());
@@ -198,14 +201,13 @@ public class EntryAgent extends BaseAgent {
 				}
 				finished();
 			} else {
-				block();
+				//block();
 			}
 		}
 
 		protected ArrayList<Order> getOrdersForCurrentTimeStep() {
 			ArrayList<Order> orders = new ArrayList<Order>();
 			ArrayList<Order> ordersToRemove = new ArrayList<Order>();
-			System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
 
 			int currGlobalOrderTime = getGlobalOrderTime(getCurrentDay(), getCurrentHour(), 0);
 			Iterator<Order> itr = orderQueue_.iterator();
@@ -226,6 +228,9 @@ public class EntryAgent extends BaseAgent {
 			}
 
 			orderQueue_.removeAll(ordersToRemove);
+			if (orderQueue_.size() <= 0) {
+				baseAgent.addBehaviour(new shutdown());
+			}
 
 			return orders;
 		}
@@ -288,6 +293,28 @@ public class EntryAgent extends BaseAgent {
 				msg.addReceiver(agent);
 			}
 			sendMessage(msg);
+		}
+	}
+	
+	// Taken from http://www.rickyvanrijn.nl/2017/08/29/how-to-shutdown-jade-agent-platform-programmatically/
+	@SuppressWarnings("unused")
+	private class shutdown extends OneShotBehaviour{
+		public void action() {
+			ACLMessage shutdownMessage = new ACLMessage(ACLMessage.REQUEST);
+			Codec codec = new SLCodec();
+			baseAgent.getContentManager().registerLanguage(codec);
+			baseAgent.getContentManager().registerOntology(JADEManagementOntology.getInstance());
+			shutdownMessage.addReceiver(baseAgent.getAMS());
+			shutdownMessage.setLanguage(FIPANames.ContentLanguage.FIPA_SL);
+			shutdownMessage.setOntology(JADEManagementOntology.getInstance().getName());
+			try {
+				baseAgent.getContentManager().fillContent(shutdownMessage,new Action(baseAgent.getAID(), new ShutdownPlatform()));
+				baseAgent.send(shutdownMessage);
+			}
+			catch (Exception e) {
+				//LOGGER.error(e);
+			}
+
 		}
 	}
 }

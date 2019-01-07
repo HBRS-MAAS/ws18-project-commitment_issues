@@ -53,7 +53,8 @@ public class PackagingAgent extends BaseAgent {
 		}
 
 		determineItemsPerBox();
-		loadOrderInfoFromFile();
+		//loadOrderInfoFromFile();
+		addBehaviour(new OrderDetailsReceiver());
 
 //		System.out.println("All Loaded orders:");
 //		Iterator<OrderInfo> itr = orderQueue_.iterator();
@@ -145,16 +146,23 @@ public class PackagingAgent extends BaseAgent {
 
 		public OrderInfo(String jsonString) {
 			JSONObject obj = new JSONObject(jsonString);
-			orderID_ = obj.getString("OrderID");
-			deliveryTime_ = obj.getJSONObject("delivery_date").getInt("hour");
+			orderID_ = obj.getString("guid");
+			deliveryTime_ = obj.getJSONObject("deliveryDate").getInt("hour");
 
-			JSONArray products = obj.getJSONArray("Products");
-			for (int p = 0; p < products.length(); p++) {
-				Iterator<String> key = products.getJSONObject(p).keys();
-				String productName = key.next();
-				int quantity = products.getJSONObject(p).getInt(productName);
-				pendingProducts_.put(productName, quantity);
+			JSONObject products = obj.getJSONObject("products");
+			Iterator<String> keyItr = products.keys();
+			while (keyItr.hasNext()) {
+				String product = keyItr.next();
+				int quantity = products.getInt(product);
+				pendingProducts_.put(product, quantity);
 			}
+				
+//			for (int p = 0; p < products.length(); p++) {
+//				Iterator<String> key = products.getJSONObject(p).keys();
+//				String productName = key.next();
+//				int quantity = products.getJSONObject(p).getInt(productName);
+//				pendingProducts_.put(productName, quantity);
+//			}
 		}
 
 		public void printOrderInfo() {
@@ -363,17 +371,19 @@ public class PackagingAgent extends BaseAgent {
 
 			AID loadingBayAgent = null;
 
-			try {
-				DFAgentDescription[] result = DFService.search(baseAgent, template);
-				if (result.length > 0) {
-					loadingBayAgent = result[0].getName();
-				} else {
-					loadingBayAgent = null;
-					System.out.println(
-							getAID().getLocalName() + ": No agent with Service type (" + serviceType + ") found!");
+			while (loadingBayAgent == null) {
+				try {
+					DFAgentDescription[] result = DFService.search(baseAgent, template);
+					if (result.length > 0) {
+						loadingBayAgent = result[0].getName();
+					} else {
+						loadingBayAgent = null;
+						System.out.println(
+								getAID().getLocalName() + ": No agent with Service type (" + serviceType + ") found!");
+					}
+				} catch (FIPAException fe) {
+					fe.printStackTrace();
 				}
-			} catch (FIPAException fe) {
-				fe.printStackTrace();
 			}
 
 			return loadingBayAgent;
@@ -395,5 +405,54 @@ public class PackagingAgent extends BaseAgent {
 			}
 		}
 
+	}
+	
+	private class OrderDetailsReceiver extends CyclicBehaviour {
+		private String orderProcessorServiceType;
+		private AID orderProcessor = null;
+		private MessageTemplate mt;
+
+		protected void findOrderProcessor() {
+			DFAgentDescription template = new DFAgentDescription();
+			ServiceDescription sd = new ServiceDescription();
+			orderProcessorServiceType = "OrderProcessing";
+
+			sd.setType(orderProcessorServiceType);
+			template.addServices(sd);
+			try {
+				DFAgentDescription[] result = DFService.search(myAgent, template);
+				if (result.length > 0) {
+					orderProcessor = result[0].getName();
+				}
+			} catch (FIPAException fe) {
+				System.out.println("[" + getAID().getLocalName() + "]: No OrderProcessor agent found.");
+				fe.printStackTrace();
+			}
+		}
+
+		public void action() {
+			findOrderProcessor();
+
+			mt = MessageTemplate.and(MessageTemplate.MatchSender(orderProcessor),
+					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			ACLMessage msg = myAgent.receive(mt);
+
+			if (msg != null) {
+				// If a single order is provided, in a message:
+				//((LoadingBayAgent) baseAgent).orderDetailsArray.put(new JSONObject(msg.getContent()));
+				System.out.println("################# Received message from order processor: \n" + msg.getContent());
+				OrderInfo newOrder = new OrderInfo(msg.getContent());
+				orderQueue_.add(newOrder);
+
+				// Enable this instead, if a list of orders is provided:
+				/*
+				 * JSONArray messagethis.orderDetailsArray = new JSONArray(msg.getContent());
+				 * for (int i = 0 ; i < messagethis.orderDetailsArray.length() ; i++) {
+				 * this.orderDetailsArray.put(messagethis.orderDetailsArray.get(i)); }
+				 */
+			} else {
+				block();
+			}
+		}
 	}
 }

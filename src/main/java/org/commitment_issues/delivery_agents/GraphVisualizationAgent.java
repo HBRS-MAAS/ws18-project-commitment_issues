@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.yourteamname.agents.BaseAgent;
+import org.maas.agents.BaseAgent;
 
 import com.fxgraph.cells.*;
 import jade.core.behaviours.CyclicBehaviour;

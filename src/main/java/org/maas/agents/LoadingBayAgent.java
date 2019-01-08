@@ -192,8 +192,8 @@ public class LoadingBayAgent extends BaseAgent {
 			DFAgentDescription template = new DFAgentDescription();
 			ServiceDescription sd = new ServiceDescription();
 			sd.setType(bakeryGuid+"-order-aggregator");
-//			sd.setName(bakeryGuid+"-order-aggregator");
 			template.addServices(sd);
+			
 			try {
 				DFAgentDescription[] result = DFService.search(myAgent, template);
 				if (result.length > 0) {
@@ -228,17 +228,15 @@ public class LoadingBayAgent extends BaseAgent {
 	}
 
 	private class OrderDetailsReceiver extends CyclicBehaviour {
-		private String orderProcessorServiceType;
 		private AID orderProcessor = null;
 		private MessageTemplate mt;
 
 		protected void findOrderProcessor() {
 			DFAgentDescription template = new DFAgentDescription();
 			ServiceDescription sd = new ServiceDescription();
-			orderProcessorServiceType = "OrderProcessing";
-
-			sd.setType(orderProcessorServiceType);
+			sd.setType("OrderProcessing");
 			template.addServices(sd);
+			
 			try {
 				DFAgentDescription[] result = DFService.search(myAgent, template);
 				if (result.length > 0) {

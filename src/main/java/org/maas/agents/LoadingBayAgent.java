@@ -193,7 +193,7 @@ public class LoadingBayAgent extends BaseAgent {
 			DFAgentDescription template = new DFAgentDescription();
 			ServiceDescription sd = new ServiceDescription();
 
-			sd.setType("order-aggregator");
+			sd.setType(bakeryGuid+"-order-aggregator");
 			sd.setName(bakeryGuid+"-order-aggregator");
 			template.addServices(sd);
 			try {

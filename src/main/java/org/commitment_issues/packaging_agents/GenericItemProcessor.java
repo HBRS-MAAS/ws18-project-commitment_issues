@@ -146,7 +146,7 @@ public class GenericItemProcessor extends BaseAgent {
       MessageTemplate mt = MessageTemplate.MatchConversationId("bake");
       ordersToPrepare = myAgent.receive(mt);
       if(ordersToPrepare != null) {
-    	System.out.println("[" + getLocalName() + "]: Received products from " + ordersToPrepare.getSender().getLocalName());
+    	//System.out.println("[" + getLocalName() + "]: Received products from " + ordersToPrepare.getSender().getLocalName());
     	
         products = new ArrayList<Product>();
         JSONObject productJSON = new JSONObject(ordersToPrepare.getContent());
@@ -193,13 +193,13 @@ public class GenericItemProcessor extends BaseAgent {
       if (isCoolingRack) {
         for (int i = 0; i < this.products.size();i++) {
           myAgent.addBehaviour(new CoolingTask(products.get(i),24*60*getCurrentDay()+getCurrentHour()*60 + getCurrentMinute()));
-          System.out.println("[" + getLocalName() + "]: Cooling of "+products.get(i).getName()+" started at "+Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute())); 
+          //System.out.println("[" + getLocalName() + "]: Cooling of "+products.get(i).getName()+" started at "+Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute())); 
 
         }
       }
       else {
         for (int i = 0; i < this.products.size();i++) {
-          System.out.println("[" + getLocalName() + "]: " + products.get(i).getProcesses().get(1).getName()+" of "+products.get(i).getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute()));
+          //System.out.println("[" + getLocalName() + "]: " + products.get(i).getProcesses().get(1).getName()+" of "+products.get(i).getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute()));
           myAgent.addBehaviour(new GenericTask(products.get(i), 1));
         }
       }
@@ -230,7 +230,7 @@ public class GenericItemProcessor extends BaseAgent {
         JSONObject y = new JSONObject();
         y.put(this.p.getName(),this.p.getAmount());
         x.put("products", y);
-        System.out.println("[" + getLocalName() + "]: Cooling of "+p.getName()+" is done and sent to the next stage"); 
+        //System.out.println("[" + getLocalName() + "]: Cooling of "+p.getName()+" is done and sent to the next stage"); 
 
         msg.setContent(x.toString());
         msg.setConversationId("bake");
@@ -275,13 +275,13 @@ public class GenericItemProcessor extends BaseAgent {
           y.put(this.p.getName(),this.p.getAmount());
           msg.setContent(y.toString());
           myAgent.send(msg);
-          System.out.println("[" + getLocalName() + "]: " + p.getProcesses().get(step).getName()+" of "+p.getName()+" is done and sent to the packaging"); 
+          //System.out.println("[" + getLocalName() + "]: " + p.getProcesses().get(step).getName()+" of "+p.getName()+" is done and sent to the packaging"); 
           complete = true;
         }else {
           this.step++;
-          System.out.println("[" + getLocalName() + "]: " + p.getProcesses().get(step-1).getName()+" of "+p.getName()+" is done and sent to the " +p.getProcesses().get(step).getName()); 
+          //System.out.println("[" + getLocalName() + "]: " + p.getProcesses().get(step-1).getName()+" of "+p.getName()+" is done and sent to the " +p.getProcesses().get(step).getName()); 
           myAgent.addBehaviour(new GenericTask(p, step));
-          System.out.println("[" + getLocalName() + "]: " + p.getProcesses().get(step).getName()+" of "+p.getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute()));
+          //System.out.println("[" + getLocalName() + "]: " + p.getProcesses().get(step).getName()+" of "+p.getName()+" started at "+ Integer.toString(getCurrentDay())+":"+Integer.toString(getCurrentHour())+":"+Integer.toString(getCurrentMinute()));
           complete = true;
         }
       } 

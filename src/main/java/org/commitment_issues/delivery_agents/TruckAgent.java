@@ -157,13 +157,15 @@ public class TruckAgent extends BaseAgent {
 		public String customerName_ = "No Customer Name Provided";
 		public String bakeryName_ = "No Bakery Name Provided";
 		public int deliveryDate_;
-		public int deliveryTime_;
+		public int deliveryHour_;
+		public int deliveryMinutes_;
 		
 		public OrderDetails(String jsonMessage) {
 			JSONObject jsonObj = new JSONObject(jsonMessage);
 			
 			orderID_ = jsonObj.getString("OrderID");
 			numOfBoxes_ = jsonObj.getInt("NumOfBoxes");
+			customerName_ = jsonObj.getString("CustomerId");
 			
 			bakeryLocation_ = new float[2];
 			bakeryLocation_[0] = jsonObj.getJSONObject("Source").getFloat("X");
@@ -180,7 +182,7 @@ public class TruckAgent extends BaseAgent {
 			System.out.println("Bakery Name/Location: " + bakeryName_ + getPosAsString(bakeryLocation_));
 			System.out.println("Customer Name/Location: " + customerName_ + getPosAsString(customerLocation_));
 			System.out.println("NumOfBoxes: " + numOfBoxes_);
-			System.out.println("Delivery date/time: " + deliveryDate_ + "." + deliveryTime_);
+			System.out.println("Delivery date/time/minutes: " + deliveryDate_ + "." + deliveryHour_ + "." + deliveryMinutes_);
 			System.out.println("*******************************");
 		}
 	}
@@ -290,24 +292,19 @@ public class TruckAgent extends BaseAgent {
             if (msg != null) {
                 // ACCEPT_PROPOSAL Message received. Process it
                 ACLMessage reply = msg.createReply();
+            	reply.setPerformative(ACLMessage.INFORM);
+            	reply.setContent("DeliveryAccepted");
                 
                 OrderDetails newOrder = new OrderDetails(msg.getContent());
+                newOrder.bakeryName_ = msg.getSender().getLocalName().split("_")[0];
                 
                 if (currOrder_ == null) {
                 	currOrder_ = newOrder;
-                	currOrder_.bakeryName_ = msg.getSender().getLocalName().split("_")[0];
-                	reply.setPerformative(ACLMessage.INFORM);
-                	reply.setContent("DeliveryAccepted");
                 	System.out.println(baseAgent.getAID().getLocalName() + " Accepted new order as CURRENT order:");
-                	//currOrder_.print();
                 }
                 else if (nextOrder_ == null) {
                 	nextOrder_ = newOrder;
-                	nextOrder_.bakeryName_ = msg.getSender().getLocalName().split("_")[0];
-                	reply.setPerformative(ACLMessage.INFORM);
-                	reply.setContent("DeliveryAccepted");
                 	System.out.println(baseAgent.getAID().getLocalName() + " Accepted new order as NEXT order:");
-                	//nextOrder_.print();
                 }
                 else {
                 	reply.setPerformative(ACLMessage.FAILURE);
@@ -390,6 +387,9 @@ public class TruckAgent extends BaseAgent {
 	            		System.out.println(baseAgent.getAID().getLocalName() + " Reached bakery. Requested boxes from transport agent");
 	            	}
 	            	else if (reachedCutomer()) {
+	            		currOrder_.deliveryDate_ = getCurrentDay();
+	            		currOrder_.deliveryHour_ = getCurrentHour();
+	            		currOrder_.deliveryMinutes_ = getCurrentMinute();
 	            		baseAgent.addBehaviour(new PostDeliveryCompletionMessage(currOrder_));
 	            		if (nextOrder_ != null) {
 	            			startNewOrder(nextOrder_);
@@ -766,7 +766,8 @@ public class TruckAgent extends BaseAgent {
 						.put("OrderDeliveredTo", orderInfo_.customerName_)
           		  		.put("OrderDeliveredBy", baseAgent.getAID().getLocalName())
           		  		.put("DayOfDelivery", orderInfo_.deliveryDate_)
-          		  		.put("TimeOfDelivery", orderInfo_.deliveryTime_)
+          		  		.put("HourOfDelivery", orderInfo_.deliveryHour_)
+          		  		.put("MinuteOfDelivery", orderInfo_.deliveryMinutes_)
           		  		.put("NumOfBoxes", orderInfo_.numOfBoxes_)
           		  		.put("ProducedBy", orderInfo_.bakeryName_));
 			

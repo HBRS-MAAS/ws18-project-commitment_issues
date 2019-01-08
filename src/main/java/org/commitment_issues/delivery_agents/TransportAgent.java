@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -27,6 +29,7 @@ import org.maas.agents.BaseAgent;
 public class TransportAgent extends BaseAgent {
   // declaring the attributes static as their will be only one transport agent
   private static ArrayList<Order> orders = new ArrayList<Order>(); //list of all the orders
+  private HashMap<String, String> customerInfo = new HashMap<String, String>();
   private static AID[] trucks;//list of all the trucks
   
   protected String scenarioDirectory_;
@@ -50,6 +53,7 @@ public class TransportAgent extends BaseAgent {
 		}
 		trucksFinder();// search for the trucks
 		addBehaviour(new OrderParser());
+		addBehaviour(new OrderDetailsReceiver());
 		addBehaviour(new truckReady());// check if trucks are ready to pick orders
 		addBehaviour(new TimeUpdater());
 	}
@@ -192,6 +196,7 @@ public class TransportAgent extends BaseAgent {
 			assignmentToTrucks.put("Source", source);
 			assignmentToTrucks.put("Destination", destination);
 			assignmentToTrucks.put("NumOfBoxes", this.order.getBoxes().size());
+			assignmentToTrucks.put("CustomerId", customerInfo.get(this.order.getOrderID()));
 
 			// Start communicating with the trucks to find the fastest one
       switch (step) {
@@ -305,5 +310,46 @@ public class TransportAgent extends BaseAgent {
 
 		}
 
+	}
+	
+	private class OrderDetailsReceiver extends CyclicBehaviour {
+		private String orderProcessorServiceType;
+		private AID orderProcessor = null;
+		private MessageTemplate mt;
+
+		protected void findOrderProcessor() {
+			DFAgentDescription template = new DFAgentDescription();
+			ServiceDescription sd = new ServiceDescription();
+			orderProcessorServiceType = "OrderProcessing";
+
+			sd.setType(orderProcessorServiceType);
+			template.addServices(sd);
+			try {
+				DFAgentDescription[] result = DFService.search(myAgent, template);
+				if (result.length > 0) {
+					orderProcessor = result[0].getName();
+				}
+			} catch (FIPAException fe) {
+				System.out.println("[" + getAID().getLocalName() + "]: No OrderProcessor agent found.");
+				fe.printStackTrace();
+			}
+		}
+
+		public void action() {
+			findOrderProcessor();
+
+			mt = MessageTemplate.and(MessageTemplate.MatchSender(orderProcessor),
+					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			ACLMessage msg = myAgent.receive(mt);
+
+			if (msg != null) {
+				JSONObject obj = new JSONObject(msg.getContent());
+				String orderID = obj.getString("guid");
+				customerInfo.put(orderID, obj.getString("customerId"));
+				
+			} else {
+				block();
+			}
+		}
 	}
 }

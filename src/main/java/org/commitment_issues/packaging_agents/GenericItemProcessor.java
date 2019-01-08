@@ -73,7 +73,13 @@ public class GenericItemProcessor extends BaseAgent {
     template.addServices(sd);
     try {
       DFAgentDescription[] result = DFService.search(this, template);
-      this.targetAgent = result[0].getName();
+      if (result.length > 0) {
+    	  this.targetAgent = result[0].getName();
+      }
+      
+      if (this.targetAgent == null) {
+    	  System.out.println("No agent with service type " + service + " found.");
+      }
      
     } catch (FIPAException fe) {
       fe.printStackTrace();

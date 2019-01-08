@@ -63,7 +63,7 @@ public class DeliveryStageInitializer extends Initializer {
 				else {
 					System.out.println("Skipped Transport Company " + companyName + " as it has no trucks");
 				}
-				break;
+//				break;
 			}
 		}
 		return agents;

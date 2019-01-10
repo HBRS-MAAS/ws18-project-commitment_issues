@@ -245,22 +245,31 @@ public class StreetNetworkAgent extends BaseAgent {
 		JSONObject JSONVisData = new JSONObject();
 		JSONArray JSONVisNodes = new JSONArray();
 		JSONArray JSONVisLinks = new JSONArray();
+		
 		boolean repeated = false;
 		
 		String nodeType = "";
+		String companyName = "";
 		
 		for (int i = 0; i < nodesJSONArray.length(); i++) {
 			JSONObject JSONVisNodeInfo = new JSONObject();
 			JSONVisNodeInfo.put("guid", nodesJSONArray.getJSONObject(i).getString("guid"));
-			
 			
 			try {
         nodeType = nodesJSONArray.getJSONObject(i).getString("type");
       } catch (Exception e) {
         nodeType = "";
       }
+			
+			try {
+			  companyName = nodesJSONArray.getJSONObject(i).getString("company");
+      } catch (Exception e) {
+        companyName = "";
+      }
+			
 			// Node type can be: "client", "delivery", "bakery", or none (represented as "").
-			JSONVisNodeInfo.put("type",nodeType);
+			JSONVisNodeInfo.put("type", nodeType);
+			JSONVisNodeInfo.put("company", companyName);
 			// The location object contains two integers: 'x' and 'y'.
 			JSONVisNodeInfo.put("location", nodesJSONArray.getJSONObject(i).getJSONObject("location"));
 			

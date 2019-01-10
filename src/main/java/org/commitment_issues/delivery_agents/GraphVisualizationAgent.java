@@ -40,7 +40,7 @@ public class GraphVisualizationAgent extends BaseAgent {
     register("transport-visualization","transport-visualization");
     
     // Dummy node needed for correct visualization behavior
-    addNode(NodeType.SIMPLE, "dummy", 400, 200, "");
+    addNode(NodeType.SIMPLE, "dummy", 400, 200, ".");
 
     addBehaviour(new GraphConstructor());
     addBehaviour(new JFXStart());
@@ -130,7 +130,7 @@ public class GraphVisualizationAgent extends BaseAgent {
 	    	model.addCell(labelNode);
 	    graph.endUpdate();		
 	    
-	    updateNodePosition(id, posX, posY, 25);
+	    updateNodePosition(id, posX, posY, 5);
 	}
 	
 	private void addEdge(String cellID1, String cellID2) {
@@ -205,14 +205,18 @@ public class GraphVisualizationAgent extends BaseAgent {
             float nodeY = location.getFloat("y")*(float)100.0;
             
             String nodeID = node.getString("guid");
+            
             if (type.equals("client")) {
-              addNode(NodeType.CUSTOMER, nodeID, nodeX, nodeY, nodeID);
+              String name = "C-" + node.getString("company").split("-")[1];
+              addNode(NodeType.CUSTOMER, nodeID, nodeX, nodeY, name);
             }
             else if (type.equals("delivery")) {
-              addNode(NodeType.TRANSPORT_COMPANY, nodeID, nodeX, nodeY, nodeID);
+              String name = "DC-" + node.getString("company").split("-")[2];
+              addNode(NodeType.TRANSPORT_COMPANY, nodeID, nodeX, nodeY, name);
             }
             else if (type.equals("bakery")) {
-              addNode(NodeType.BAKERY, nodeID, nodeX, nodeY, nodeID);
+              String name = "B-" + node.getString("company").split("-")[1];
+              addNode(NodeType.BAKERY, nodeID, nodeX, nodeY, name);
             }
             else {
               addNode(NodeType.SIMPLE, nodeID, nodeX, nodeY, "");

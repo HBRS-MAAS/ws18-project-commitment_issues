@@ -12,6 +12,9 @@ import org.json.JSONObject;
 import org.maas.agents.BaseAgent;
 
 import com.fxgraph.cells.*;
+
+import jade.core.AID;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
@@ -19,6 +22,8 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import javafx.scene.paint.Color;
 
 @SuppressWarnings("serial")
 public class GraphVisualizationAgent extends BaseAgent {
@@ -35,12 +40,13 @@ public class GraphVisualizationAgent extends BaseAgent {
 //    yellowPageRegister();
     register("transport-visualization","transport-visualization");
     
-    addBehaviour(new GraphBuilder());
+//    addBehaviour(new GraphBuilder());
 //    addBehaviour(new TruckTracker());
     addBehaviour(new JFXStart());
     
     
-    addBehaviour(new PositionUpdater());
+//    addBehaviour(new PositionUpdater());
+    addBehaviour(new GraphConstructor());
     addBehaviour(new TimeUpdater());
    }
   
@@ -153,7 +159,7 @@ public class GraphVisualizationAgent extends BaseAgent {
     }
     
   }
-  private class GraphBuilder extends OneShotBehaviour{
+  private class GraphBuilder extends OneShotBehaviour {
     
     @Override
     public void action() {      
@@ -227,6 +233,81 @@ public class GraphVisualizationAgent extends BaseAgent {
   }
   
   
+  private class GraphConstructor extends Behaviour {
+
+    private MessageTemplate mt; 
+    private boolean receivedDetails = false;
+    
+    public void action() {
+        mt = MessageTemplate.MatchConversationId("graph-visualization");
+        ACLMessage msg = myAgent.receive(mt);
+        
+        if (msg != null) {
+          JSONObject wholeMsg = new JSONObject(msg.getContent());
+          JSONArray nodes = wholeMsg.getJSONArray("nodes");
+          JSONArray edges = wholeMsg.getJSONArray("edges");
+          
+          
+          for (int i = 0; i < nodes.length(); i++) {
+            JSONObject node = nodes.getJSONObject(i);
+            
+            String type = node.getString("type");
+            JSONObject location = node.getJSONObject("location");
+            float nodeX = location.getFloat("x")*(float)100.0;
+            float nodeY = location.getFloat("y")*(float)100.0;
+            
+            String nodeID = node.getString("guid");
+            
+            graph.beginUpdate();
+            
+            if (type.equals("client")) {
+              RectangleCell rectangle = new RectangleCell(nodeID);
+              model.addCell(rectangle);
+            }
+            else if (type.equals("delivery")) {
+              RectangleCell rectangle = new RectangleCell(nodeID);
+              model.addCell(rectangle);
+            }
+            else if (type.equals("bakery")) {
+              RectangleCell rectangle = new RectangleCell(nodeID);
+              model.addCell(rectangle);
+            }
+            else {
+              Ball ball = new Ball(nodeID);
+              model.addCell(ball);
+            }
+            
+            graph.endUpdate();
+            model.getAllCells().get(i).relocate(nodeX, nodeY);
+            
+          }
+          
+          for (int k = 0;k < edges.length(); k++) {
+            
+            JSONObject edge = edges.getJSONObject(k);
+            
+            String startNode = edge.getString("source");
+            String endNode = edge.getString("target");
+            
+            graph.beginUpdate();
+            model.addEdge(startNode, endNode);
+            graph.endUpdate();
+          
+          }
+          
+          m.setGraph(graph);
+          receivedDetails = true;
+        }
+        else {
+            block();
+        }
+    }
+    public boolean done() {
+        return receivedDetails;
+    }
+  }
+  
+  
   private class PositionUpdater extends CyclicBehaviour {
     double counter = 10.0;
     
@@ -235,7 +316,13 @@ public class GraphVisualizationAgent extends BaseAgent {
       ACLMessage recieve = myAgent.receive();
       CellType shape = CellType.BALL;
       
-      updateNodePosition("bakery-001", counter, 100.0, 25);
+//      if ((int)counter == 10) {
+//        graph.beginUpdate();
+//        model.addCell("hello", shape);
+//        graph.endUpdate();
+//      }
+      
+      model.getAllCells().get(0).relocate(counter ,100);
       
       counter += 10.0;
       

@@ -14,6 +14,7 @@ public class Ball extends Cell{
 
     setView( view);
 
+    cellType = CellType.BALL;
 }
   
   public void setColor(Color color) {

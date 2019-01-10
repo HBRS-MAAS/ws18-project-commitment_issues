@@ -58,8 +58,8 @@ public class DummyCustomer extends BaseAgent {
 			
 			if (msg != null) {
 				System.out.println("["+getAID().getLocalName()+"]: Received order completion message from "+msg.getSender().getLocalName()+":\n"+msg.getContent());
-				System.out.println("Triggering System Shutdown");
-				myAgent.addBehaviour(new shutdown());
+				//System.out.println("Triggering System Shutdown");
+				//myAgent.addBehaviour(new shutdown());
 			}
 
 			else {

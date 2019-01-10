@@ -37,16 +37,14 @@ public class GraphVisualizationAgent extends BaseAgent {
   public void setup() {
     super.setup();
     System.out.println("Hello! Visualization-agent "+getAID().getName()+" is ready.");
-//    yellowPageRegister();
     register("transport-visualization","transport-visualization");
     
-//    addBehaviour(new GraphBuilder());
-//    addBehaviour(new TruckTracker());
-    addBehaviour(new JFXStart());
+    // Dummy node needed for correct visualization behavior
+    addNode(NodeType.SIMPLE, "dummy", 400, 200, "");
     
-    
-//    addBehaviour(new PositionUpdater());
     addBehaviour(new GraphConstructor());
+    addBehaviour(new JFXStart());
+
     addBehaviour(new TimeUpdater());
    }
   
@@ -146,6 +144,11 @@ public class GraphVisualizationAgent extends BaseAgent {
     @Override
     public void action(){
       // Create a new thread to start the application
+      try {
+        Thread.sleep(3000);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
       Thread thread = new Thread(() -> {
         
         try {

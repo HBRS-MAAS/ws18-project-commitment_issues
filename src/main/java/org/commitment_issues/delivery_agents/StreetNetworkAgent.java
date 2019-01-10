@@ -43,7 +43,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		parseStreetNetworkData(getStreetNetworkData());
 		
 		// Uncomment this behavior for graph visualization integration
-//		addBehaviour(new GraphVisualizerServer());
+		addBehaviour(new GraphVisualizerServer());
 		addBehaviour(new TimeToDeliveryServer());
 		addBehaviour(new PathServer());
 		addBehaviour(new NodeLocationServer());
@@ -213,14 +213,26 @@ public class StreetNetworkAgent extends BaseAgent {
 		JSONArray JSONVisNodes = new JSONArray();
 		JSONArray JSONVisLinks = new JSONArray();
 		
+		String nodeType = "";
+		
 		for (int i = 0; i < nodesJSONArray.length(); i++) {
 			JSONObject JSONVisNodeInfo = new JSONObject();
 			JSONVisNodeInfo.put("guid", nodesJSONArray.getJSONObject(i).getString("guid"));
-			int type = 0;
-			if (nodesJSONArray.getJSONObject(i).getString("type").equals("bakery")) {
-				type = 1;
-			}
-			JSONVisNodeInfo.put("type",type);
+			
+//			int type = 0;
+//			if (nodesJSONArray.getJSONObject(i).getString("type").equals("bakery")) {
+//				type = 1;
+//			}
+//			JSONVisNodeInfo.put("type",type);
+			
+			try {
+        nodeType = nodesJSONArray.getJSONObject(i).getString("type");
+      } catch (Exception e) {
+        nodeType = "";
+      }
+			// Node type can be: "client", "delivery", "bakery", or none (represented as "").
+			JSONVisNodeInfo.put("type",nodeType);
+			// The location object contains two integers: 'x' and 'y'.
 			JSONVisNodeInfo.put("location", nodesJSONArray.getJSONObject(i).getJSONObject("location"));
 			
 			JSONVisNodes.put(JSONVisNodeInfo);

@@ -61,7 +61,11 @@ public class TruckAgent extends BaseAgent {
 		addBehaviour(new TruckScheduleServer());
 		addBehaviour(new MoveTruck());
 		
-		
+		try {
+	        Thread.sleep(3000);
+	    } catch (InterruptedException e) {
+	        e.printStackTrace();
+	    }
 		addBehaviour(new QueryNodePosition(getLocalName().split("_")[0]));
 		addBehaviour(new TimeUpdater());
 		
@@ -342,7 +346,7 @@ public class TruckAgent extends BaseAgent {
 					currTruckLocation_[1] = currPath_.get(i - 1)[1];
 					retval = true;
 					baseAgent.addBehaviour(new SendTruckPosForVisualiaztion());
-					System.out.println(getLocalName() +  " moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
+//					System.out.println(getLocalName() +  " moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
 				}
 			}
 			finished();
@@ -801,13 +805,8 @@ public class TruckAgent extends BaseAgent {
 		
 		
 		public void action() {
-			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-			AID visAgent = null;
-			while (visAgent == null) {
-				visAgent = discoverAgent("transport-visualization");
-			}
-			
-			msg.addReceiver(visAgent);
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);			
+			msg.addReceiver(discoverAgent("transport-visualization"));
 			msg.setContent(generateJsonMessage());
 			msg.setConversationId("TruckPosUpdate");
 			msg.setPostTimeStamp(System.currentTimeMillis());

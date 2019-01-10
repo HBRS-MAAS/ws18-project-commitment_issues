@@ -92,24 +92,28 @@ public class StreetNetworkAgent extends BaseAgent {
       sd.setType("transport-visualization");
       template.addServices(sd);
       
-      while (graphVisualizerAgent == null) {
         try {
           DFAgentDescription[] result = DFService.search(myAgent, template);
           if (result.length > 0) {
               graphVisualizerAgent = result[0].getName();
           }
-  //        if (graphVisualizerAgent == null) {
-  //            System.out.println("["+getAID().getLocalName()+"]: No GraphVisualizer agent found.");
-  //        }
+          if (graphVisualizerAgent == null) {
+              System.out.println("["+getAID().getLocalName()+"]: No GraphVisualizer agent found.");
+          }
   
         } catch (FIPAException fe) {
           System.out.println("[" + getAID().getLocalName() + "]: No GraphVisualizer agent found.");
           fe.printStackTrace();
         }
-      }
+    
     }
 
 		public void action() {
+			try {
+		        Thread.sleep(3000);
+		    } catch (InterruptedException e) {
+		        e.printStackTrace();
+		    }
 		  findGraphVisualizer();
 		  
 			ACLMessage SNVisualizationInfo = new ACLMessage(ACLMessage.INFORM);

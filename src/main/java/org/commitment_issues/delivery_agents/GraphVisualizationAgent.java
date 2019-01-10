@@ -104,22 +104,22 @@ public class GraphVisualizationAgent extends BaseAgent {
 		}
 		case BAKERY: {
 			node = new RectangleCell(id);
-			((RectangleCell)node).setColor(Color.BROWN);
+			((RectangleCell)node).setColor(Color.AQUA);
 			break;
 		}
 		case CUSTOMER: {
 			node = new RectangleCell(id);
-			((RectangleCell)node).setColor(Color.YELLOW);
+			((RectangleCell)node).setColor(Color.GREEN);
 			break;
 		}
 		case TRANSPORT_COMPANY: {
 			node = new RectangleCell(id);
-			((RectangleCell)node).setColor(Color.AQUA);
+			((RectangleCell)node).setColor(Color.RED);
 			break;
 		}
 		case TRUCK: {
 			node = new TriangleCell(id);
-			((TriangleCell)node).setColor(Color.RED);
+			((TriangleCell)node).setColor(Color.YELLOW);
 			break;
 		}
 		default:
@@ -168,7 +168,7 @@ public class GraphVisualizationAgent extends BaseAgent {
     public void action(){
       // Create a new thread to start the application
       try {
-        Thread.sleep(3000);
+        Thread.sleep(5000);
     } catch (InterruptedException e) {
         e.printStackTrace();
     }

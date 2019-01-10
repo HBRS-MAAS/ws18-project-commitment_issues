@@ -12,6 +12,9 @@ import org.json.JSONObject;
 import org.maas.agents.BaseAgent;
 
 import com.fxgraph.cells.*;
+
+import jade.core.AID;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
@@ -20,6 +23,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import javafx.scene.paint.Color;
 
 @SuppressWarnings("serial")
 public class GraphVisualizationAgent extends BaseAgent {
@@ -33,16 +37,15 @@ public class GraphVisualizationAgent extends BaseAgent {
   public void setup() {
     super.setup();
     System.out.println("Hello! Visualization-agent "+getAID().getName()+" is ready.");
-//    yellowPageRegister();
     register("transport-visualization","transport-visualization");
     
-    addBehaviour(new GraphBuilder());
-//    addBehaviour(new TruckTracker());
-    addBehaviour(new JFXStart());
-    
-    
-    addBehaviour(new PositionUpdater());
+    // Dummy node needed for correct visualization behavior
+    addNode(NodeType.SIMPLE, "dummy", 400, 200, ".");
+
+//    addBehaviour(new GraphBuilder());
+    addBehaviour(new GraphConstructor());
     addBehaviour(new TruckPositionUpdater());
+    addBehaviour(new JFXStart());
     addBehaviour(new TimeUpdater());
    }
   
@@ -55,12 +58,18 @@ public class GraphVisualizationAgent extends BaseAgent {
   }
   
   private void updateNodePosition(String cellID, double x, double y, double margin) {
+	  int overallXOffset = 50;
+	  int overallYOffset = 50;
+	  
+	  x += overallXOffset;
+	  y += overallYOffset;
+	  
 	  List<Cell> allCells = model.getAllCells();
 	  int cellsUpdated = 0;
 	  
 	  for (Cell cell: allCells) {
 		  if (cell.getCellId().equals(cellID)) {
-			  cell.relocate(x, y);
+		      cell.relocate(x, y); 
 			  cellsUpdated += 1;
 		  }
 		  else if (cell.getCellId().equals(cellID + "_label")) {
@@ -158,6 +167,11 @@ public class GraphVisualizationAgent extends BaseAgent {
     @Override
     public void action(){
       // Create a new thread to start the application
+      try {
+        Thread.sleep(3000);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
       Thread thread = new Thread(() -> {
         
         try {
@@ -187,6 +201,68 @@ public class GraphVisualizationAgent extends BaseAgent {
 	}
   
   
+  private class GraphConstructor extends Behaviour {
+
+    private MessageTemplate mt; 
+    private boolean receivedDetails = false;
+    
+    public void action() {
+        mt = MessageTemplate.MatchConversationId("graph-visualization");
+        ACLMessage msg = myAgent.receive(mt);
+        
+        if (msg != null) {
+          JSONObject wholeMsg = new JSONObject(msg.getContent());
+          JSONArray nodes = wholeMsg.getJSONArray("nodes");
+          JSONArray edges = wholeMsg.getJSONArray("edges");
+          
+          
+          for (int i = 0; i < nodes.length(); i++) {
+            JSONObject node = nodes.getJSONObject(i);
+            
+            String type = node.getString("type");
+            JSONObject location = node.getJSONObject("location");
+            float nodeX = location.getFloat("x")*(float)100.0;
+            float nodeY = location.getFloat("y")*(float)100.0;
+            
+            String nodeID = node.getString("guid");
+            if (type.equals("client")) {
+              addNode(NodeType.CUSTOMER, nodeID, nodeX, nodeY, nodeID);
+            }
+            else if (type.equals("delivery")) {
+              addNode(NodeType.TRANSPORT_COMPANY, nodeID, nodeX, nodeY, nodeID);
+            }
+            else if (type.equals("bakery")) {
+              addNode(NodeType.BAKERY, nodeID, nodeX, nodeY, nodeID);
+            }
+            else {
+              addNode(NodeType.SIMPLE, nodeID, nodeX, nodeY, "");
+            }
+          }
+          
+          for (int k = 0;k < edges.length(); k++) {
+            JSONObject edge = edges.getJSONObject(k);
+            
+            String startNode = edge.getString("source");
+            String endNode = edge.getString("target");
+            
+            graph.beginUpdate();
+            model.addEdge(startNode, endNode);
+            graph.endUpdate();
+          }
+          
+          m.setGraph(graph);
+          receivedDetails = true;
+        }
+        else {
+            block();
+        }
+    }
+    public boolean done() {
+        return receivedDetails;
+    }
+  }
+  
+  
   private class PositionUpdater extends CyclicBehaviour {
     double counter = 10.0;
     
@@ -194,7 +270,11 @@ public class GraphVisualizationAgent extends BaseAgent {
     public void action() {
       CellType shape = CellType.BALL;
       
-      updateNodePosition("bakery-001", counter, 100.0, 25);
+//      if ((int)counter == 10) {
+//        graph.beginUpdate();
+//        model.addCell("hello", shape);
+//        graph.endUpdate();
+//      }
       
 //      counter += 10.0;
       
@@ -213,22 +293,17 @@ public class GraphVisualizationAgent extends BaseAgent {
 			ACLMessage msg = myAgent.receive(mt);
 
 			if (msg != null) {
-				System.out.println("++++++++++ Visualization recived msg: \n" + msg.getContent() );
 				JSONObject jsonObj = new JSONObject(msg.getContent());
 				String truckID = jsonObj.getString("id");
-				float x = jsonObj.getFloat("x");
-				float y = jsonObj.getFloat("y");
+				float x = jsonObj.getFloat("x")*(float)100.0;
+				float y = jsonObj.getFloat("y")*(float)100.0;
 				
 				if (nodeAlreadyInGraph(truckID)) {
-					System.out.println("Truck node already exists. Updating its position");
 					updateNodePosition(truckID, x, y, 25);	
 				}
 				else {
-					System.out.println("Truck node does not exists. Creating a new node");
 					addNode(NodeType.TRUCK, truckID, x, y, truckID);	
 				}
-				
-				System.out.println("****************Action Complete..");
 			}
 		}
 	}

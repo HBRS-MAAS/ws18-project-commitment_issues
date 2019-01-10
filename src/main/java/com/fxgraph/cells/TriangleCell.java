@@ -18,7 +18,8 @@ public class TriangleCell extends Cell {
         view.setFill(Color.RED);
 
         setView(view);
-
+        
+        cellType = CellType.TRIANGLE;
     }
     
     public void setColor(Color color) {

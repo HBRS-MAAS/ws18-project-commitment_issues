@@ -73,6 +73,10 @@ public class TruckAgent extends BaseAgent {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 	
+	  public String getTruckName() {
+		  return getLocalName().split("_")[1];
+	  }
+	
 	protected boolean isTruckIdle() {
 		return currOrder_ == null;
 	}
@@ -793,7 +797,7 @@ public class TruckAgent extends BaseAgent {
 	private class SendTruckPosForVisualiaztion extends OneShotBehaviour {		
 		private String generateJsonMessage() {			
 			JSONObject jsonObj = new JSONObject();	
-			jsonObj.put("id", getLocalName());
+			jsonObj.put("id", getTruckName());
 			jsonObj.put("x", currTruckLocation_[0]);
 			jsonObj.put("y", currTruckLocation_[1]);
 			return jsonObj.toString();
@@ -812,7 +816,6 @@ public class TruckAgent extends BaseAgent {
 			msg.setConversationId("TruckPosUpdate");
 			msg.setPostTimeStamp(System.currentTimeMillis());
 			baseAgent.send(msg);
-			System.out.println(">>>>>>>>>>>>>>>>>>>" + getLocalName() + " sent position to " + visAgent.getLocalName());
 		}
 	}
 	

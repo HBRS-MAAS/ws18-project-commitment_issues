@@ -7,13 +7,14 @@ public class Ball extends Cell{
   public Ball( String id) {
     super( id);
 
-    Circle view = new Circle( 30);
+    Circle view = new Circle( 10);
 
     view.setStroke(Color.DODGERBLUE);
     view.setFill(Color.YELLOW);
 
     setView( view);
 
+    cellType = CellType.BALL;
 }
   
   public void setColor(Color color) {

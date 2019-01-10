@@ -15,7 +15,8 @@ public class RectangleCell extends Cell {
         view.setFill(Color.DODGERBLUE);
 
         setView( view);
-
+        
+        cellType = CellType.RECTANGLE;
     }
     
     public void setColor(Color color) {

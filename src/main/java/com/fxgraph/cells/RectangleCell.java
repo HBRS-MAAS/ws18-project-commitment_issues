@@ -17,5 +17,10 @@ public class RectangleCell extends Cell {
         setView( view);
 
     }
+    
+    public void setColor(Color color) {
+    	((Rectangle)getView()).setStroke(color);
+    	((Rectangle)getView()).setFill(color);
+    }
 
 }

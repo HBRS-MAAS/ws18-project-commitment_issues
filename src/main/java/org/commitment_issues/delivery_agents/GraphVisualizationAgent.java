@@ -32,30 +32,26 @@ public class GraphVisualizationAgent extends BaseAgent {
   protected ArrayList <Cell> textNodes = new ArrayList<Cell>(); // list of all text nodes to track them easily
   
   public void setup() {
-    
+    super.setup();
     System.out.println("Hello! Visualization-agent "+getAID().getName()+" is ready.");
-    yellowPageRegister();
-    
+//    yellowPageRegister();
+    register("transport-visualization","transport-visualization");
     
     addBehaviour(new GraphBuilder());
-    
-    addBehaviour(new TruckTracker());
+//    addBehaviour(new TruckTracker());
     addBehaviour(new JFXStart());
+    
+    
+    addBehaviour(new PositionUpdater());
+    addBehaviour(new TimeUpdater());
    }
   
-  private void yellowPageRegister() {
-    DFAgentDescription dfd = new DFAgentDescription();
-    dfd.setName(getAID());
-    ServiceDescription sd = new ServiceDescription();
-    sd.setType("transport-visualization");
-    sd.setName("transport-visualization");
-    dfd.addServices(sd);
-    try {
-      DFService.register(this, dfd);
-    }
-    catch (FIPAException fe) {
-      fe.printStackTrace();
-    }
+  private class TimeUpdater extends CyclicBehaviour {
+    public void action() {
+          if (getAllowAction()) {
+            finished();
+          } 
+        }
   }
   
   private class JFXStart  extends OneShotBehaviour{
@@ -66,14 +62,12 @@ public class GraphVisualizationAgent extends BaseAgent {
       Thread thread = new Thread(() -> {
         
         try {
-
           m = new Main(graph);
-          ((GraphVisualizationAgent)myAgent).m.main();
+          m.main();
         } catch (InterruptedException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
-    });
+      });
       thread.start();
     }
     
@@ -89,8 +83,10 @@ public class GraphVisualizationAgent extends BaseAgent {
       ((GraphVisualizationAgent)myAgent).model.addCell("customer-001", CellType.TRIANGLE);
       TextCell name = new TextCell("Name: bakery-001", "bakery-001", "bakery-001");
       TextCell name2 = new TextCell("Name: customer-001", "customer-001", "customer-001");
+      
+      model.getAllCells().get(0).addCellChild(name);
 
-      ((GraphVisualizationAgent)myAgent).model.addCell(name);
+//      ((GraphVisualizationAgent)myAgent).model.addCell(name);
       ((GraphVisualizationAgent)myAgent).model.addCell(name2);
       //((GraphVisualizationAgent)myAgent).model.addCell("bakery-002", CellType.RECTANGLE);
       ((GraphVisualizationAgent)myAgent).graph.endUpdate();
@@ -164,6 +160,33 @@ public class GraphVisualizationAgent extends BaseAgent {
     
   }
   
+  
+  private class PositionUpdater extends CyclicBehaviour {
+    double counter = 10.0;
+    
+    @Override
+    public void action() {
+      ACLMessage recieve = myAgent.receive();
+      CellType shape = CellType.BALL;
+      
+//      if ((int)counter == 10) {
+//        graph.beginUpdate();
+//        model.addCell("hello", shape);
+//        graph.endUpdate();
+//      }
+      
+      model.getAllCells().get(0).relocate(counter ,100);
+      
+      counter += 10.0;
+      
+      try {
+        Thread.sleep(100);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+    }
+  }
+  
   private class TruckTracker extends CyclicBehaviour{
 
     @Override
@@ -173,70 +196,70 @@ public class GraphVisualizationAgent extends BaseAgent {
       graph.beginUpdate();
       model.addCell("t", shape);
       graph.endUpdate();
-      if (recieve != null && recieve.getConversationId().equals("truck-location")) {
-        String content = recieve.getContent();
-        
-        JSONObject truck = new JSONObject(content);
-        String truckID = truck.getString("TruckID");
-        String orderID = truck.getString("OrderID");
-        float truckXLoc = truck.getFloat("X")*(float)100.0;
-        float truckYLoc = truck.getFloat("Y")*(float)100.0;
-        float estimatedTime = truck.getFloat("EstimatedTime");
-        
-        if (trucksID.contains(truckID)) {
-          // If it is already there in the graph then search for it by id and relocate it
-          int orderIDindex = 0;
-          int currTimeIndex = 0;
-          int truckIndex = 0;
-          int counter = 0;
-          for (int i = 0; i < model.getAllCells().size(); i++) {
-            if (counter == 3) {
-              break;
-            }
-            if (model.getAllCells().get(i).getCellId().equals(truckID)) {
-              truckIndex = i;
-            }
-            
-            if (model.getAllCells().get(i).getCellId().equals(truckID+"Estimated Time: ")) {
-              currTimeIndex = i;
-            }
-            
-            if (model.getAllCells().get(i).getCellId().equals(truckID+"order: ")) {
-              orderIDindex = i;
-            }
-          }
-          model.getAllCells().get(truckIndex).relocate(truckXLoc, truckYLoc);
-          model.getAllCells().get(orderIDindex).relocate(truckXLoc-(float)50, truckYLoc);
-          ((TextCell)model.getAllCells().get(orderIDindex)).setContent("order: "+orderID);
-          model.getAllCells().get(currTimeIndex).relocate(truckXLoc-(float)75, truckYLoc);
-          ((TextCell)model.getAllCells().get(currTimeIndex)).setContent("Estimated Time: "+Float.toString(estimatedTime));
-          
-        }
-        else {
-          TextCell currOrderID = new TextCell(truckID+"order: ", truckID, "order: "+ orderID);
-          TextCell currTime = new TextCell(truckID+"Estimated Time: ", truckID, "Estimated Time: "+Float.toString(estimatedTime));
-          textNodes.add(currOrderID);
-          textNodes.add(currTime);
-          graph.beginUpdate();
-          model.addCell(truckID, shape);
-          graph.endUpdate();
-          
-          model.getAllCells().get(model.getAllCells().size()-1)
-          .relocate(truckXLoc, truckYLoc);
-          graph.beginUpdate();
-          model.addCell(currOrderID);
-          graph.endUpdate();
-          model.getAllCells().get(model.getAllCells().size()-1)
-          .relocate(truckXLoc, truckYLoc-(float)50);
-          graph.beginUpdate();
-          model.addCell(currOrderID);
-          graph.endUpdate();
-          model.getAllCells().get(model.getAllCells().size()-1)
-          .relocate(truckXLoc, truckYLoc-(float)75);
-        }
+//      if (recieve != null && recieve.getConversationId().equals("truck-location")) {
+//        String content = recieve.getContent();
+//        
+//        JSONObject truck = new JSONObject(content);
+//        String truckID = truck.getString("TruckID");
+//        String orderID = truck.getString("OrderID");
+//        float truckXLoc = truck.getFloat("X")*(float)100.0;
+//        float truckYLoc = truck.getFloat("Y")*(float)100.0;
+//        float estimatedTime = truck.getFloat("EstimatedTime");
+//        
+//        if (trucksID.contains(truckID)) {
+//          // If it is already there in the graph then search for it by id and relocate it
+//          int orderIDindex = 0;
+//          int currTimeIndex = 0;
+//          int truckIndex = 0;
+//          int counter = 0;
+//          for (int i = 0; i < model.getAllCells().size(); i++) {
+//            if (counter == 3) {
+//              break;
+//            }
+//            if (model.getAllCells().get(i).getCellId().equals(truckID)) {
+//              truckIndex = i;
+//            }
+//            
+//            if (model.getAllCells().get(i).getCellId().equals(truckID+"Estimated Time: ")) {
+//              currTimeIndex = i;
+//            }
+//            
+//            if (model.getAllCells().get(i).getCellId().equals(truckID+"order: ")) {
+//              orderIDindex = i;
+//            }
+//          }
+//          model.getAllCells().get(truckIndex).relocate(truckXLoc, truckYLoc);
+//          model.getAllCells().get(orderIDindex).relocate(truckXLoc-(float)50, truckYLoc);
+//          ((TextCell)model.getAllCells().get(orderIDindex)).setContent("order: "+orderID);
+//          model.getAllCells().get(currTimeIndex).relocate(truckXLoc-(float)75, truckYLoc);
+//          ((TextCell)model.getAllCells().get(currTimeIndex)).setContent("Estimated Time: "+Float.toString(estimatedTime));
+//          
+//        }
+//        else {
+//          TextCell currOrderID = new TextCell(truckID+"order: ", truckID, "order: "+ orderID);
+//          TextCell currTime = new TextCell(truckID+"Estimated Time: ", truckID, "Estimated Time: "+Float.toString(estimatedTime));
+//          textNodes.add(currOrderID);
+//          textNodes.add(currTime);
+//          graph.beginUpdate();
+//          model.addCell(truckID, shape);
+//          graph.endUpdate();
+//          
+//          model.getAllCells().get(model.getAllCells().size()-1)
+//          .relocate(truckXLoc, truckYLoc);
+//          graph.beginUpdate();
+//          model.addCell(currOrderID);
+//          graph.endUpdate();
+//          model.getAllCells().get(model.getAllCells().size()-1)
+//          .relocate(truckXLoc, truckYLoc-(float)50);
+//          graph.beginUpdate();
+//          model.addCell(currOrderID);
+//          graph.endUpdate();
+//          model.getAllCells().get(model.getAllCells().size()-1)
+//          .relocate(truckXLoc, truckYLoc-(float)75);
+//        }
         
       
-      }  
+//      }  
       
     }
     

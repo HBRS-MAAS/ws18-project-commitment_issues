@@ -19,6 +19,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
 public class GraphVisualizationAgent extends BaseAgent {
@@ -41,6 +42,7 @@ public class GraphVisualizationAgent extends BaseAgent {
     
     
     addBehaviour(new PositionUpdater());
+    addBehaviour(new TruckPositionUpdater());
     addBehaviour(new TimeUpdater());
    }
   
@@ -127,12 +129,28 @@ public class GraphVisualizationAgent extends BaseAgent {
 	    graph.endUpdate();		
 	    
 	    updateNodePosition(id, posX, posY, 25);
+	    
+	    m.setGraph(graph);
 	}
 	
 	private void addEdge(String cellID1, String cellID2) {
 		graph.beginUpdate();
 		model.addEdge(cellID1, cellID2);
 		graph.endUpdate();
+	}
+	
+	private boolean nodeAlreadyInGraph(String cellID) {
+		boolean nodeExists = false;
+
+		List<Cell> allCells = model.getAllCells();
+
+		for (Cell cell : allCells) {
+			if (cell.getCellId().equals(cellID)) {
+				nodeExists = true;
+				break;
+			}
+		}
+		return nodeExists;
 	}
   
   private class JFXStart  extends OneShotBehaviour{
@@ -153,78 +171,20 @@ public class GraphVisualizationAgent extends BaseAgent {
     }
     
   }
-  private class GraphBuilder extends OneShotBehaviour{
-    
-    @Override
-    public void action() {      
-      addNode(NodeType.BAKERY, "bakery-001", 10, 100, "bakery-001");
-      addNode(NodeType.CUSTOMER, "customer-001", 400, 200, "customer-001");
-      addNode(NodeType.SIMPLE, "simple-1", 600, 200, null);
-      addNode(NodeType.TRUCK, "Truck-001", 800, 200, "Truck-001");
-      addNode(NodeType.TRANSPORT_COMPANY, "Transport-Company-001", 1000, 200, "Transport-Company-001");
-      addEdge("bakery-001", "customer-001");
-      addEdge("Transport-Company-001", "Truck-001");
-      
-      m.setGraph(graph);
-      
-      ACLMessage recieve = myAgent.receive();
-      if (recieve != null && recieve.getConversationId().equals("initial-state")) {
-        
-        JSONObject wholeMsg = new JSONObject(recieve);
-        
-        JSONArray nodes = wholeMsg.getJSONArray("Nodes");
-        JSONArray edges = wholeMsg.getJSONArray("Edges");
-        
-        for (int i = 0; i < nodes.length(); i++) {
-          
-          JSONObject node = nodes.getJSONObject(i);
-          
-          int type = node.getInt("Type");
-          // i for bakeries and 0 for customers
-          JSONObject location = node.getJSONObject("Location");
-          float nodeX = location.getFloat("X")*(float)100.0;
-          float nodeY = location.getFloat("Y")*(float)100.0;
-          
-          String nodeID = node.getString("NodeID");
-          
-          if (type == 0) {
-            shape = CellType.RECTANGLE;
-          }
-          else{
-            shape = CellType.TRIANGLE;
-          }
-          
-          graph.beginUpdate();
-          model.addCell(nodeID, shape);
-          graph.endUpdate();
-          
-          model.getAllCells().get(i).relocate(nodeX, nodeY);
-        }
-        
-        for (int k = 0;k < edges.length(); k++) {
-          
-          JSONObject edge = edges.getJSONObject(k);
-          
-          String startNode = edge.getString("startNodeID");
-          String endNode = edge.getString("endNodeID");
-          
-          graph.beginUpdate();
-          model.addEdge(startNode, endNode);
-          graph.endUpdate();
-        
-        }
-        
-      m.setGraph(graph);
-      }
-      else {
-        
-        //block();
-      
-      }
 
-    }
-    
-  }
+	private class GraphBuilder extends OneShotBehaviour {
+
+		@Override
+		public void action() {
+			addNode(NodeType.BAKERY, "bakery-001", 10, 100, "bakery-001");
+			addNode(NodeType.CUSTOMER, "customer-001", 400, 200, "customer-001");
+			addNode(NodeType.SIMPLE, "simple-1", 600, 200, null);
+			addNode(NodeType.TRUCK, "Truck-001", 800, 200, "Truck-001");
+			addNode(NodeType.TRANSPORT_COMPANY, "Transport-Company-001", 1000, 200, "Transport-Company-001");
+			addEdge("bakery-001", "customer-001");
+			addEdge("Transport-Company-001", "Truck-001");
+		}
+	}
   
   
   private class PositionUpdater extends CyclicBehaviour {
@@ -232,12 +192,11 @@ public class GraphVisualizationAgent extends BaseAgent {
     
     @Override
     public void action() {
-      ACLMessage recieve = myAgent.receive();
       CellType shape = CellType.BALL;
       
       updateNodePosition("bakery-001", counter, 100.0, 25);
       
-      counter += 10.0;
+//      counter += 10.0;
       
       try {
         Thread.sleep(100);
@@ -247,82 +206,31 @@ public class GraphVisualizationAgent extends BaseAgent {
     }
   }
   
-  private class TruckTracker extends CyclicBehaviour{
+	private class TruckPositionUpdater extends CyclicBehaviour {
+		@Override
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchConversationId("TruckPosUpdate");
+			ACLMessage msg = myAgent.receive(mt);
 
-    @Override
-    public void action() {
-      ACLMessage recieve = myAgent.receive();
-      CellType shape = CellType.BALL;
-      graph.beginUpdate();
-      model.addCell("t", shape);
-      graph.endUpdate();
-//      if (recieve != null && recieve.getConversationId().equals("truck-location")) {
-//        String content = recieve.getContent();
-//        
-//        JSONObject truck = new JSONObject(content);
-//        String truckID = truck.getString("TruckID");
-//        String orderID = truck.getString("OrderID");
-//        float truckXLoc = truck.getFloat("X")*(float)100.0;
-//        float truckYLoc = truck.getFloat("Y")*(float)100.0;
-//        float estimatedTime = truck.getFloat("EstimatedTime");
-//        
-//        if (trucksID.contains(truckID)) {
-//          // If it is already there in the graph then search for it by id and relocate it
-//          int orderIDindex = 0;
-//          int currTimeIndex = 0;
-//          int truckIndex = 0;
-//          int counter = 0;
-//          for (int i = 0; i < model.getAllCells().size(); i++) {
-//            if (counter == 3) {
-//              break;
-//            }
-//            if (model.getAllCells().get(i).getCellId().equals(truckID)) {
-//              truckIndex = i;
-//            }
-//            
-//            if (model.getAllCells().get(i).getCellId().equals(truckID+"Estimated Time: ")) {
-//              currTimeIndex = i;
-//            }
-//            
-//            if (model.getAllCells().get(i).getCellId().equals(truckID+"order: ")) {
-//              orderIDindex = i;
-//            }
-//          }
-//          model.getAllCells().get(truckIndex).relocate(truckXLoc, truckYLoc);
-//          model.getAllCells().get(orderIDindex).relocate(truckXLoc-(float)50, truckYLoc);
-//          ((TextCell)model.getAllCells().get(orderIDindex)).setContent("order: "+orderID);
-//          model.getAllCells().get(currTimeIndex).relocate(truckXLoc-(float)75, truckYLoc);
-//          ((TextCell)model.getAllCells().get(currTimeIndex)).setContent("Estimated Time: "+Float.toString(estimatedTime));
-//          
-//        }
-//        else {
-//          TextCell currOrderID = new TextCell(truckID+"order: ", truckID, "order: "+ orderID);
-//          TextCell currTime = new TextCell(truckID+"Estimated Time: ", truckID, "Estimated Time: "+Float.toString(estimatedTime));
-//          textNodes.add(currOrderID);
-//          textNodes.add(currTime);
-//          graph.beginUpdate();
-//          model.addCell(truckID, shape);
-//          graph.endUpdate();
-//          
-//          model.getAllCells().get(model.getAllCells().size()-1)
-//          .relocate(truckXLoc, truckYLoc);
-//          graph.beginUpdate();
-//          model.addCell(currOrderID);
-//          graph.endUpdate();
-//          model.getAllCells().get(model.getAllCells().size()-1)
-//          .relocate(truckXLoc, truckYLoc-(float)50);
-//          graph.beginUpdate();
-//          model.addCell(currOrderID);
-//          graph.endUpdate();
-//          model.getAllCells().get(model.getAllCells().size()-1)
-//          .relocate(truckXLoc, truckYLoc-(float)75);
-//        }
-        
-      
-//      }  
-      
-    }
-    
-  }
+			if (msg != null) {
+				System.out.println("++++++++++ Visualization recived msg: \n" + msg.getContent() );
+				JSONObject jsonObj = new JSONObject(msg.getContent());
+				String truckID = jsonObj.getString("id");
+				float x = jsonObj.getFloat("x");
+				float y = jsonObj.getFloat("y");
+				
+				if (nodeAlreadyInGraph(truckID)) {
+					System.out.println("Truck node already exists. Updating its position");
+					updateNodePosition(truckID, x, y, 25);	
+				}
+				else {
+					System.out.println("Truck node does not exists. Creating a new node");
+					addNode(NodeType.TRUCK, truckID, x, y, truckID);	
+				}
+				
+				System.out.println("****************Action Complete..");
+			}
+		}
+	}
   
 }

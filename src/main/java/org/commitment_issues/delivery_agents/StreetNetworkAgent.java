@@ -245,6 +245,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		JSONObject JSONVisData = new JSONObject();
 		JSONArray JSONVisNodes = new JSONArray();
 		JSONArray JSONVisLinks = new JSONArray();
+		boolean repeated = false;
 		
 		String nodeType = "";
 		
@@ -275,15 +276,18 @@ public class StreetNetworkAgent extends BaseAgent {
 			  String tempSourceNode = JSONVisLinks.getJSONObject(j).getString("source");
 	      String tempTargetNode = JSONVisLinks.getJSONObject(j).getString("target");
 			  
-	      if ((sourceNode.equals(tempTargetNode) && targetNode.equals(tempSourceNode))
-	          || sourceNode.equals(tempSourceNode) && targetNode.equals(tempTargetNode)) {
-	        continue;
+	      if (sourceNode.equals(tempTargetNode) && targetNode.equals(tempSourceNode)) {
+	        repeated = true;
 	      }
 			}
-			JSONVisLinkInfo.put("source", sourceNode);
-			JSONVisLinkInfo.put("target", targetNode);
 			
-			JSONVisLinks.put(JSONVisLinkInfo);
+			if (!repeated) {
+  			JSONVisLinkInfo.put("source", sourceNode);
+  			JSONVisLinkInfo.put("target", targetNode);
+  			
+  			JSONVisLinks.put(JSONVisLinkInfo);
+			}
+			repeated = false;
 		}
 		
 		JSONVisData.put("nodes", JSONVisNodes);		

@@ -15,4 +15,9 @@ public class Ball extends Cell{
     setView( view);
 
 }
+  
+  public void setColor(Color color) {
+  	((Circle)getView()).setStroke(color);
+  	((Circle)getView()).setFill(color);
+  }
 }

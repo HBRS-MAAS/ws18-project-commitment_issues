@@ -20,5 +20,10 @@ public class TriangleCell extends Cell {
         setView(view);
 
     }
+    
+    public void setColor(Color color) {
+    	((Polygon)getView()).setStroke(color);
+    	((Polygon)getView()).setFill(color);
+    }
 
 }

@@ -73,6 +73,10 @@ public class TruckAgent extends BaseAgent {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 	
+	  public String getTruckName() {
+		  return getLocalName().split("_")[1];
+	  }
+	
 	protected boolean isTruckIdle() {
 		return currOrder_ == null;
 	}
@@ -341,6 +345,7 @@ public class TruckAgent extends BaseAgent {
 					currTruckLocation_[0] = currPath_.get(i - 1)[0];
 					currTruckLocation_[1] = currPath_.get(i - 1)[1];
 					retval = true;
+					baseAgent.addBehaviour(new SendTruckPosForVisualiaztion());
 					System.out.println(getLocalName() +  " moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
 				}
 			}
@@ -669,6 +674,8 @@ public class TruckAgent extends BaseAgent {
                     	//System.out.println(baseAgent.getAID().getLocalName() + ": Querying node position from street network failed!!");
                     	state_ = StreetNetworkQueryStates.QUERY_FAILED;
                     }
+                    
+                    baseAgent.addBehaviour(new SendTruckPosForVisualiaztion());
                 }
 				break;
 			default:
@@ -783,6 +790,32 @@ public class TruckAgent extends BaseAgent {
 			msg.setPostTimeStamp(System.currentTimeMillis());
 			baseAgent.send(msg);
 			System.out.println(baseAgent.getAID().getLocalName() + " Posted message to mailbox");
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private class SendTruckPosForVisualiaztion extends OneShotBehaviour {		
+		private String generateJsonMessage() {			
+			JSONObject jsonObj = new JSONObject();	
+			jsonObj.put("id", getTruckName());
+			jsonObj.put("x", currTruckLocation_[0]);
+			jsonObj.put("y", currTruckLocation_[1]);
+			return jsonObj.toString();
+		}
+		
+		
+		public void action() {
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			AID visAgent = null;
+			while (visAgent == null) {
+				visAgent = discoverAgent("transport-visualization");
+			}
+			
+			msg.addReceiver(visAgent);
+			msg.setContent(generateJsonMessage());
+			msg.setConversationId("TruckPosUpdate");
+			msg.setPostTimeStamp(System.currentTimeMillis());
+			baseAgent.send(msg);
 		}
 	}
 	

@@ -388,10 +388,11 @@ public class StreetNetworkAgent extends BaseAgent {
 	     if (path == null || path.size() == 0) {
 	     	System.out.println("["+getAID().getLocalName()+"]: No valid path found!! ");
 	     }
-	        
-	        for (int k = 0; k < path.size(); k++) {
-	        	fullPath.add(path.get(k));
-	        }
+	     else {
+		        for (int k = 0; k < path.size(); k++) {
+		        	fullPath.add(path.get(k));
+		        } 
+	     }
 	        
 		}
 		return fullPath;		

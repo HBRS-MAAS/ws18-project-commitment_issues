@@ -806,6 +806,7 @@ public class TruckAgent extends BaseAgent {
 			jsonObj.put("id", getTruckName());
 			jsonObj.put("x", currTruckLocation_[0]);
 			jsonObj.put("y", currTruckLocation_[1]);
+			jsonObj.put("state", truckState_);
 			return jsonObj.toString();
 		}
 		

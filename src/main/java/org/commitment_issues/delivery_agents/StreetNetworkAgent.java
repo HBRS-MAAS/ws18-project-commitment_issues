@@ -385,7 +385,7 @@ public class StreetNetworkAgent extends BaseAgent {
 	        LinkedList<Vertex> path = dijkstra.getPath(targetNode);
 	        
 	     // ++++
-	     if (path.size() == 0) {
+	     if (path == null || path.size() == 0) {
 	     	System.out.println("["+getAID().getLocalName()+"]: No valid path found!! ");
 	     }
 	        

@@ -298,15 +298,16 @@ public class GraphVisualizationAgent extends BaseAgent {
 			if (msg != null) {
 				JSONObject jsonObj = new JSONObject(msg.getContent());
 				String truckID = jsonObj.getString("id");
-				float x = jsonObj.getFloat("x")*(float)100.0;
-				float y = jsonObj.getFloat("y")*(float)100.0;
-				
+				float x = jsonObj.getFloat("x") * (float) 100.0;
+				float y = jsonObj.getFloat("y") * (float) 100.0;
+
 				if (nodeAlreadyInGraph(truckID)) {
-					updateNodePosition(truckID, x, y, 25);	
+					updateNodePosition(truckID, x, y, 25);
+				} else {
+					addNode(NodeType.TRUCK, truckID, x, y, truckID);
 				}
-				else {
-					addNode(NodeType.TRUCK, truckID, x, y, truckID);	
-				}
+			} else {
+				block();
 			}
 		}
 	}

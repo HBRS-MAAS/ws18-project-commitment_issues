@@ -74,7 +74,7 @@ public class GraphVisualizationAgent extends BaseAgent {
 	  }
   }
   
-  private void updateNodePosition(String cellID, double x, double y, double margin, String state) {
+  private void updateNodePosition(String cellID, double x, double y, double margin, String state, int eta) {
 	  int overallXOffset = 50;
 	  int overallYOffset = 50;
 	  
@@ -93,6 +93,12 @@ public class GraphVisualizationAgent extends BaseAgent {
 				  setTruckColor(cell, state);
 		  }
 		  else if (cell.getCellId().equals(cellID + "_label")) {
+			  String content = ((TextCell)cell).getContent().split(",")[0];
+			  if (eta >= 0) {
+				  content += ", ETA: " + Integer.toString(eta) + " mins"; 
+			  }
+			  ((TextCell)cell).setContent(content);
+			  
 			  cell.relocate(x, y - margin);
 			  cellsUpdated += 1;
 		  }
@@ -158,7 +164,7 @@ public class GraphVisualizationAgent extends BaseAgent {
 	    graph.endUpdate();		
 	    
 
-	    updateNodePosition(id, posX, posY, 5, "");
+	    updateNodePosition(id, posX, posY, 5, "", -1);
 	    m.setGraph(graph);
 	}
 	
@@ -311,6 +317,7 @@ public class GraphVisualizationAgent extends BaseAgent {
   }
   
 	private class TruckPositionUpdater extends CyclicBehaviour {
+		int counter = 0;
 		@Override
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchConversationId("TruckPosUpdate");
@@ -324,9 +331,11 @@ public class GraphVisualizationAgent extends BaseAgent {
 				float x = jsonObj.getFloat("x") * (float) 100.0;
 				float y = jsonObj.getFloat("y") * (float) 100.0;
 				String state = jsonObj.getString("state");
+				int eta = state.equals("IDLE") ? -1 : jsonObj.getInt("eta");
 
 				if (nodeAlreadyInGraph(truckID)) {
-					updateNodePosition(truckID, x, y, 25, state);
+					updateNodePosition(truckID, x, y, 25, state, eta);
+					counter++;
 				} else {
 					addNode(NodeType.TRUCK, truckID, x, y, truckID);
 				}

@@ -797,13 +797,24 @@ public class TruckAgent extends BaseAgent {
 	
 	@SuppressWarnings("unused")
 	private class SendTruckPosForVisualiaztion extends OneShotBehaviour {		
-		private String generateJsonMessage() {			
+		private String generateJsonMessage() {		
+			float eta = 0.0f;
+			if (currPath_ != null) {
+				float timeSincePathStart = getTime() - pathStartTime_;
+				eta = currPath_.get(currPath_.size() - 1)[2] - timeSincePathStart;	
+			}
+			
 			JSONObject jsonObj = new JSONObject();	
 			jsonObj.put("id", getLocalName());
 			jsonObj.put("x", currTruckLocation_[0]);
 			jsonObj.put("y", currTruckLocation_[1]);
 			jsonObj.put("state", truckState_);
+			jsonObj.put("eta", (int)eta);
 			return jsonObj.toString();
+		}
+		
+		private int getTime() {
+			return (getCurrentDay() * 24 * 60) + (getCurrentHour() * 60) + getCurrentMinute();
 		}
 		
 		

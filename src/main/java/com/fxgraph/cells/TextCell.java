@@ -28,11 +28,18 @@ public class TextCell extends Cell {
     public void setParentID(String parentID) {
       this.parentID = parentID;
     }
+    
+    public String getContent() {
+    	return this.content;
+    }
     public void setContent(String content) {
       this.content = content;
       
+    ((Text)getView()).setText(this.content);
+  	((Text)getView()).setAccessibleText(this.content);
+      
       //v.setText(this.content);
-      setView(v);
+//      setView(v);
     }
     
     

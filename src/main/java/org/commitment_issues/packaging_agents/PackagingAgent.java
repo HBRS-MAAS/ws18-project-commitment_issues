@@ -326,6 +326,9 @@ public class PackagingAgent extends BaseAgent {
 				addProductsToOrders(msg.getContent());
 				baseAgent.addBehaviour(new SendBoxes());
 			}
+			else {
+				block();
+			}
 		}
 	}
 

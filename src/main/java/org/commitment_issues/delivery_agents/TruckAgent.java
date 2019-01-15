@@ -61,7 +61,11 @@ public class TruckAgent extends BaseAgent {
 		addBehaviour(new TruckScheduleServer());
 		addBehaviour(new MoveTruck());
 		
-		
+		try {
+	        Thread.sleep(3000);
+	    } catch (InterruptedException e) {
+	        e.printStackTrace();
+	    }
 		addBehaviour(new QueryNodePosition(getLocalName().split("_")[0]));
 		addBehaviour(new TimeUpdater());
 		
@@ -72,6 +76,10 @@ public class TruckAgent extends BaseAgent {
 		
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
+	
+	  public String getTruckName() {
+		  return getLocalName().split("_")[1];
+	  }
 	
 	protected boolean isTruckIdle() {
 		return currOrder_ == null;
@@ -341,7 +349,7 @@ public class TruckAgent extends BaseAgent {
 					currTruckLocation_[0] = currPath_.get(i - 1)[0];
 					currTruckLocation_[1] = currPath_.get(i - 1)[1];
 					retval = true;
-					System.out.println(getLocalName() +  " moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
+//					System.out.println(getLocalName() +  " moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
 				}
 			}
 			finished();
@@ -402,6 +410,9 @@ public class TruckAgent extends BaseAgent {
 	            			System.out.println(baseAgent.getAID().getLocalName() + " Reached customer. Truck is Idle as there is no next order");
 	            		}
 	            	}
+	            	
+
+					baseAgent.addBehaviour(new SendTruckPosForVisualiaztion());
 	            	
 //	                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 //	                msg.addReceiver(discoverAgent("transport-visualization"));
@@ -669,6 +680,8 @@ public class TruckAgent extends BaseAgent {
                     	//System.out.println(baseAgent.getAID().getLocalName() + ": Querying node position from street network failed!!");
                     	state_ = StreetNetworkQueryStates.QUERY_FAILED;
                     }
+                    
+                    baseAgent.addBehaviour(new SendTruckPosForVisualiaztion());
                 }
 				break;
 			default:
@@ -783,6 +796,39 @@ public class TruckAgent extends BaseAgent {
 			msg.setPostTimeStamp(System.currentTimeMillis());
 			baseAgent.send(msg);
 			System.out.println(baseAgent.getAID().getLocalName() + " Posted message to mailbox");
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private class SendTruckPosForVisualiaztion extends OneShotBehaviour {		
+		private String generateJsonMessage() {		
+			float eta = 0.0f;
+			if (currPath_ != null) {
+				float timeSincePathStart = getTime() - pathStartTime_;
+				eta = currPath_.get(currPath_.size() - 1)[2] - timeSincePathStart;	
+			}
+			
+			JSONObject jsonObj = new JSONObject();	
+			jsonObj.put("id", getTruckName());
+			jsonObj.put("x", currTruckLocation_[0]);
+			jsonObj.put("y", currTruckLocation_[1]);
+			jsonObj.put("state", truckState_);
+			jsonObj.put("eta", (int)eta);
+			return jsonObj.toString();
+		}
+		
+		private int getTime() {
+			return (getCurrentDay() * 24 * 60) + (getCurrentHour() * 60) + getCurrentMinute();
+		}
+		
+		
+		public void action() {
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);			
+			msg.addReceiver(discoverAgent("transport-visualization"));
+			msg.setContent(generateJsonMessage());
+			msg.setConversationId("TruckPosUpdate");
+			msg.setPostTimeStamp(System.currentTimeMillis());
+			baseAgent.send(msg);
 		}
 	}
 	

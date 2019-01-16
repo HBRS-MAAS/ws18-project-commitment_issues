@@ -186,7 +186,7 @@ public class LoadingBayAgent extends BaseAgent {
 
 	private class PackagingPhaseMessageSender extends OneShotBehaviour {
 		private AID receivingAgent = null;
-		String orderID = null;
+		protected String orderID = null;
 		
 		public PackagingPhaseMessageSender(String id) {
 			this.orderID = id;

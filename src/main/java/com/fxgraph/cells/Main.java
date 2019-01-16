@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-  static Graph graph;
+  public static Graph graph = null;
   public Main(Graph g) {
     super();
     Main.graph = g;

@@ -7,18 +7,18 @@ import javafx.scene.text.Text;
 public class TextCell extends Cell {
     private String parentID;
     private String content;
-    private Text v;
+    private Text view;
     
     public TextCell(String cellId, String parentID, String content) {
       super(cellId);
       this.parentID = parentID;
       this.content = content;
-      this.v = new Text();
-      v.setText(this.content);
-      v.setAccessibleText(this.content);
-      v.setFont(new Font(20));
+      this.view = new Text();
+      view.setText(this.content);
+      view.setAccessibleText(this.content);
+      view.setFont(new Font(20));
       
-      setView(v);
+      setView(view);
       
       cellType = CellType.TEXT;
     }

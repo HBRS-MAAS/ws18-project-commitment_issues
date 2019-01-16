@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Scanner;
@@ -38,8 +37,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class EntryAgent extends BaseAgent {
 	private PriorityQueue<Order> orderQueue_ = new PriorityQueue<Order>(100000, new OrderComparator());
 	protected String scenarioDirectory_;
-	Vector<String> bakeryNames_ = new Vector<String>();
-	int currBakery_ = 0;
+	protected Vector<String> bakeryNames_ = new Vector<String>();
+	protected int currBakery_ = 0;
 
 	protected void setup() {
 		super.setup();
@@ -200,8 +199,6 @@ public class EntryAgent extends BaseAgent {
 
 				}
 				finished();
-			} else {
-				//block();
 			}
 		}
 
@@ -258,7 +255,7 @@ public class EntryAgent extends BaseAgent {
 	}
 
 	private class BroadcastOrder extends OneShotBehaviour {
-		JSONObject orderObj;
+		protected JSONObject orderObj;
 
 		public BroadcastOrder(Order order) {
 			super();

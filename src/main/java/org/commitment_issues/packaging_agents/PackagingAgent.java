@@ -426,10 +426,10 @@ public class PackagingAgent extends BaseAgent {
 		}
 
 		public void action() {
-			findOrderProcessor();
+//			findOrderProcessor();
 
-			mt = MessageTemplate.and(MessageTemplate.MatchSender(orderProcessor),
-					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("order"),
+          MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 			ACLMessage msg = myAgent.receive(mt);
 
 			if (msg != null) {

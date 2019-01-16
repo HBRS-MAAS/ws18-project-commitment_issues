@@ -275,7 +275,7 @@ public class TruckAgent extends BaseAgent {
         		ACLMessage reply = requestMsg_.createReply();
                 reply.setPerformative(ACLMessage.PROPOSE);
                 reply.setContent(Float.toString(timeQuote_));
-                baseAgent.send(reply);
+                baseAgent.sendMessage(reply);
                 System.out.println(baseAgent.getAID().getLocalName() + " Sent time to deliver quote: " + timeQuote_);
                 resetClassMembers();
         		break;
@@ -283,7 +283,7 @@ public class TruckAgent extends BaseAgent {
         		ACLMessage reject = requestMsg_.createReply();
         		reject.setPerformative(ACLMessage.REFUSE);
         		reject.setContent("Busy");
-                baseAgent.send(reject);
+                baseAgent.sendMessage(reject);
                 System.out.println(baseAgent.getAID().getLocalName() + " Rejected Quotation request");
                 resetClassMembers();
         		break;
@@ -319,7 +319,7 @@ public class TruckAgent extends BaseAgent {
                     reply.setContent("Busy");
                     System.out.println(baseAgent.getAID().getLocalName() + " Failed to accept new order");
                 }
-                baseAgent.send(reply);
+                baseAgent.sendMessage(reply);
                 //System.out.println(baseAgent.getAID().getLocalName() + " Responded to ACCEPT_PROPOSAL with : " + reply.getContent());
             } else {
                 block();
@@ -418,7 +418,7 @@ public class TruckAgent extends BaseAgent {
 //	                msg.addReceiver(discoverAgent("transport-visualization"));
 //	                msg.setConversationId("truck-location");
 //	                msg.setContent(getVisualizationMessage());
-//	                baseAgent.send(msg);
+//	                baseAgent.sendMessage(msg);
 //	                System.out.println(baseAgent.getAID().getLocalName() + " Message sent to Visualization agent: " + msg.getContent());
             }
         }
@@ -486,7 +486,7 @@ public class TruckAgent extends BaseAgent {
                 request.setContent(getRequestContent());
                 request.setConversationId(conversationID);
                 request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
-                baseAgent.send(request);
+                baseAgent.sendMessage(request);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
                         MessageTemplate.MatchInReplyTo(request.getReplyWith()));
@@ -587,7 +587,7 @@ public class TruckAgent extends BaseAgent {
                 request.setContent(getRequestContent());
                 request.setConversationId(conversationID);
                 request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
-                baseAgent.send(request);
+                baseAgent.sendMessage(request);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
                         MessageTemplate.MatchInReplyTo(request.getReplyWith()));
@@ -658,7 +658,7 @@ public class TruckAgent extends BaseAgent {
                 request.setContent(nodeID_);
                 request.setConversationId(conversationID);
                 request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
-                baseAgent.send(request);
+                baseAgent.sendMessage(request);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
                         MessageTemplate.MatchInReplyTo(request.getReplyWith()));
@@ -730,7 +730,7 @@ public class TruckAgent extends BaseAgent {
 				msg.setContent(generateJsonMessage());
 				msg.setConversationId(convID);
 				msg.setReplyWith("req" + System.currentTimeMillis());
-				baseAgent.send(msg);
+				baseAgent.sendMessage(msg);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(convID),
                         MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
@@ -794,7 +794,7 @@ public class TruckAgent extends BaseAgent {
 			msg.setContent(generateJsonMessage());
 			msg.setConversationId("DeliveryConfirmation");
 			msg.setPostTimeStamp(System.currentTimeMillis());
-			baseAgent.send(msg);
+			baseAgent.sendMessage(msg);
 			System.out.println(baseAgent.getAID().getLocalName() + " Posted message to mailbox");
 		}
 	}
@@ -828,7 +828,7 @@ public class TruckAgent extends BaseAgent {
 			msg.setContent(generateJsonMessage());
 			msg.setConversationId("TruckPosUpdate");
 			msg.setPostTimeStamp(System.currentTimeMillis());
-			baseAgent.send(msg);
+			baseAgent.sendMessage(msg);
 		}
 	}
 	
@@ -845,7 +845,7 @@ public class TruckAgent extends BaseAgent {
 			shutdownMessage.setOntology(JADEManagementOntology.getInstance().getName());
 			try {
 				baseAgent.getContentManager().fillContent(shutdownMessage,new Action(baseAgent.getAID(), new ShutdownPlatform()));
-				baseAgent.send(shutdownMessage);
+				baseAgent.sendMessage(shutdownMessage);
 			}
 			catch (Exception e) {
 				//LOGGER.error(e);

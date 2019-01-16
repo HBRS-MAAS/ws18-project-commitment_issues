@@ -93,7 +93,7 @@ public class StreetNetworkAgent extends BaseAgent {
       template.addServices(sd);
       
         try {
-          DFAgentDescription[] result = DFService.search(myAgent, template);
+          DFAgentDescription[] result = DFService.search(baseAgent, template);
           if (result.length > 0) {
               graphVisualizerAgent = result[0].getName();
           }
@@ -124,7 +124,7 @@ public class StreetNetworkAgent extends BaseAgent {
 			SNVisualizationInfo.setContent(messageContent);
 			SNVisualizationInfo.setConversationId("graph-visualization");
 			
-			myAgent.send(SNVisualizationInfo);
+			baseAgent.sendMessage(SNVisualizationInfo);
 			
 			JSONObject o = new JSONObject(messageContent);
 //			System.out.println("[" + getAID().getLocalName() + "]: Sent details to GraphVisualizer agent !!!!!!!!!!!!!!!!!!!!!!!!!!!!"+ o);
@@ -141,7 +141,7 @@ public class StreetNetworkAgent extends BaseAgent {
 //					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("TimeQuery"),
 					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 								
 			
 			if (msg != null) {
@@ -156,7 +156,7 @@ public class StreetNetworkAgent extends BaseAgent {
 
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(time));
-				myAgent.send(reply);
+				baseAgent.sendMessage(reply);
 				
 				// +++
 				System.out.println("["+getAID().getLocalName()+"]: Returned journey time for "+msg.getSender().getLocalName()+" is "+time);
@@ -179,11 +179,11 @@ public class StreetNetworkAgent extends BaseAgent {
 //			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 //			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
 //					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
-//			msg = myAgent.receive(mt);
+//			msg = baseAgent.receive(mt);
 			
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
 					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 			
 					
 			if (msg != null) {
@@ -198,7 +198,7 @@ public class StreetNetworkAgent extends BaseAgent {
 
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(JSONPath));
-				myAgent.send(reply);
+				baseAgent.sendMessage(reply);
 				
 				// +++
 				System.out.println("["+getAID().getLocalName()+"]: Returned journey path for "+msg.getSender().getLocalName());
@@ -219,7 +219,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		public void action() {
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("LocationQuery"),
 					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 								
 			
 			if (msg != null) {
@@ -234,7 +234,7 @@ public class StreetNetworkAgent extends BaseAgent {
 
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(JSONNodeLocation));
-				myAgent.send(reply);
+				baseAgent.sendMessage(reply);
 				
 				// DEBUG:
 //				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName());

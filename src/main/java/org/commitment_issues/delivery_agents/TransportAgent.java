@@ -120,7 +120,7 @@ public class TransportAgent extends BaseAgent {
     // Periodically updates the pending orders list by the data it takes from order aggregator
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchConversationId("transport-order");
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 			if (msg != null) {// && msg.getConversationId().equals(msgID)
 				JSONArray JSONOrdersBoxes = new JSONArray(msg.getContent());// a list of all the orders with their boxes
 				System.out.println(getAID().getLocalName() + " Received transport order");
@@ -148,7 +148,7 @@ public class TransportAgent extends BaseAgent {
 					}
 					TransportAgent.orders.add(order);
 
-					myAgent.addBehaviour(new TrucksRequester(order));
+					baseAgent.addBehaviour(new TrucksRequester(order));
 				}
 
 			} else {
@@ -202,14 +202,14 @@ public class TransportAgent extends BaseAgent {
 				cfp.setConversationId(this.order.getOrderID());
 				cfp.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
 				System.out.println("Placed a proposal request from all trucks for order ID: " + this.order.getOrderID());
-				myAgent.send(cfp);
+				baseAgent.sendMessage(cfp);
 				// Prepare the template to get proposals
 				mt = MessageTemplate.and(MessageTemplate.MatchConversationId(this.order.getOrderID()),
 						MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
 				step = 1;
 				break;
 			case 1:
-				ACLMessage reply = myAgent.receive(mt);
+				ACLMessage reply = baseAgent.receive(mt);
 				if (reply != null) {
 					// Reply received
 					if (reply.getPerformative() == ACLMessage.PROPOSE) {
@@ -243,7 +243,7 @@ public class TransportAgent extends BaseAgent {
 				confirm.setContent(assignmentToTrucks.toString());
 				confirm.setConversationId(orderID);
 				confirm.setReplyWith("order" + System.currentTimeMillis());
-				myAgent.send(confirm);
+				baseAgent.sendMessage(confirm);
 				step = 3;
 				break;
 
@@ -267,7 +267,7 @@ public class TransportAgent extends BaseAgent {
 		@Override
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
-			ACLMessage truckRequest = myAgent.receive(mt);
+			ACLMessage truckRequest = baseAgent.receive(mt);
 
 			if (truckRequest != null) {
 				ACLMessage reply = truckRequest.createReply();
@@ -294,7 +294,7 @@ public class TransportAgent extends BaseAgent {
 				assignment.put("Boxes", boxesJSON);
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(assignment.toString());
-				myAgent.send(reply);
+				baseAgent.sendMessage(reply);
 			} else {
 				block();
 			}
@@ -316,7 +316,7 @@ public class TransportAgent extends BaseAgent {
 			sd.setType(orderProcessorServiceType);
 			template.addServices(sd);
 			try {
-				DFAgentDescription[] result = DFService.search(myAgent, template);
+				DFAgentDescription[] result = DFService.search(baseAgent, template);
 				if (result.length > 0) {
 					orderProcessor = result[0].getName();
 				}
@@ -330,8 +330,8 @@ public class TransportAgent extends BaseAgent {
 			findOrderProcessor();
 
 			mt = MessageTemplate.and(MessageTemplate.MatchSender(orderProcessor),
-					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-			ACLMessage msg = myAgent.receive(mt);
+          MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			ACLMessage msg = baseAgent.receive(mt);
 
 			if (msg != null) {
 				JSONObject obj = new JSONObject(msg.getContent());

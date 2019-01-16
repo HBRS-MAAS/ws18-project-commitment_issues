@@ -193,7 +193,7 @@ public class EntryAgent extends BaseAgent {
 						msg.setContent(orders.get(o).products.toString());
 						msg.setConversationId("bake");
 						msg.addReceiver(receiver);
-						baseAgent.send(msg);
+						baseAgent.sendMessage(msg);
 						System.out.println("[" + getLocalName() + "]: Sent orders to " + receiver.getLocalName() + "\n"
 								+ msg.getContent());
 					}
@@ -309,7 +309,7 @@ public class EntryAgent extends BaseAgent {
 			shutdownMessage.setOntology(JADEManagementOntology.getInstance().getName());
 			try {
 				baseAgent.getContentManager().fillContent(shutdownMessage,new Action(baseAgent.getAID(), new ShutdownPlatform()));
-				baseAgent.send(shutdownMessage);
+				baseAgent.sendMessage(shutdownMessage);
 			}
 			catch (Exception e) {
 				//LOGGER.error(e);

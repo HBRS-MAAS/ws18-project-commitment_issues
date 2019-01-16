@@ -394,7 +394,7 @@ public class PackagingAgent extends BaseAgent {
 					msg.setContent(message);
 					msg.setConversationId("boxes-ready");
 					msg.setPostTimeStamp(System.currentTimeMillis());
-					baseAgent.send(msg);
+					baseAgent.sendMessage(msg);
 					System.out.println(baseAgent.getAID().getLocalName() + " Sent boxes to loading bay");
 				}
 			}

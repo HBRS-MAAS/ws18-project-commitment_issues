@@ -73,7 +73,7 @@ public class MailboxAgent extends BaseAgent {
 			sd.setType("order-confirmation");
 			template.addServices(sd);
 			try {
-				DFAgentDescription[] result = DFService.search(myAgent, template);
+				DFAgentDescription[] result = DFService.search(baseAgent, template);
 				receiverAgents = new AID[result.length];
 				for (int i = 0; i < result.length; ++i) {
 					receiverAgents[i] = result[i].getName();
@@ -86,7 +86,7 @@ public class MailboxAgent extends BaseAgent {
 		public void action() {
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("DeliveryConfirmation"),
 					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 
 			if (msg != null) {
 				String truckMessageContent = msg.getContent();
@@ -105,7 +105,7 @@ public class MailboxAgent extends BaseAgent {
 				orderConfirmation.setContent(truckMessageContent);
 				orderConfirmation.setConversationId("order-confirmation");
 				orderConfirmation.setPostTimeStamp(System.currentTimeMillis());
-				myAgent.send(orderConfirmation);
+				baseAgent.send(orderConfirmation);
 
 				System.out.println(
 						"[" + getAID().getLocalName() + "]: Relayed order completion message to all concerned agents");

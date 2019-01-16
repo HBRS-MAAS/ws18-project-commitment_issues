@@ -199,7 +199,7 @@ public class LoadingBayAgent extends BaseAgent {
 			template.addServices(sd);
 			
 			try {
-				DFAgentDescription[] result = DFService.search(myAgent, template);
+				DFAgentDescription[] result = DFService.search(baseAgent, template);
 				if (result.length > 0) {
                 	receivingAgent = result[0].getName();
                 }
@@ -242,7 +242,7 @@ public class LoadingBayAgent extends BaseAgent {
 			template.addServices(sd);
 			
 			try {
-				DFAgentDescription[] result = DFService.search(myAgent, template);
+				DFAgentDescription[] result = DFService.search(baseAgent, template);
 				if (result.length > 0) {
 					orderProcessor = result[0].getName();
 				}
@@ -257,7 +257,7 @@ public class LoadingBayAgent extends BaseAgent {
 
 			mt = MessageTemplate.and(MessageTemplate.MatchSender(orderProcessor),
 					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 
 			if (msg != null) {
 				// If a single order is provided, in a message:
@@ -281,7 +281,7 @@ public class LoadingBayAgent extends BaseAgent {
 		public void action() {
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("boxes-ready"),
 					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 
 			if (msg != null) {
 				System.out.println("[" + getAID().getLocalName() + "]: Received product boxes from "

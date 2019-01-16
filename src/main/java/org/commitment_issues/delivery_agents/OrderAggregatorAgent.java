@@ -209,9 +209,9 @@ public class OrderAggregatorAgent extends BaseAgent {
 		}
 
 		public void action() {
-			findOrderProcessor();
+//			findOrderProcessor();
 
-			mt = MessageTemplate.and(MessageTemplate.MatchSender(orderProcessor),
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("order"),
 					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 			ACLMessage msg = baseAgent.receive(mt);
 

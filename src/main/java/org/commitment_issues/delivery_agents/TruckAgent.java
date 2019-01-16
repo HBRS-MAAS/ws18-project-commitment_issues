@@ -352,7 +352,10 @@ public class TruckAgent extends BaseAgent {
 //					System.out.println(getLocalName() +  " moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
 				}
 			}
+			if (getAllowAction()) {
 			finished();
+			}
+			
 			return retval;
 		}
 		

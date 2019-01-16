@@ -1,6 +1,5 @@
 package org.maas.agents;
 
-
 import com.fxgraph.cells.Graph;
 import javafx.scene.paint.Color;
 
@@ -12,17 +11,11 @@ import org.json.JSONObject;
 
 import com.fxgraph.cells.*;
 
-import jade.core.AID;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
-import jade.domain.DFService;
-import jade.domain.FIPAException;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import javafx.scene.paint.Color;
 
 @SuppressWarnings("serial")
 public class GraphVisualizationAgent extends BaseAgent {
@@ -58,21 +51,21 @@ public class GraphVisualizationAgent extends BaseAgent {
   
   private void setTruckColor(Cell cell, String state) {
 	  if (cell.getCellType() == CellType.TRIANGLE) {
-		  if (state.equals("MOVING_TO_BAKERY"))
+		  if ("MOVING_TO_BAKERY".equals(state))
 			  ((TriangleCell)cell).setColor(Color.YELLOW);
-		  else if (state.equals("MOVING_TO_CUSTOMER"))
+		  else if ("MOVING_TO_CUSTOMER".equals(state))
 			  ((TriangleCell)cell).setColor(Color.PURPLE);
 		  else
 		  ((TriangleCell)cell).setColor(Color.GRAY);
 	  }
   }
   
-  private void updateNodePosition(String cellID, double x, double y, double margin, String state, int eta) {
+  private void updateNodePosition(String cellID, double xIn, double yIn, double margin, String state, int eta) {
 	  int overallXOffset = 50;
 	  int overallYOffset = 50;
 	  
-	  x += overallXOffset;
-	  y += overallYOffset;
+	  double x = xIn + overallXOffset;
+	  double y = yIn + overallYOffset;
 	  
 	  List<Cell> allCells = model.getAllCells();
 	  int cellsUpdated = 0;
@@ -243,15 +236,15 @@ public class GraphVisualizationAgent extends BaseAgent {
             
             String nodeID = node.getString("guid");
             
-            if (type.equals("client")) {
+            if ("client".equals(type)) {
               String name = "C-" + node.getString("company").split("-")[1];
               addNode(NodeType.CUSTOMER, nodeID, nodeX, nodeY, name);
             }
-            else if (type.equals("delivery")) {
+            else if ("delivery".equals(type)) {
               String name = "DC-" + node.getString("company").split("-")[2];
               addNode(NodeType.TRANSPORT_COMPANY, nodeID, nodeX, nodeY, name);
             }
-            else if (type.equals("bakery")) {
+            else if ("bakery".equals(type)) {
               String name = "B-" + node.getString("company").split("-")[1];
               addNode(NodeType.BAKERY, nodeID, nodeX, nodeY, name);
             }
@@ -283,23 +276,8 @@ public class GraphVisualizationAgent extends BaseAgent {
     }
   }
   
-  
-  private class PositionUpdater extends CyclicBehaviour {
-    double counter = 10.0;
-    
-    @Override
-    public void action() {
-      CellType shape = CellType.BALL;      
-      try {
-        Thread.sleep(100);
-    } catch (InterruptedException e) {
-        e.printStackTrace();
-    }
-    }
-  }
-  
 	private class TruckPositionUpdater extends CyclicBehaviour {
-		int counter = 0;
+		protected int counter = 0;
 		@Override
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchConversationId("TruckPosUpdate");
@@ -311,7 +289,7 @@ public class GraphVisualizationAgent extends BaseAgent {
 				float x = jsonObj.getFloat("x") * (float) 100.0;
 				float y = jsonObj.getFloat("y") * (float) 100.0;
 				String state = jsonObj.getString("state");
-				int eta = state.equals("IDLE") ? -1 : jsonObj.getInt("eta");
+				int eta = "IDLE".equals(state) ? -1 : jsonObj.getInt("eta");
 
 				if (nodeAlreadyInGraph(truckID)) {
 					updateNodePosition(truckID, x, y, 25, state, eta);

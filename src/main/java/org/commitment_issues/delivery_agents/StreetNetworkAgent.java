@@ -126,7 +126,7 @@ public class StreetNetworkAgent extends BaseAgent {
 			
 			myAgent.send(SNVisualizationInfo);
 			
-			JSONObject o = new JSONObject(messageContent);
+			//JSONObject o = new JSONObject(messageContent);
 //			System.out.println("[" + getAID().getLocalName() + "]: Sent details to GraphVisualizer agent !!!!!!!!!!!!!!!!!!!!!!!!!!!!"+ o);
 		}
 	}

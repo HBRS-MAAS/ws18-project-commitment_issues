@@ -3,6 +3,7 @@ package org.commitment_issues.packaging_agents;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.PriorityQueue;
@@ -66,19 +67,24 @@ public class EntryAgent extends BaseAgent {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 
-	protected AID discoverAgent(String serviceType) {
+	protected ArrayList<AID> discoverAgent(String serviceType, String name) {
 		// Find the an agent for given service type
 		DFAgentDescription template = new DFAgentDescription();
 		ServiceDescription sd = new ServiceDescription();
 		sd.setType(serviceType);
+		if (name != null) {
+			sd.setName(name);			
+		}
 		template.addServices(sd);
 
-		AID loadingBayAgent = null;
+		ArrayList<AID> loadingBayAgent = new ArrayList<AID>();
 
 		try {
 			DFAgentDescription[] result = DFService.search(baseAgent, template);
 			if (result.length > 0) {
-				loadingBayAgent = result[0].getName();
+				for (DFAgentDescription r:result) {
+					loadingBayAgent.add(r.getName());
+				}
 			} else {
 				loadingBayAgent = null;
 				System.out.println(
@@ -163,6 +169,22 @@ public class EntryAgent extends BaseAgent {
 		public int getOrderTime() {
 			return getGlobalOrderTime(orderDay, orderHour, 0);
 		}
+		
+		public String getMessageString() {
+			JSONObject prods = products.getJSONObject("products");
+			JSONArray productList = new JSONArray();
+			Iterator<String> keyItr = prods.keys();
+			while (keyItr.hasNext()) {
+				String product = keyItr.next();
+				JSONObject p = new JSONObject();
+				p.put("guid", product);
+				p.put("quantity", prods.getInt(product));
+				p.put("coolingDuration", 1); // Dummy duration value
+				
+				productList.put(p);
+			}
+			return productList.toString();
+		}
 	}
 
 	private class OrderComparator implements Comparator<Order> {
@@ -184,17 +206,19 @@ public class EntryAgent extends BaseAgent {
 				ArrayList<Order> orders = getOrdersForCurrentTimeStep();
 				if (orders.size() > 0) {
 					for (int o = 0; o < orders.size(); o++) {
+						//System.out.println(orders.get(o).getMessageString());
 						baseAgent.addBehaviour(new BroadcastOrder(orders.get(o)));
 						String currBakery = bakeryNames_.get(currBakery_);
 						currBakery_ = (currBakery_ >= bakeryNames_.size()-1) ? 0 : (currBakery_ + 1);
-						AID receiver = discoverAgent(currBakery + "-cooling-rack");
-						ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-						msg.setContent(orders.get(o).products.toString());
-						msg.setConversationId("bake");
-						msg.addReceiver(receiver);
-						baseAgent.sendMessage(msg);
-						System.out.println("[" + getLocalName() + "]: Sent orders to " + receiver.getLocalName() + "\n"
-								+ msg.getContent());
+						ArrayList<AID> receivers = discoverAgent("cooling-rack-agent", currBakery + "-CoolingRackAgent");
+						if (receivers != null && receivers.size() > 0) {
+							ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+							msg.setContent(orders.get(o).getMessageString());
+							msg.addReceiver(receivers.get(0));
+							baseAgent.sendMessage(msg);
+							System.out.println("[" + getLocalName() + "]: Sent orders to " + receivers.get(0).getLocalName() + "\n"
+									+ msg.getContent());	
+						}
 					}
 
 				}
@@ -283,7 +307,9 @@ public class EntryAgent extends BaseAgent {
 
 		@Override
 		public void action() {
-			AID[] allAgents = findAllAgents();
+			ArrayList<AID> allAgents = new ArrayList<AID>(Arrays.asList(findAllAgents()));
+			ArrayList<AID> coolingRackAgents = discoverAgent("cooling-rack-agent", null);
+			allAgents.removeAll(coolingRackAgents);
 			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 			msg.setConversationId("order");
 			msg.setContent(orderObj.toString());

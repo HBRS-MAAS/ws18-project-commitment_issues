@@ -776,12 +776,13 @@ public class TruckAgent extends BaseAgent {
 			JSONObject jsonObj = new JSONObject();						
 			jsonObj.put("DeliveryStatus", new JSONObject()
 						.put("OrderDeliveredTo", orderInfo_.customerName_)
-          		  		.put("OrderDeliveredBy", baseAgent.getAID().getLocalName())
-          		  		.put("DayOfDelivery", orderInfo_.deliveryDate_)
-          		  		.put("HourOfDelivery", orderInfo_.deliveryHour_)
-          		  		.put("MinuteOfDelivery", orderInfo_.deliveryMinutes_)
-          		  		.put("NumOfBoxes", orderInfo_.numOfBoxes_)
-          		  		.put("ProducedBy", orderInfo_.bakeryName_));
+						.put("OrderID", orderInfo_.orderID_) 
+          	.put("OrderDeliveredBy", baseAgent.getAID().getLocalName())
+          	.put("DayOfDelivery", orderInfo_.deliveryDate_)
+          	.put("HourOfDelivery", orderInfo_.deliveryHour_)
+          	.put("MinuteOfDelivery", orderInfo_.deliveryMinutes_)
+          	.put("NumOfBoxes", orderInfo_.numOfBoxes_)
+          	.put("ProducedBy", orderInfo_.bakeryName_));
 			
 			return jsonObj.toString();
 		}
@@ -794,7 +795,7 @@ public class TruckAgent extends BaseAgent {
 			msg.setConversationId("DeliveryConfirmation");
 			msg.setPostTimeStamp(System.currentTimeMillis());
 			baseAgent.sendMessage(msg);
-			System.out.println(baseAgent.getAID().getLocalName() + " Posted message to mailbox");
+			System.out.println(baseAgent.getAID().getLocalName() + " Posted message to mailbox" + msg.getContent());
 		}
 	}
 	

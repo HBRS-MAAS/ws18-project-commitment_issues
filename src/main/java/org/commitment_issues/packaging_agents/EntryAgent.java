@@ -288,6 +288,7 @@ public class EntryAgent extends BaseAgent {
 		public void action() {
 			AID[] allAgents = findAllAgents();
 			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			msg.setConversationId("order");
 			msg.setContent(orderObj.toString());
 			for (AID agent : allAgents) {
 				msg.addReceiver(agent);

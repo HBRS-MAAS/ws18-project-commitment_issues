@@ -26,15 +26,16 @@ public class GenericItemProcessor extends BaseAgent {
   private AID targetAgent;
   private boolean productsToProcessBehaviorAdded = false;
   protected String scenarioDirectory_;
+  protected String bakeryName_;
   protected void setup() {
     super.setup();
     System.out.println("Hello! GenericItemProcessor "+ getAID().getName() +" is ready.");
     
     Object[] args = getArguments();
-    if (args != null && args.length > 0) {
-    	scenarioDirectory_ = args[0].toString();
-    	
-    	if (args.length > 1) {
+    if (args != null && args.length > 1) {
+    	 bakeryName_ = args[0].toString();
+    	 scenarioDirectory_ = args[1].toString();
+    	if (args.length > 2) {
     		isCoolingRack = true;
     }else {
     	    isCoolingRack = false;
@@ -44,7 +45,7 @@ public class GenericItemProcessor extends BaseAgent {
     productsStepReader();
     
     if (isCoolingRack) {
-      register(getBakeryName() + "-cooling-rack", getBakeryName() + "-cooling-rack");
+      register("cooling-rack-agent", getBakeryName() + "-CoolingRackAgent");
     }else {
       register(getBakeryName() + "-generic-rack", getBakeryName() + "-generic-rack");
     }
@@ -52,7 +53,7 @@ public class GenericItemProcessor extends BaseAgent {
   }
   
   public String getBakeryName() {
-	  return getLocalName().split("_")[0];
+	  return bakeryName_;
   }
   private class TimeUpdater extends CyclicBehaviour {
     public void action() {
@@ -146,13 +147,44 @@ public class GenericItemProcessor extends BaseAgent {
   private class ProductsToProcess extends CyclicBehaviour{
     private ACLMessage ordersToPrepare;
     private ArrayList<Product> products = new ArrayList<Product>();
+    private AID senderAgent = null;
+    
+	protected void findSender(String serviceType, String name) {
+		DFAgentDescription template = new DFAgentDescription();
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("cooling-rack-agent");
+		sd.setName(getBakeryName() + "-CoolingRackAgent");
+		template.addServices(sd);
+		
+		try {
+			DFAgentDescription[] result = DFService.search(baseAgent, template);
+			if (result.length > 0) {
+            	senderAgent = result[0].getName();
+            }
+			if (senderAgent == null) {
+            	System.out.println("["+getAID().getLocalName()+"]: No CoolingRack agent found.");
+            }
+
+		} catch (FIPAException fe) {
+			System.out.println("[" + getAID().getLocalName() + "]: No CoolingRack agent found.");
+			fe.printStackTrace();
+		}
+	}
+	
     @Override
     public void action() {
+    	if (!isCoolingRack) {
+    		findSender("cooling-rack-agent", getBakeryName() + "-CoolingRackAgent");	
+    	}
+    	else
+    	{
+    		findSender("OrderProcessing", "OrderProcessing");
+    	}
      
-      MessageTemplate mt = MessageTemplate.MatchConversationId("bake");
+      MessageTemplate mt = MessageTemplate.MatchSender(senderAgent);
       ordersToPrepare = myAgent.receive(mt);
       if(ordersToPrepare != null) {
-    	//System.out.println("[" + getLocalName() + "]: Received products from " + ordersToPrepare.getSender().getLocalName());
+    	System.out.println("[" + getLocalName() + "]: Received products from " + ordersToPrepare.getSender().getLocalName());
     	
         products = new ArrayList<Product>();
         JSONObject productJSON = new JSONObject(ordersToPrepare.getContent());

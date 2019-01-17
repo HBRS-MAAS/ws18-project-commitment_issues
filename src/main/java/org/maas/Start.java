@@ -109,6 +109,7 @@ public class Start {
             }
             if (args[i].equals("-host")) {
                 host = args[i+1];
+                isHost = false;
                 ++i;
             }
             if (args[i].equals("-port")) {

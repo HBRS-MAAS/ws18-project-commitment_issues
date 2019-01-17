@@ -101,7 +101,7 @@ public class OrderAggregatorAgent extends BaseAgent {
 		@Override
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchConversationId("packaged-orders");
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 
 			if (msg != null) {
 				JSONObject recieved = new JSONObject(msg.getContent());
@@ -109,8 +109,8 @@ public class OrderAggregatorAgent extends BaseAgent {
 				String orderID = recieved.getString("OrderID");
 
 				Order order = null;
-				for (int k = 0; k < ((OrderAggregatorAgent) myAgent).orders.size(); k++) {
-					if ((((OrderAggregatorAgent) myAgent).orders.get(k).getOrderID()).equals(orderID)) {
+				for (int k = 0; k < ((OrderAggregatorAgent) baseAgent).orders.size(); k++) {
+					if ((((OrderAggregatorAgent) baseAgent).orders.get(k).getOrderID()).equals(orderID)) {
 						order = orders.get(k);
 						orders.remove(order);
 						break;
@@ -137,10 +137,10 @@ public class OrderAggregatorAgent extends BaseAgent {
 				}
 
 				if (pendingOrderInfo.get(orderID).products.size() <= 0) {
-					myAgent.addBehaviour(new SendOrderToTransport(order));
+					baseAgent.addBehaviour(new SendOrderToTransport(order));
 					pendingOrderInfo.remove(orderID);
 				} else {
-					((OrderAggregatorAgent) myAgent).orders.add(order);
+					((OrderAggregatorAgent) baseAgent).orders.add(order);
 				}
 				System.out.println(getAID().getName() + " recieved an order");
 			} else {
@@ -178,7 +178,7 @@ public class OrderAggregatorAgent extends BaseAgent {
       orderJSON.put("boxes", boxesJSON);
       msgJSON.put(orderJSON);
       finalOrder.setContent(msgJSON.toString());
-      myAgent.send(finalOrder);
+      baseAgent.sendMessage(finalOrder);
       System.out.println(getAID().getName()+" sent order to transport agent");
 
     }
@@ -198,7 +198,7 @@ public class OrderAggregatorAgent extends BaseAgent {
 			sd.setType(orderProcessorServiceType);
 			template.addServices(sd);
 			try {
-				DFAgentDescription[] result = DFService.search(myAgent, template);
+				DFAgentDescription[] result = DFService.search(baseAgent, template);
 				if (result.length > 0) {
 					orderProcessor = result[0].getName();
 				}
@@ -209,11 +209,11 @@ public class OrderAggregatorAgent extends BaseAgent {
 		}
 
 		public void action() {
-			findOrderProcessor();
+//			findOrderProcessor();
 
-			mt = MessageTemplate.and(MessageTemplate.MatchSender(orderProcessor),
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("order"),
 					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 
 			if (msg != null) {
 				JSONObject obj = new JSONObject(msg.getContent());

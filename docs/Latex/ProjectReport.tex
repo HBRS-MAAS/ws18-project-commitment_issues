@@ -241,19 +241,50 @@ This agent communicates with two agents in the delivery stage. The street networ
 In order to run the simulation of these two stages, follow the below steps:
 \begin{enumerate}
 	\item Clone the repository from \href{https://github.com/HBRS-MAAS/ws18-project-commitment_issues}{GitHub}
-	\item Ensure that the EntryAgent is active by checking the file \textit{PackagingStageInitializer.java} \\(uncomment the line \textit{agents.add("EntryAgent:org.commitment\_issues.packaging\_agents.EntryAgent(" + scenarioDirectory + ")");} if it is commented)
-	\item Start the program using the command\\
-	\begin{lstlisting}
+	\item Install the gradle version mentioned in the README of the cloned repository.
+	\item Ensure that the EntryAgent is active by checking the file \textit{PackagingStageInitializer.java} by uncommenting the below line if it is commented.
+	\begin{verbatim}	 \textit{agents.add("EntryAgent:org.commitment_issues.packaging_agents.
+	 EntryAgent(" + scenarioDirectory + ")"); \end{verbatim} 
+	\item Start the program using the command
+	\begin{verbatim}
 	gradle run --args='-packaging -delivery -visualization'
-	\end{lstlisting}
+	\end{verbatim}
 	\item If you get an error saying gradle does not support '\textit{args}'. Then use the below command instead to start the program
-	\begin{lstlisting}
-	./gradlew run --args="-packaging -delivery"
-	\end{lstlisting}
+	\begin{verbatim}
+	./gradlew run --args='-packaging -delivery -visualization'
+	\end{verbatim}
 \end{enumerate}
 
 \subsection{Running on distributed systems}
+Follow these steps to run multiple stages on different systems.
+\begin{enumerate}
+	\item Connect all systems to the same network.
+	\item Search for open ports using the command:
+\begin{verbatim}
+netstat -lntu
+\end{verbatim}
+	\item Look for a port whose state is not LISTEN (this will be the PORT used below).
+	\item Find the host's IP address using the command: (in field wlp8s0, Inet addr: ...)
+\begin{verbatim}
+ifconfig
+\end{verbatim}
+	\item Start the host using the command:
+\begin{verbatim}
+gradle run --args='-isHost [host ip address] -localPort [PORT] -[STAGE] -noTK'
+\end{verbatim}
+Example:
+\begin{verbatim}
+gradle run --args='-isHost 192.168.43.113 -localPort 5353 -packaging -noTK'
+\end{verbatim}
 
-\section{Conclusion}
+	\item Start a client using the command:
+\begin{verbatim}
+gradle run --args='-host [HOST IP ADDRESS] -port [HOST LISTENING PORT] -[STAGE]'
+\end{verbatim}
+Example:
+\begin{verbatim}
+gradle run --args='-host 192.168.43.113 -port 5353 -packaging'
+\end{verbatim}
+\end{enumerate}
 
 \end{document}\grid

@@ -49,7 +49,6 @@ public class EntryAgent extends BaseAgent {
 			scenarioDirectory_ = args[0].toString();
 		}
 
-//		bakeryNames_ = getBakeryNames(scenarioDirectory_);
 		bakeryNames_.add(getBakeryNames(scenarioDirectory_).get(0));
 
 		// This agent also acts as a dummy order processor. Therefore this name.
@@ -73,7 +72,7 @@ public class EntryAgent extends BaseAgent {
 		ServiceDescription sd = new ServiceDescription();
 		sd.setType(serviceType);
 		if (name != null) {
-			sd.setName(name);			
+			sd.setName(name);
 		}
 		template.addServices(sd);
 
@@ -82,7 +81,7 @@ public class EntryAgent extends BaseAgent {
 		try {
 			DFAgentDescription[] result = DFService.search(baseAgent, template);
 			if (result.length > 0) {
-				for (DFAgentDescription r:result) {
+				for (DFAgentDescription r : result) {
 					loadingBayAgent.add(r.getName());
 				}
 			} else {
@@ -150,7 +149,6 @@ public class EntryAgent extends BaseAgent {
 		public int orderMinute;
 		public int deliveryDay;
 		public int deliveryHour;
-		public int deliveryMinute;
 		public JSONObject products;
 
 		public Order(JSONObject object) {
@@ -158,10 +156,8 @@ public class EntryAgent extends BaseAgent {
 			customerID = object.getString("customer_id");
 			orderDay = object.getJSONObject("order_date").getInt("day");
 			orderHour = object.getJSONObject("order_date").getInt("hour");
-//			orderMinute = object.getJSONObject("order_date").getInt("minute");
 			deliveryDay = object.getJSONObject("delivery_date").getInt("day");
 			deliveryHour = object.getJSONObject("delivery_date").getInt("hour");
-//			deliveryMinute = object.getJSONObject("delivery_date").getInt("minute");
 			products = new JSONObject();
 			products.put("products", object.getJSONObject("products"));
 		}
@@ -169,7 +165,7 @@ public class EntryAgent extends BaseAgent {
 		public int getOrderTime() {
 			return getGlobalOrderTime(orderDay, orderHour, 0);
 		}
-		
+
 		public String getMessageString() {
 			JSONObject prods = products.getJSONObject("products");
 			JSONArray productList = new JSONArray();
@@ -180,7 +176,7 @@ public class EntryAgent extends BaseAgent {
 				p.put("guid", product);
 				p.put("quantity", prods.getInt(product));
 				p.put("coolingDuration", 1); // Dummy duration value
-				
+
 				productList.put(p);
 			}
 			return productList.toString();
@@ -206,18 +202,18 @@ public class EntryAgent extends BaseAgent {
 				ArrayList<Order> orders = getOrdersForCurrentTimeStep();
 				if (orders.size() > 0) {
 					for (int o = 0; o < orders.size(); o++) {
-						//System.out.println(orders.get(o).getMessageString());
 						baseAgent.addBehaviour(new BroadcastOrder(orders.get(o)));
 						String currBakery = bakeryNames_.get(currBakery_);
-						currBakery_ = (currBakery_ >= bakeryNames_.size()-1) ? 0 : (currBakery_ + 1);
-						ArrayList<AID> receivers = discoverAgent("cooling-rack-agent", currBakery + "-CoolingRackAgent");
+						currBakery_ = (currBakery_ >= bakeryNames_.size() - 1) ? 0 : (currBakery_ + 1);
+						ArrayList<AID> receivers = discoverAgent("cooling-rack-agent",
+								currBakery + "-CoolingRackAgent");
 						if (receivers != null && receivers.size() > 0) {
 							ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 							msg.setContent(orders.get(o).getMessageString());
 							msg.addReceiver(receivers.get(0));
 							baseAgent.sendMessage(msg);
-							System.out.println("[" + getLocalName() + "]: Sent orders to " + receivers.get(0).getLocalName() + "\n"
-									+ msg.getContent());	
+							System.out.println("[" + getLocalName() + "]: Sent orders to "
+									+ receivers.get(0).getLocalName() + "\n" + msg.getContent());
 						}
 					}
 
@@ -319,10 +315,11 @@ public class EntryAgent extends BaseAgent {
 			sendMessage(msg);
 		}
 	}
-	
-	// Taken from http://www.rickyvanrijn.nl/2017/08/29/how-to-shutdown-jade-agent-platform-programmatically/
+
+	// Taken from
+	// http://www.rickyvanrijn.nl/2017/08/29/how-to-shutdown-jade-agent-platform-programmatically/
 	@SuppressWarnings("unused")
-	private class shutdown extends OneShotBehaviour{
+	private class shutdown extends OneShotBehaviour {
 		public void action() {
 			ACLMessage shutdownMessage = new ACLMessage(ACLMessage.REQUEST);
 			Codec codec = new SLCodec();
@@ -332,11 +329,11 @@ public class EntryAgent extends BaseAgent {
 			shutdownMessage.setLanguage(FIPANames.ContentLanguage.FIPA_SL);
 			shutdownMessage.setOntology(JADEManagementOntology.getInstance().getName());
 			try {
-				baseAgent.getContentManager().fillContent(shutdownMessage,new Action(baseAgent.getAID(), new ShutdownPlatform()));
+				baseAgent.getContentManager().fillContent(shutdownMessage,
+						new Action(baseAgent.getAID(), new ShutdownPlatform()));
 				baseAgent.sendMessage(shutdownMessage);
-			}
-			catch (Exception e) {
-				//LOGGER.error(e);
+			} catch (Exception e) {
+				// LOGGER.error(e);
 			}
 
 		}

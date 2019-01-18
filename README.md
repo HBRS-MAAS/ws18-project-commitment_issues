@@ -22,6 +22,24 @@ If you get an error saying --args is not supprted, use the below command:
 
     ./gradlew run --args='-packaging -delivery -visualization'
 
+### Run with multiple machines
+- Connect machines to a common network
+- Find the ip of the server/host machine (for example `192.168.1.123`)
+- Find a port which can be used for JADE communication (for example `5555`)
+
+For server/host machine
+
+    gradle run --args="-isHost 192.168.1.123 -localPort 5555 -stage1 -stage2 ... -noTK"
+
+For client machines
+
+    gradle run --args="-host 192.168.1.123 -port 5555 -stage3 -noTK"
+    
+For the client which executes gradle command later than every other machine
+
+    gradle run --args="-host 192.168.1.123 -port 5555 -stageN"
+
+
 It will automatically get the dependencies and start JADE with the configured agents.
 In case you want to clean you workspace run
 

@@ -49,7 +49,6 @@ public class EntryAgent extends BaseAgent {
 			scenarioDirectory_ = args[0].toString();
 		}
 
-//		bakeryNames_ = getBakeryNames(scenarioDirectory_);
 		bakeryNames_.add(getBakeryNames(scenarioDirectory_).get(0));
 
 		// This agent also acts as a dummy order processor. Therefore this name.
@@ -150,7 +149,6 @@ public class EntryAgent extends BaseAgent {
 		public int orderMinute;
 		public int deliveryDay;
 		public int deliveryHour;
-		public int deliveryMinute;
 		public JSONObject products;
 
 		public Order(JSONObject object) {
@@ -158,10 +156,8 @@ public class EntryAgent extends BaseAgent {
 			customerID = object.getString("customer_id");
 			orderDay = object.getJSONObject("order_date").getInt("day");
 			orderHour = object.getJSONObject("order_date").getInt("hour");
-//			orderMinute = object.getJSONObject("order_date").getInt("minute");
 			deliveryDay = object.getJSONObject("delivery_date").getInt("day");
 			deliveryHour = object.getJSONObject("delivery_date").getInt("hour");
-//			deliveryMinute = object.getJSONObject("delivery_date").getInt("minute");
 			products = new JSONObject();
 			products.put("products", object.getJSONObject("products"));
 		}
@@ -206,7 +202,6 @@ public class EntryAgent extends BaseAgent {
 				ArrayList<Order> orders = getOrdersForCurrentTimeStep();
 				if (orders.size() > 0) {
 					for (int o = 0; o < orders.size(); o++) {
-						//System.out.println(orders.get(o).getMessageString());
 						baseAgent.addBehaviour(new BroadcastOrder(orders.get(o)));
 						String currBakery = bakeryNames_.get(currBakery_);
 						currBakery_ = (currBakery_ >= bakeryNames_.size()-1) ? 0 : (currBakery_ + 1);

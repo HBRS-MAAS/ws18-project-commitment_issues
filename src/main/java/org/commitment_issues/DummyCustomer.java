@@ -5,6 +5,7 @@ import org.maas.agents.BaseAgent;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.basic.Action;
+import jade.core.AID;
 import jade.core.behaviours.*;
 import jade.domain.FIPANames;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
@@ -52,14 +53,14 @@ public class DummyCustomer extends BaseAgent {
 		private MessageTemplate mt;
 
 		public void action() {
-			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("order-confirmation"),
+			mt = MessageTemplate.and(MessageTemplate.MatchSender(new AID("MailboxAgent", AID.ISLOCALNAME)),
 					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 			ACLMessage msg = myAgent.receive(mt);
 			
 			if (msg != null) {
 				System.out.println("["+getAID().getLocalName()+"]: Received order completion message from "+msg.getSender().getLocalName()+":\n"+msg.getContent());
-				System.out.println("Triggering System Shutdown");
-				myAgent.addBehaviour(new shutdown());
+				//System.out.println("Triggering System Shutdown");
+				//myAgent.addBehaviour(new shutdown());
 			}
 
 			else {

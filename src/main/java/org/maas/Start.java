@@ -6,6 +6,7 @@ import org.maas.OrderProcessingInitializer;
 import org.maas.BakingStageInitializer;
 import org.maas.PackagingStageInitializer;
 import org.maas.DeliveryStageInitializer;
+import org.maas.DoughPrepStageInitializer;
 
 public class Start {
     private static boolean isHost = true;
@@ -22,7 +23,7 @@ public class Start {
     private static boolean visualizationStage = false;
     private static boolean noAgentStarting = true;
 
-    private static String endTime = "000.03.00";
+    private static String endTime = "001.03.00";
     private static String scenarioDirectory = "small";
 
     public static void main(String[] args) {
@@ -38,6 +39,9 @@ public class Start {
         StringBuilder sb = new StringBuilder();
         List<String> cmd = new Vector<>();
 
+        cmd.add("-jade_domain_df_maxresult");
+        cmd.add("10000");
+
         if(isHost) {
             cmd.add("-local-port");
             cmd.add(localPort);
@@ -52,39 +56,46 @@ public class Start {
         cmd.add("-agents");
 
         if(customerStage) {
-            
+			Initializer init = new CustomerInitializer();
+            sb.append(init.initialize(scenarioDirectory));
         }
         if(orderProcessingStage) {
 			Initializer init = new OrderProcessingInitializer();
-            sb.append(init.initialize());
+            sb.append(init.initialize(scenarioDirectory));
         }
         if(doughPrepStage) {
-
+            Initializer init = new DoughPrepStageInitializer();
+            sb.append(init.initialize(scenarioDirectory));
+            endTime = "002.06.00";
         }
         if(bakingStage) {
-			Initializer init = new BakingStageInitializer();
-            sb.append(init.initialize());
-            endTime = "000.06.00";
+            Initializer init = new BakingStageInitializer();
+            sb.append(init.initialize(scenarioDirectory));
+            endTime = "004.12.00";
         }
         if(packagingStage) {
-			Initializer init = new PackagingStageInitializer();
-            sb.append(init.initialize());
-            endTime = "000.11.00";
+            Initializer init = new PackagingStageInitializer();
+            sb.append(init.initialize(scenarioDirectory));
+            endTime = "002.01.00";
         }
         if(deliveryStage) {
 			Initializer init = new DeliveryStageInitializer();
-            sb.append(init.initialize());
+            sb.append(init.initialize(scenarioDirectory));
             endTime = "005.24.00";
         }
         if(visualizationStage) {
-
+            Initializer init = new VisualizationInitializer();
+            sb.append(init.initialize(scenarioDirectory));
+            
+//            Initializer boardInit = new BoardVisualisationInitializer(endTime);
+//            sb.append(boardInit.initialize(scenarioDirectory));
         }
-		if(isHost) {
-			sb.append("timekeeper:org.maas.agents.TimeKeeper(" + scenarioDirectory + ", " + endTime + ");");
-			if(noAgentStarting) {
-			    sb.append("dummy:org.maas.agents.DummyAgent;");
+        if(isHost) {
+            sb.append("timekeeper:org.maas.agents.TimeKeeper(" + scenarioDirectory + ", " + endTime + ");");
+            if(noAgentStarting) {
+                sb.append("dummy:org.maas.agents.DummyAgent;");
             }
-		}
+        }
         cmd.add(sb.toString());
         return cmd;
     }
@@ -93,10 +104,13 @@ public class Start {
         for (int i = 0; i < args.length; ++i) {
             if (args[i].equals("-isHost")) {
                 isHost = true;
-                continue;
+                host = args[i+1];
+                ++i;
             }
             if (args[i].equals("-host")) {
+                isHost = false;
                 host = args[i+1];
+                isHost = false;
                 ++i;
             }
             if (args[i].equals("-port")) {
@@ -139,6 +153,7 @@ public class Start {
                 // TODO: implement help output
                 System.out.println();
             }
+
         }
         if (!isHost && (port == null || host == null)) {
             System.out.println("instance is not host and host and port have to be specified!");

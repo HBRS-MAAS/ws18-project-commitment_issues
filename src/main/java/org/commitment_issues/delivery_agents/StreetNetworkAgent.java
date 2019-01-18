@@ -13,7 +13,12 @@ import java.util.List;
 
 import org.json.*;
 
+import jade.core.AID;
 import jade.core.behaviours.*;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
@@ -26,17 +31,24 @@ public class StreetNetworkAgent extends BaseAgent {
 	public List<Edge> edges = new ArrayList<Edge>();
 	public Graph graph;
     public DijkstraAlgorithm dijkstra;
+    
+    protected String scenarioDirectory_;
 
 	protected void setup() {
 		super.setup();
 		System.out.println("Hello! StreetNetwork-agent "+getAID().getName()+" is ready.");
+		
+		Object args[] = getArguments();
+		if (args != null && args.length > 0) {
+			scenarioDirectory_ = args[0].toString();
+		}
 		
 		register("street-network", "street-network");
 		
 		parseStreetNetworkData(getStreetNetworkData());
 		
 		// Uncomment this behavior for graph visualization integration
-//		addBehaviour(new GraphVisualizerServer());
+		addBehaviour(new GraphVisualizerServer());
 		addBehaviour(new TimeToDeliveryServer());
 		addBehaviour(new PathServer());
 		addBehaviour(new NodeLocationServer());
@@ -49,7 +61,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		}
 		
 	protected String getStreetNetworkData() {
-		File fileRelative = new File("src/main/resources/config/small/street-network.json");
+		File fileRelative = new File("src/main/resources/config/" + scenarioDirectory_ + "/street-network.json");
 		String data = ""; 
 	    try {
 			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));
@@ -70,22 +82,54 @@ public class StreetNetworkAgent extends BaseAgent {
 	}
 	
 	// TODO: This behavior still requires the identity of the visualization agent
-//	private class GraphVisualizerServer extends CyclicBehaviour {
+	private class GraphVisualizerServer extends OneShotBehaviour {
 //		private MessageTemplate mt;
-//
-//		public void action() {			
-//			ACLMessage SNVisualizationInfo = new ACLMessage(ACLMessage.INFORM);
-//			// TODO:
-//			AID receivingAgent = null;
-//			String messageContent = createVisualizerMessage();
-//			
-//			SNVisualizationInfo.addReceiver(receivingAgent);
-//			SNVisualizationInfo.setContent(messageContent);
-//			SNVisualizationInfo.setConversationId("graph-visualization");
-//			
-//			myAgent.send(SNVisualizationInfo);
-//		}
-//	}
+		private AID graphVisualizerAgent = null;
+		
+		protected void findGraphVisualizer() {
+      DFAgentDescription template = new DFAgentDescription();
+      ServiceDescription sd = new ServiceDescription();
+      sd.setType("transport-visualization");
+      template.addServices(sd);
+      
+        try {
+          DFAgentDescription[] result = DFService.search(baseAgent, template);
+          if (result.length > 0) {
+              graphVisualizerAgent = result[0].getName();
+          }
+          if (graphVisualizerAgent == null) {
+              System.out.println("["+getAID().getLocalName()+"]: No GraphVisualizer agent found.");
+          }
+  
+        } catch (FIPAException fe) {
+          System.out.println("[" + getAID().getLocalName() + "]: No GraphVisualizer agent found.");
+          fe.printStackTrace();
+        }
+    
+    }
+
+		public void action() {
+			try {
+		        Thread.sleep(3000);
+		    } catch (InterruptedException e) {
+		        e.printStackTrace();
+		    }
+		  findGraphVisualizer();
+		  
+			ACLMessage SNVisualizationInfo = new ACLMessage(ACLMessage.INFORM);
+			// TODO:
+			String messageContent = createVisualizerMessage();
+			
+			SNVisualizationInfo.addReceiver(graphVisualizerAgent);
+			SNVisualizationInfo.setContent(messageContent);
+			SNVisualizationInfo.setConversationId("graph-visualization");
+			
+			baseAgent.sendMessage(SNVisualizationInfo);
+			
+			//JSONObject o = new JSONObject(messageContent);
+//			System.out.println("[" + getAID().getLocalName() + "]: Sent details to GraphVisualizer agent !!!!!!!!!!!!!!!!!!!!!!!!!!!!"+ o);
+		}
+	}
 	
 	private class TimeToDeliveryServer extends CyclicBehaviour {
 		private MessageTemplate mt;
@@ -97,7 +141,7 @@ public class StreetNetworkAgent extends BaseAgent {
 //					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("TimeQuery"),
 					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 								
 			
 			if (msg != null) {
@@ -112,7 +156,7 @@ public class StreetNetworkAgent extends BaseAgent {
 
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(time));
-				myAgent.send(reply);
+				baseAgent.sendMessage(reply);
 				
 				// +++
 				System.out.println("["+getAID().getLocalName()+"]: Returned journey time for "+msg.getSender().getLocalName()+" is "+time);
@@ -135,11 +179,11 @@ public class StreetNetworkAgent extends BaseAgent {
 //			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 //			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
 //					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
-//			msg = myAgent.receive(mt);
+//			msg = baseAgent.receive(mt);
 			
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
 					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 			
 					
 			if (msg != null) {
@@ -154,7 +198,7 @@ public class StreetNetworkAgent extends BaseAgent {
 
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(JSONPath));
-				myAgent.send(reply);
+				baseAgent.sendMessage(reply);
 				
 				// +++
 				System.out.println("["+getAID().getLocalName()+"]: Returned journey path for "+msg.getSender().getLocalName());
@@ -175,7 +219,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		public void action() {
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("LocationQuery"),
 					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 								
 			
 			if (msg != null) {
@@ -190,10 +234,10 @@ public class StreetNetworkAgent extends BaseAgent {
 
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(JSONNodeLocation));
-				myAgent.send(reply);
+				baseAgent.sendMessage(reply);
 				
 				// DEBUG:
-				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName());
+//				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName());
 			}
 			else {
 				block();
@@ -206,14 +250,31 @@ public class StreetNetworkAgent extends BaseAgent {
 		JSONArray JSONVisNodes = new JSONArray();
 		JSONArray JSONVisLinks = new JSONArray();
 		
+		boolean repeated = false;
+		
+		String nodeType = "";
+		String companyName = "";
+		
 		for (int i = 0; i < nodesJSONArray.length(); i++) {
 			JSONObject JSONVisNodeInfo = new JSONObject();
 			JSONVisNodeInfo.put("guid", nodesJSONArray.getJSONObject(i).getString("guid"));
-			int type = 0;
-			if (nodesJSONArray.getJSONObject(i).getString("type").equals("bakery")) {
-				type = 1;
-			}
-			JSONVisNodeInfo.put("type",type);
+			
+			try {
+        nodeType = nodesJSONArray.getJSONObject(i).getString("type");
+      } catch (Exception e) {
+        nodeType = "";
+      }
+			
+			try {
+			  companyName = nodesJSONArray.getJSONObject(i).getString("company");
+      } catch (Exception e) {
+        companyName = "";
+      }
+			
+			// Node type can be: "client", "delivery", "bakery", or none (represented as "").
+			JSONVisNodeInfo.put("type", nodeType);
+			JSONVisNodeInfo.put("company", companyName);
+			// The location object contains two integers: 'x' and 'y'.
 			JSONVisNodeInfo.put("location", nodesJSONArray.getJSONObject(i).getJSONObject("location"));
 			
 			JSONVisNodes.put(JSONVisNodeInfo);
@@ -221,10 +282,25 @@ public class StreetNetworkAgent extends BaseAgent {
 		
 		for (int i = 0; i < linksJSONArray.length(); i++) {
 			JSONObject JSONVisLinkInfo = new JSONObject();
-			JSONVisLinkInfo.put("source", linksJSONArray.getJSONObject(i).getString("source"));
-			JSONVisLinkInfo.put("target", linksJSONArray.getJSONObject(i).getString("target"));
+			String sourceNode = linksJSONArray.getJSONObject(i).getString("source");
+			String targetNode = linksJSONArray.getJSONObject(i).getString("target");
 			
-			JSONVisLinks.put(JSONVisLinkInfo);
+			for (int j = 0; j < JSONVisLinks.length(); j++) {
+			  String tempSourceNode = JSONVisLinks.getJSONObject(j).getString("source");
+	      String tempTargetNode = JSONVisLinks.getJSONObject(j).getString("target");
+			  
+	      if (sourceNode.equals(tempTargetNode) && targetNode.equals(tempSourceNode)) {
+	        repeated = true;
+	      }
+			}
+			
+			if (!repeated) {
+  			JSONVisLinkInfo.put("source", sourceNode);
+  			JSONVisLinkInfo.put("target", targetNode);
+  			
+  			JSONVisLinks.put(JSONVisLinkInfo);
+			}
+			repeated = false;
 		}
 		
 		JSONVisData.put("nodes", JSONVisNodes);		
@@ -309,13 +385,14 @@ public class StreetNetworkAgent extends BaseAgent {
 	        LinkedList<Vertex> path = dijkstra.getPath(targetNode);
 	        
 	     // ++++
-	     if (path.size() == 0) {
+	     if (path == null || path.size() == 0) {
 	     	System.out.println("["+getAID().getLocalName()+"]: No valid path found!! ");
 	     }
-	        
-	        for (int k = 0; k < path.size(); k++) {
-	        	fullPath.add(path.get(k));
-	        }
+	     else {
+		        for (int k = 0; k < path.size(); k++) {
+		        	fullPath.add(path.get(k));
+		        } 
+	     }
 	        
 		}
 		return fullPath;		

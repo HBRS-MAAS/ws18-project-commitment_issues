@@ -1,13 +1,8 @@
 package org.commitment_issues.delivery_agents;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-
+import java.util.HashMap;
 import jade.core.AID;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
@@ -27,13 +22,22 @@ import org.maas.agents.BaseAgent;
 public class TransportAgent extends BaseAgent {
   // declaring the attributes static as their will be only one transport agent
   private static ArrayList<Order> orders = new ArrayList<Order>(); //list of all the orders
+  private HashMap<String, String> customerInfo = new HashMap<String, String>();
   private static AID[] trucks;//list of all the trucks
+  
+  protected String scenarioDirectory_;
 
 	protected void setup() {
 		super.setup();
 		System.out.println("Hello! TransportAgent-agent " + getAID().getLocalName() + " is ready.");
+		
+		Object args[] = getArguments();
+		if (args != null && args.length > 0) {
+			scenarioDirectory_ = args[0].toString();
+		}
 
-		register("transport-agent", "transport-agent");
+		//register("transport-agent", "transport-agent");
+		register(getBakeryName() + "-transport-agent", getBakeryName() + "-transport-agent");
 		try {
 			Thread.sleep(3000);
 		} catch (InterruptedException e) {
@@ -42,18 +46,23 @@ public class TransportAgent extends BaseAgent {
 		}
 		trucksFinder();// search for the trucks
 		addBehaviour(new OrderParser());
+		addBehaviour(new OrderDetailsReceiver());
 		addBehaviour(new truckReady());// check if trucks are ready to pick orders
 		addBehaviour(new TimeUpdater());
 	}
+	
+	  public String getBakeryName() {
+		  return getLocalName().split("_")[0];
+	  }
 
 	protected void takeDown() {
 		deRegister();
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 
-	protected static float[] getNodePosition(String guid) {
+	protected float[] getNodePosition(String guid) {
 		float location[] = new float[2];
-		File relativePath = new File("src/main/resources/config/small/street-network.json");
+		File relativePath = new File("src/main/resources/config/" + scenarioDirectory_ + "/street-network.json");
 		String streetNWContents = CustomerAgent.readFileAsString(relativePath.getAbsolutePath());
 		JSONArray nodesArray = new JSONObject(streetNWContents).getJSONArray("nodes");
 		for (int i = 0; i < nodesArray.length(); i++) {
@@ -104,16 +113,16 @@ public class TransportAgent extends BaseAgent {
     // Periodically updates the pending orders list by the data it takes from order aggregator
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchConversationId("transport-order");
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 			if (msg != null) {// && msg.getConversationId().equals(msgID)
 				JSONArray JSONOrdersBoxes = new JSONArray(msg.getContent());// a list of all the orders with their boxes
 				System.out.println(getAID().getLocalName() + " Received transport order");
 				for (int i = 0; i < JSONOrdersBoxes.length(); i++) {
 					JSONObject wholeOrder = JSONOrdersBoxes.getJSONObject(i);
           String cutID = wholeOrder.getString("CustId");//This is assuming that the aggregator will also pass the customerID
-          float [] custLocation = TransportAgent.getNodePosition(cutID);
+          float [] custLocation = getNodePosition(cutID);
           String bakID = wholeOrder.getString("BackId");//This is assuming that the aggregator will also pass the customerID
-          float [] bakLocation = TransportAgent.getNodePosition(bakID);
+          float [] bakLocation = getNodePosition(bakID);
 					String wholeOrderID = wholeOrder.getString("OrderId");
 
 					Order order = new Order();
@@ -132,7 +141,7 @@ public class TransportAgent extends BaseAgent {
 					}
 					TransportAgent.orders.add(order);
 
-					myAgent.addBehaviour(new TrucksRequester(order));
+					baseAgent.addBehaviour(new TrucksRequester(order));
 				}
 
 			} else {
@@ -171,6 +180,7 @@ public class TransportAgent extends BaseAgent {
 			assignmentToTrucks.put("Source", source);
 			assignmentToTrucks.put("Destination", destination);
 			assignmentToTrucks.put("NumOfBoxes", this.order.getBoxes().size());
+			assignmentToTrucks.put("CustomerId", customerInfo.get(this.order.getOrderID()));
 
 			// Start communicating with the trucks to find the fastest one
       switch (step) {
@@ -185,14 +195,14 @@ public class TransportAgent extends BaseAgent {
 				cfp.setConversationId(this.order.getOrderID());
 				cfp.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
 				System.out.println("Placed a proposal request from all trucks for order ID: " + this.order.getOrderID());
-				myAgent.send(cfp);
+				baseAgent.sendMessage(cfp);
 				// Prepare the template to get proposals
 				mt = MessageTemplate.and(MessageTemplate.MatchConversationId(this.order.getOrderID()),
 						MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
 				step = 1;
 				break;
 			case 1:
-				ACLMessage reply = myAgent.receive(mt);
+				ACLMessage reply = baseAgent.receive(mt);
 				if (reply != null) {
 					// Reply received
 					if (reply.getPerformative() == ACLMessage.PROPOSE) {
@@ -226,7 +236,7 @@ public class TransportAgent extends BaseAgent {
 				confirm.setContent(assignmentToTrucks.toString());
 				confirm.setConversationId(orderID);
 				confirm.setReplyWith("order" + System.currentTimeMillis());
-				myAgent.send(confirm);
+				baseAgent.sendMessage(confirm);
 				step = 3;
 				break;
 
@@ -250,7 +260,7 @@ public class TransportAgent extends BaseAgent {
 		@Override
 		public void action() {
 			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
-			ACLMessage truckRequest = myAgent.receive(mt);
+			ACLMessage truckRequest = baseAgent.receive(mt);
 
 			if (truckRequest != null) {
 				ACLMessage reply = truckRequest.createReply();
@@ -277,12 +287,53 @@ public class TransportAgent extends BaseAgent {
 				assignment.put("Boxes", boxesJSON);
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(assignment.toString());
-				myAgent.send(reply);
+				baseAgent.sendMessage(reply);
 			} else {
 				block();
 			}
 
 		}
 
+	}
+	
+	private class OrderDetailsReceiver extends CyclicBehaviour {
+		private String orderProcessorServiceType;
+		private AID orderProcessor = null;
+		private MessageTemplate mt;
+
+		protected void findOrderProcessor() {
+			DFAgentDescription template = new DFAgentDescription();
+			ServiceDescription sd = new ServiceDescription();
+			orderProcessorServiceType = "OrderProcessing";
+
+			sd.setType(orderProcessorServiceType);
+			template.addServices(sd);
+			try {
+				DFAgentDescription[] result = DFService.search(baseAgent, template);
+				if (result.length > 0) {
+					orderProcessor = result[0].getName();
+				}
+			} catch (FIPAException fe) {
+				System.out.println("[" + getAID().getLocalName() + "]: No OrderProcessor agent found.");
+				fe.printStackTrace();
+			}
+		}
+
+		public void action() {
+//			findOrderProcessor();
+
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("order"),
+          MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			ACLMessage msg = baseAgent.receive(mt);
+
+			if (msg != null) {
+				JSONObject obj = new JSONObject(msg.getContent());
+				String orderID = obj.getString("guid");
+				customerInfo.put(orderID, obj.getString("customerId"));
+				
+			} else {
+				block();
+			}
+		}
 	}
 }

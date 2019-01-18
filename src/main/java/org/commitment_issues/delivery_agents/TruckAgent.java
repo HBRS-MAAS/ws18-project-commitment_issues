@@ -61,7 +61,11 @@ public class TruckAgent extends BaseAgent {
 		addBehaviour(new TruckScheduleServer());
 		addBehaviour(new MoveTruck());
 		
-		
+		try {
+	        Thread.sleep(3000);
+	    } catch (InterruptedException e) {
+	        e.printStackTrace();
+	    }
 		addBehaviour(new QueryNodePosition(getLocalName().split("_")[0]));
 		addBehaviour(new TimeUpdater());
 		
@@ -72,6 +76,10 @@ public class TruckAgent extends BaseAgent {
 		
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
+	
+	  public String getTruckName() {
+		  return getLocalName().split("_")[1];
+	  }
 	
 	protected boolean isTruckIdle() {
 		return currOrder_ == null;
@@ -87,7 +95,7 @@ public class TruckAgent extends BaseAgent {
 		currPath_ = null;
 
 		addBehaviour(new QueryPath(currOrder_.bakeryLocation_));
-		System.out.println(baseAgent.getAID().getLocalName() + " Started executing new order: " + currOrder_.orderID_);
+		System.out.println(baseAgent.getAID().getLocalName() + " Started executing new order: " + currOrder_.orderID_ + " of bakery " + currOrder_.bakeryName_);
 		
 		//TODO: Find a proper place to put the below finished command
 //		finished();
@@ -124,7 +132,7 @@ public class TruckAgent extends BaseAgent {
             else
             {
             	streetNwAgent = null;
-            	System.out.println(getAID().getLocalName() +  ": No agent with Service type (" + serviceType + ") found!");
+//            	System.out.println(getAID().getLocalName() +  ": No agent with Service type (" + serviceType + ") found!");
             }
         } catch (FIPAException fe) {
             fe.printStackTrace();
@@ -157,13 +165,15 @@ public class TruckAgent extends BaseAgent {
 		public String customerName_ = "No Customer Name Provided";
 		public String bakeryName_ = "No Bakery Name Provided";
 		public int deliveryDate_;
-		public int deliveryTime_;
+		public int deliveryHour_;
+		public int deliveryMinutes_;
 		
 		public OrderDetails(String jsonMessage) {
 			JSONObject jsonObj = new JSONObject(jsonMessage);
 			
 			orderID_ = jsonObj.getString("OrderID");
 			numOfBoxes_ = jsonObj.getInt("NumOfBoxes");
+			customerName_ = jsonObj.getString("CustomerId");
 			
 			bakeryLocation_ = new float[2];
 			bakeryLocation_[0] = jsonObj.getJSONObject("Source").getFloat("X");
@@ -180,7 +190,7 @@ public class TruckAgent extends BaseAgent {
 			System.out.println("Bakery Name/Location: " + bakeryName_ + getPosAsString(bakeryLocation_));
 			System.out.println("Customer Name/Location: " + customerName_ + getPosAsString(customerLocation_));
 			System.out.println("NumOfBoxes: " + numOfBoxes_);
-			System.out.println("Delivery date/time: " + deliveryDate_ + "." + deliveryTime_);
+			System.out.println("Delivery date/time/minutes: " + deliveryDate_ + "." + deliveryHour_ + "." + deliveryMinutes_);
 			System.out.println("*******************************");
 		}
 	}
@@ -265,7 +275,7 @@ public class TruckAgent extends BaseAgent {
         		ACLMessage reply = requestMsg_.createReply();
                 reply.setPerformative(ACLMessage.PROPOSE);
                 reply.setContent(Float.toString(timeQuote_));
-                baseAgent.send(reply);
+                baseAgent.sendMessage(reply);
                 System.out.println(baseAgent.getAID().getLocalName() + " Sent time to deliver quote: " + timeQuote_);
                 resetClassMembers();
         		break;
@@ -273,7 +283,7 @@ public class TruckAgent extends BaseAgent {
         		ACLMessage reject = requestMsg_.createReply();
         		reject.setPerformative(ACLMessage.REFUSE);
         		reject.setContent("Busy");
-                baseAgent.send(reject);
+                baseAgent.sendMessage(reject);
                 System.out.println(baseAgent.getAID().getLocalName() + " Rejected Quotation request");
                 resetClassMembers();
         		break;
@@ -290,29 +300,26 @@ public class TruckAgent extends BaseAgent {
             if (msg != null) {
                 // ACCEPT_PROPOSAL Message received. Process it
                 ACLMessage reply = msg.createReply();
+            	reply.setPerformative(ACLMessage.INFORM);
+            	reply.setContent("DeliveryAccepted");
                 
                 OrderDetails newOrder = new OrderDetails(msg.getContent());
+                newOrder.bakeryName_ = msg.getSender().getLocalName().split("_")[0];
                 
                 if (currOrder_ == null) {
                 	currOrder_ = newOrder;
-                	reply.setPerformative(ACLMessage.INFORM);
-                	reply.setContent("DeliveryAccepted");
                 	System.out.println(baseAgent.getAID().getLocalName() + " Accepted new order as CURRENT order:");
-                	//currOrder_.print();
                 }
                 else if (nextOrder_ == null) {
                 	nextOrder_ = newOrder;
-                	reply.setPerformative(ACLMessage.INFORM);
-                	reply.setContent("DeliveryAccepted");
                 	System.out.println(baseAgent.getAID().getLocalName() + " Accepted new order as NEXT order:");
-                	//nextOrder_.print();
                 }
                 else {
                 	reply.setPerformative(ACLMessage.FAILURE);
                     reply.setContent("Busy");
                     System.out.println(baseAgent.getAID().getLocalName() + " Failed to accept new order");
                 }
-                baseAgent.send(reply);
+                baseAgent.sendMessage(reply);
                 //System.out.println(baseAgent.getAID().getLocalName() + " Responded to ACCEPT_PROPOSAL with : " + reply.getContent());
             } else {
                 block();
@@ -342,10 +349,13 @@ public class TruckAgent extends BaseAgent {
 					currTruckLocation_[0] = currPath_.get(i - 1)[0];
 					currTruckLocation_[1] = currPath_.get(i - 1)[1];
 					retval = true;
-					System.out.println(getLocalName() +  " moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
+//					System.out.println(getLocalName() +  " moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
 				}
 			}
+			if (getAllowAction()) {
 			finished();
+			}
+			
 			return retval;
 		}
 		
@@ -388,6 +398,9 @@ public class TruckAgent extends BaseAgent {
 	            		System.out.println(baseAgent.getAID().getLocalName() + " Reached bakery. Requested boxes from transport agent");
 	            	}
 	            	else if (reachedCutomer()) {
+	            		currOrder_.deliveryDate_ = getCurrentDay();
+	            		currOrder_.deliveryHour_ = getCurrentHour();
+	            		currOrder_.deliveryMinutes_ = getCurrentMinute();
 	            		baseAgent.addBehaviour(new PostDeliveryCompletionMessage(currOrder_));
 	            		if (nextOrder_ != null) {
 	            			startNewOrder(nextOrder_);
@@ -401,11 +414,14 @@ public class TruckAgent extends BaseAgent {
 	            		}
 	            	}
 	            	
+
+					baseAgent.addBehaviour(new SendTruckPosForVisualiaztion());
+	            	
 //	                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 //	                msg.addReceiver(discoverAgent("transport-visualization"));
 //	                msg.setConversationId("truck-location");
 //	                msg.setContent(getVisualizationMessage());
-//	                baseAgent.send(msg);
+//	                baseAgent.sendMessage(msg);
 //	                System.out.println(baseAgent.getAID().getLocalName() + " Message sent to Visualization agent: " + msg.getContent());
             }
         }
@@ -473,7 +489,7 @@ public class TruckAgent extends BaseAgent {
                 request.setContent(getRequestContent());
                 request.setConversationId(conversationID);
                 request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
-                baseAgent.send(request);
+                baseAgent.sendMessage(request);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
                         MessageTemplate.MatchInReplyTo(request.getReplyWith()));
@@ -574,7 +590,7 @@ public class TruckAgent extends BaseAgent {
                 request.setContent(getRequestContent());
                 request.setConversationId(conversationID);
                 request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
-                baseAgent.send(request);
+                baseAgent.sendMessage(request);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
                         MessageTemplate.MatchInReplyTo(request.getReplyWith()));
@@ -645,7 +661,7 @@ public class TruckAgent extends BaseAgent {
                 request.setContent(nodeID_);
                 request.setConversationId(conversationID);
                 request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
-                baseAgent.send(request);
+                baseAgent.sendMessage(request);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
                         MessageTemplate.MatchInReplyTo(request.getReplyWith()));
@@ -667,6 +683,8 @@ public class TruckAgent extends BaseAgent {
                     	//System.out.println(baseAgent.getAID().getLocalName() + ": Querying node position from street network failed!!");
                     	state_ = StreetNetworkQueryStates.QUERY_FAILED;
                     }
+                    
+                    baseAgent.addBehaviour(new SendTruckPosForVisualiaztion());
                 }
 				break;
 			default:
@@ -711,11 +729,11 @@ public class TruckAgent extends BaseAgent {
 			case 0:
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 				String convID = "ReadyForPickup" + orderID_;
-				msg.addReceiver(discoverAgent("transport-agent")); // TODO fix this services name
+				msg.addReceiver(discoverAgent(currOrder_.bakeryName_ + "-transport-agent")); // TODO fix this services name
 				msg.setContent(generateJsonMessage());
 				msg.setConversationId(convID);
 				msg.setReplyWith("req" + System.currentTimeMillis());
-				baseAgent.send(msg);
+				baseAgent.sendMessage(msg);
                 // Prepare the template to get replies
                 mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(convID),
                         MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
@@ -762,11 +780,13 @@ public class TruckAgent extends BaseAgent {
 			JSONObject jsonObj = new JSONObject();						
 			jsonObj.put("DeliveryStatus", new JSONObject()
 						.put("OrderDeliveredTo", orderInfo_.customerName_)
-          		  		.put("OrderDeliveredBy", baseAgent.getAID().getLocalName())
-          		  		.put("DayOfDelivery", orderInfo_.deliveryDate_)
-          		  		.put("TimeOfDelivery", orderInfo_.deliveryTime_)
-          		  		.put("NumOfBoxes", orderInfo_.numOfBoxes_)
-          		  		.put("ProducedBy", orderInfo_.bakeryName_));
+						.put("OrderID", orderInfo_.orderID_) 
+          	.put("OrderDeliveredBy", baseAgent.getAID().getLocalName())
+          	.put("DayOfDelivery", orderInfo_.deliveryDate_)
+          	.put("HourOfDelivery", orderInfo_.deliveryHour_)
+          	.put("MinuteOfDelivery", orderInfo_.deliveryMinutes_)
+          	.put("NumOfBoxes", orderInfo_.numOfBoxes_)
+          	.put("ProducedBy", orderInfo_.bakeryName_));
 			
 			return jsonObj.toString();
 		}
@@ -778,8 +798,41 @@ public class TruckAgent extends BaseAgent {
 			msg.setContent(generateJsonMessage());
 			msg.setConversationId("DeliveryConfirmation");
 			msg.setPostTimeStamp(System.currentTimeMillis());
-			baseAgent.send(msg);
-			System.out.println(baseAgent.getAID().getLocalName() + " Posted message to mailbox");
+			baseAgent.sendMessage(msg);
+			System.out.println(baseAgent.getAID().getLocalName() + " Posted message to mailbox" + msg.getContent());
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private class SendTruckPosForVisualiaztion extends OneShotBehaviour {		
+		private String generateJsonMessage() {		
+			float eta = 0.0f;
+			if (currPath_ != null) {
+				float timeSincePathStart = getTime() - pathStartTime_;
+				eta = currPath_.get(currPath_.size() - 1)[2] - timeSincePathStart;	
+			}
+			
+			JSONObject jsonObj = new JSONObject();	
+			jsonObj.put("id", getTruckName());
+			jsonObj.put("x", currTruckLocation_[0]);
+			jsonObj.put("y", currTruckLocation_[1]);
+			jsonObj.put("state", truckState_);
+			jsonObj.put("eta", (int)eta);
+			return jsonObj.toString();
+		}
+		
+		private int getTime() {
+			return (getCurrentDay() * 24 * 60) + (getCurrentHour() * 60) + getCurrentMinute();
+		}
+		
+		
+		public void action() {
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);			
+			msg.addReceiver(discoverAgent("transport-visualization"));
+			msg.setContent(generateJsonMessage());
+			msg.setConversationId("TruckPosUpdate");
+			msg.setPostTimeStamp(System.currentTimeMillis());
+			baseAgent.sendMessage(msg);
 		}
 	}
 	
@@ -796,7 +849,7 @@ public class TruckAgent extends BaseAgent {
 			shutdownMessage.setOntology(JADEManagementOntology.getInstance().getName());
 			try {
 				baseAgent.getContentManager().fillContent(shutdownMessage,new Action(baseAgent.getAID(), new ShutdownPlatform()));
-				baseAgent.send(shutdownMessage);
+				baseAgent.sendMessage(shutdownMessage);
 			}
 			catch (Exception e) {
 				//LOGGER.error(e);

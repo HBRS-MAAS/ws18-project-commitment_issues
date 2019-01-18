@@ -130,7 +130,7 @@ public class GraphVisualizationAgent extends BaseAgent {
 		}
 		case TRUCK: {
 			node = new TriangleCell(id);
-			((TriangleCell)node).setColor(Color.YELLOW);
+			((TriangleCell)node).setColor(Color.GRAY);
 			break;
 		}
 		default:

@@ -32,6 +32,7 @@ public class PackagingAgent extends BaseAgent {
 	private HashMap<String, Integer> itemsPerBox_ = new HashMap<String, Integer>();
 	private String bakeryName_;
 	private int boxCount_ = 0;
+	protected String scenarioDirectory_;
 
 	protected void setup() {
 		super.setup();
@@ -39,23 +40,20 @@ public class PackagingAgent extends BaseAgent {
 		Object args[] = getArguments();
 		if (args != null && args.length > 0) {
 			bakeryName_ = args[0].toString();
+			
+			if (args.length > 1) {
+				scenarioDirectory_ = args[1].toString();
+			}
 		}
 
-		register("packaging", "packaging");
+		register(getBakeryName() + "-packaging", getBakeryName() + "-packaging");
 
 		while (this.loadingBayAgent_ == null) {
 			findLoadingBayAgent();
 		}
 
 		determineItemsPerBox();
-		loadOrderInfoFromFile();
-
-//		System.out.println("All Loaded orders:");
-//		Iterator<OrderInfo> itr = orderQueue_.iterator();
-//		while (itr.hasNext()) {
-//			OrderInfo order = itr.next();
-//			order.printOrderInfo();
-//		}
+		addBehaviour(new OrderDetailsReceiver());
 
 		addBehaviour(new ProductsReceiver());
 		//addBehaviour(new Simulator());
@@ -63,6 +61,10 @@ public class PackagingAgent extends BaseAgent {
 		
 		System.out.println("Hello! PackagingAgent " + getAID().getLocalName() + " is ready.");
 	}
+	
+	  public String getBakeryName() {
+		  return getLocalName().split("_")[0];
+	  }
 
 	protected void takeDown() {
 		deRegister();
@@ -73,7 +75,7 @@ public class PackagingAgent extends BaseAgent {
 	private void findLoadingBayAgent() {
 		DFAgentDescription template = new DFAgentDescription();
 		ServiceDescription sd = new ServiceDescription();
-		sd.setType("loading-bay");
+		sd.setType(getBakeryName() + "-loading-bay");
 		template.addServices(sd);
 		try {
 			DFAgentDescription[] result = DFService.search(this, template);
@@ -101,7 +103,7 @@ public class PackagingAgent extends BaseAgent {
 	}
 
 	private void determineItemsPerBox() {
-		String data = loadFile("src/main/resources/config/small/bakeries.json");
+		String data = loadFile("src/main/resources/config/" + scenarioDirectory_ + "/bakeries.json");
 		JSONArray bakeries = new JSONArray(data);
 		for (int b = 0; b < bakeries.length(); b++) {
 			JSONObject bakeryDetails = bakeries.getJSONObject(b);
@@ -136,16 +138,23 @@ public class PackagingAgent extends BaseAgent {
 
 		public OrderInfo(String jsonString) {
 			JSONObject obj = new JSONObject(jsonString);
-			orderID_ = obj.getString("OrderID");
-			deliveryTime_ = obj.getJSONObject("delivery_date").getInt("hour");
+			orderID_ = obj.getString("guid");
+			deliveryTime_ = obj.getJSONObject("deliveryDate").getInt("hour");
 
-			JSONArray products = obj.getJSONArray("Products");
-			for (int p = 0; p < products.length(); p++) {
-				Iterator<String> key = products.getJSONObject(p).keys();
-				String productName = key.next();
-				int quantity = products.getJSONObject(p).getInt(productName);
-				pendingProducts_.put(productName, quantity);
+			JSONObject products = obj.getJSONObject("products");
+			Iterator<String> keyItr = products.keys();
+			while (keyItr.hasNext()) {
+				String product = keyItr.next();
+				int quantity = products.getInt(product);
+				pendingProducts_.put(product, quantity);
 			}
+				
+//			for (int p = 0; p < products.length(); p++) {
+//				Iterator<String> key = products.getJSONObject(p).keys();
+//				String productName = key.next();
+//				int quantity = products.getJSONObject(p).getInt(productName);
+//				pendingProducts_.put(productName, quantity);
+//			}
 		}
 
 		public void printOrderInfo() {
@@ -317,6 +326,9 @@ public class PackagingAgent extends BaseAgent {
 				addProductsToOrders(msg.getContent());
 				baseAgent.addBehaviour(new SendBoxes());
 			}
+			else {
+				block();
+			}
 		}
 	}
 
@@ -354,17 +366,19 @@ public class PackagingAgent extends BaseAgent {
 
 			AID loadingBayAgent = null;
 
-			try {
-				DFAgentDescription[] result = DFService.search(baseAgent, template);
-				if (result.length > 0) {
-					loadingBayAgent = result[0].getName();
-				} else {
-					loadingBayAgent = null;
-					System.out.println(
-							getAID().getLocalName() + ": No agent with Service type (" + serviceType + ") found!");
+			while (loadingBayAgent == null) {
+				try {
+					DFAgentDescription[] result = DFService.search(baseAgent, template);
+					if (result.length > 0) {
+						loadingBayAgent = result[0].getName();
+					} else {
+						loadingBayAgent = null;
+						System.out.println(
+								getAID().getLocalName() + ": No agent with Service type (" + serviceType + ") found!");
+					}
+				} catch (FIPAException fe) {
+					fe.printStackTrace();
 				}
-			} catch (FIPAException fe) {
-				fe.printStackTrace();
 			}
 
 			return loadingBayAgent;
@@ -376,15 +390,64 @@ public class PackagingAgent extends BaseAgent {
 				String message = messageList.get(i);
 				if ((message != null) && !message.isEmpty()) {
 					ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-					msg.addReceiver(discoverAgent("loading-bay"));
+					msg.addReceiver(discoverAgent(getBakeryName() + "-loading-bay"));
 					msg.setContent(message);
 					msg.setConversationId("boxes-ready");
 					msg.setPostTimeStamp(System.currentTimeMillis());
-					baseAgent.send(msg);
+					baseAgent.sendMessage(msg);
 					System.out.println(baseAgent.getAID().getLocalName() + " Sent boxes to loading bay");
 				}
 			}
 		}
 
+	}
+	
+	private class OrderDetailsReceiver extends CyclicBehaviour {
+		private String orderProcessorServiceType;
+		private AID orderProcessor = null;
+		private MessageTemplate mt;
+
+		protected void findOrderProcessor() {
+			DFAgentDescription template = new DFAgentDescription();
+			ServiceDescription sd = new ServiceDescription();
+			orderProcessorServiceType = "OrderProcessing";
+
+			sd.setType(orderProcessorServiceType);
+			template.addServices(sd);
+			try {
+				DFAgentDescription[] result = DFService.search(myAgent, template);
+				if (result.length > 0) {
+					orderProcessor = result[0].getName();
+				}
+			} catch (FIPAException fe) {
+				System.out.println("[" + getAID().getLocalName() + "]: No OrderProcessor agent found.");
+				fe.printStackTrace();
+			}
+		}
+
+		public void action() {
+//			findOrderProcessor();
+
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("order"),
+          MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			ACLMessage msg = myAgent.receive(mt);
+
+			if (msg != null) {
+				// If a single order is provided, in a message:
+				//((LoadingBayAgent) baseAgent).orderDetailsArray.put(new JSONObject(msg.getContent()));
+				//System.out.println("################# Received message from order processor: \n" + msg.getContent());
+				OrderInfo newOrder = new OrderInfo(msg.getContent());
+				orderQueue_.add(newOrder);
+
+				// Enable this instead, if a list of orders is provided:
+				/*
+				 * JSONArray messagethis.orderDetailsArray = new JSONArray(msg.getContent());
+				 * for (int i = 0 ; i < messagethis.orderDetailsArray.length() ; i++) {
+				 * this.orderDetailsArray.put(messagethis.orderDetailsArray.get(i)); }
+				 */
+			} else {
+				block();
+			}
+		}
 	}
 }

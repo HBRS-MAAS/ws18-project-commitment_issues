@@ -16,7 +16,7 @@ import jade.lang.acl.MessageTemplate;
 @SuppressWarnings("serial")
 public class LoadingBayAgent extends BaseAgent {
 	private JSONArray orderDetailsArray = new JSONArray();
-	private String readyOrderID = null;
+	private String bakeryGuid = "bakery-001";
 
 	private HashMap<String, HashMap<String, Integer>> productDatabase = new HashMap<>();
 	private HashMap<String, JSONArray> boxDatabase = new HashMap<>();
@@ -24,13 +24,22 @@ public class LoadingBayAgent extends BaseAgent {
 	protected void setup() {
 		super.setup();
 		System.out.println("Hello! LoadingBay-agent " + getAID().getName() + " is ready.");
+		Object[] args = getArguments();
+        if (args != null && args.length > 0) {
+            bakeryGuid = (String) args[0];
+        }
 
-		register("loading-bay", "loading-bay");
+
+		register(bakeryGuid + "-loading-bay", bakeryGuid + "-loading-bay");
 
 		addBehaviour(new OrderDetailsReceiver());
 		addBehaviour(new ProductDetailsReceiver());
 		addBehaviour(new TimeUpdater());
 	}
+	
+	public String getBakeryName() {
+    return getLocalName().split("_")[0];
+  }
 
 	protected void takeDown() {
 		deRegister();
@@ -151,6 +160,9 @@ public class LoadingBayAgent extends BaseAgent {
 
 		for (String productName : productsObject.keySet()) {
 			int orderQuantity = productsObject.getInt(productName);
+            if (orderQuantity == 0) {
+                continue;
+            }
 
 			try {
 				productQuantity = orderProductDetails.get(productName);
@@ -175,15 +187,29 @@ public class LoadingBayAgent extends BaseAgent {
 
 	private class PackagingPhaseMessageSender extends OneShotBehaviour {
 		private AID receivingAgent = null;
+		protected String orderID = null;
+		
+		public PackagingPhaseMessageSender(String id) {
+			this.orderID = id;
+		}
 
 		protected void findReceiver() {
 			DFAgentDescription template = new DFAgentDescription();
 			ServiceDescription sd = new ServiceDescription();
-			sd.setType("order-aggregator");
+
+			sd.setType(bakeryGuid+"-order-aggregator");
+			sd.setName(bakeryGuid+"-order-aggregator");
+
 			template.addServices(sd);
+			
 			try {
-				DFAgentDescription[] result = DFService.search(myAgent, template);
-				receivingAgent = result[0].getName();
+				DFAgentDescription[] result = DFService.search(baseAgent, template);
+				if (result.length > 0) {
+                	receivingAgent = result[0].getName();
+                }
+				if (receivingAgent == null) {
+                	System.out.println("["+getAID().getLocalName()+"]: No OrderAggregator agent found.");
+                }
 
 			} catch (FIPAException fe) {
 				System.out.println("[" + getAID().getLocalName() + "]: No OrderAggregator agent found.");
@@ -194,33 +220,40 @@ public class LoadingBayAgent extends BaseAgent {
 		public void action() {
 			findReceiver();
 
-			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-
-			msg.addReceiver(receivingAgent);
-			msg.setContent(createOrderBoxesJSONMessage(((LoadingBayAgent) baseAgent).readyOrderID));
-			msg.setConversationId("packaged-orders");
-			msg.setPostTimeStamp(System.currentTimeMillis());
-
-			myAgent.send(msg);
-
-			System.out.println("[" + getAID().getLocalName() + "]: Order details sent to OrderAggregator");
+			if (receivingAgent != null) {
+				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+	
+				msg.addReceiver(receivingAgent);
+				msg.setContent(createOrderBoxesJSONMessage(this.orderID));
+				msg.setConversationId("packaged-orders");
+				msg.setPostTimeStamp(System.currentTimeMillis());
+	
+				baseAgent.sendMessage(msg);
+	
+				System.out.println("[" + getAID().getLocalName() + "]: Order details sent to OrderAggregator");
+			}
 		}
 	}
 
 	private class OrderDetailsReceiver extends CyclicBehaviour {
-		private String orderProcessorServiceType;
 		private AID orderProcessor = null;
 		private MessageTemplate mt;
 
 		protected void findOrderProcessor() {
 			DFAgentDescription template = new DFAgentDescription();
 			ServiceDescription sd = new ServiceDescription();
+<<<<<<< HEAD
+
 			orderProcessorServiceType = "OrderProcessing";
 
 			sd.setType(orderProcessorServiceType);
+=======
+			sd.setType(bakeryGuid+"-OrderProcessing");
+>>>>>>> cfad8139d40bdcb1e934f6d7356eb30159e2ed32
 			template.addServices(sd);
+			
 			try {
-				DFAgentDescription[] result = DFService.search(myAgent, template);
+				DFAgentDescription[] result = DFService.search(baseAgent, template);
 				if (result.length > 0) {
 					orderProcessor = result[0].getName();
 				}
@@ -235,7 +268,7 @@ public class LoadingBayAgent extends BaseAgent {
 
 			mt = MessageTemplate.and(MessageTemplate.MatchSender(orderProcessor),
 					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 
 			if (msg != null) {
 				// If a single order is provided, in a message:
@@ -259,7 +292,7 @@ public class LoadingBayAgent extends BaseAgent {
 		public void action() {
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("boxes-ready"),
 					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = baseAgent.receive(mt);
 
 			if (msg != null) {
 				System.out.println("[" + getAID().getLocalName() + "]: Received product boxes from "
@@ -275,8 +308,7 @@ public class LoadingBayAgent extends BaseAgent {
 				updateProductDatabase(boxesMessageContent);
 
 				if (orderProductsReady(orderID)) {
-					((LoadingBayAgent) baseAgent).readyOrderID = orderID;
-					addBehaviour(new PackagingPhaseMessageSender());
+					addBehaviour(new PackagingPhaseMessageSender(orderID));
 				}
 			} else {
 				block();

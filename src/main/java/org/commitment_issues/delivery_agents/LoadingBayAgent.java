@@ -34,13 +34,17 @@ public class LoadingBayAgent extends BaseAgent {
 		super.setup();
 		System.out.println("Hello! LoadingBay-agent "+getAID().getName()+" is ready.");
 		
-		register("loading-bay", "loading-bay");	
+		register(getBakeryName() + "-loading-bay", getBakeryName() + "-loading-bay");	
 		
 
 		addBehaviour(new OrderDetailsReceiver());
 		addBehaviour(new ProductDetailsReceiver());
 		addBehaviour(new TimeUpdater());
 	}
+	
+	  public String getBakeryName() {
+		  return getLocalName().split("_")[0];
+	  }
 	
 	protected void takeDown() {
 		deRegister();
@@ -94,7 +98,7 @@ public class LoadingBayAgent extends BaseAgent {
             DFAgentDescription template = new DFAgentDescription();
             ServiceDescription sd = new ServiceDescription();
             // SERVICE TYPE FOR RECEIVING ORDER CONFIRMATIONS:
-            sd.setType("order-aggregator");
+            sd.setType(getBakeryName() + "-order-aggregator");
             template.addServices(sd);
             try {
                 DFAgentDescription[] result = DFService.search(myAgent, template);

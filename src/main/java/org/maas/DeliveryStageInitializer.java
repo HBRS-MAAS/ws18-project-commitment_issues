@@ -27,7 +27,7 @@ public class DeliveryStageInitializer extends Initializer {
         }
         agents.add("StreetNetworkAgent:org.commitment_issues.delivery_agents.StreetNetworkAgent(" + scenarioDirectory + ")");
         agents.add("MailboxAgent:org.maas.agents.MailboxAgent");
-		agents.add("customer-001" + ":org.commitment_issues.DummyCustomer");
+		//agents.add("customer-001" + ":org.commitment_issues.DummyCustomer");
 		//agents.add("GraphVisualizationAgent:org.commitment_issues.delivery_agents.GraphVisualizationAgent");
 
         String agentInitString = String.join(";", agents);

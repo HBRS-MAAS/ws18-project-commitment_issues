@@ -27,6 +27,8 @@ public class PackagingStageInitializer extends Initializer {
           agents.add(bakeryName + "_LoadingBayAgent:org.maas.agents.LoadingBayAgent(" + bakeryName + ")");
         }
         
+        // This agent acts as a entry agent for the packaging stage 
+        // and as a dummy order processor
         agents.add(bakeryNames.get(0) + "-postBakingProcessor:org.commitment_issues.packaging_agents.EntryAgent(" + scenarioDirectory + ")");
 
         String agentInitString = String.join(";", agents);

@@ -1,4 +1,3 @@
-//package org.commitment_issues.deliveryAgents;
 package org.commitment_issues.delivery_agents;
 
 import org.maas.agents.BaseAgent;
@@ -47,7 +46,6 @@ public class StreetNetworkAgent extends BaseAgent {
 		
 		parseStreetNetworkData(getStreetNetworkData());
 		
-		// Uncomment this behavior for graph visualization integration
 		addBehaviour(new GraphVisualizerServer());
 		addBehaviour(new TimeToDeliveryServer());
 		addBehaviour(new PathServer());
@@ -81,9 +79,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		    }
 	}
 	
-	// TODO: This behavior still requires the identity of the visualization agent
 	private class GraphVisualizerServer extends OneShotBehaviour {
-//		private MessageTemplate mt;
 		private AID graphVisualizerAgent = null;
 		
 		protected void findGraphVisualizer() {
@@ -117,7 +113,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		  findGraphVisualizer();
 		  
 			ACLMessage SNVisualizationInfo = new ACLMessage(ACLMessage.INFORM);
-			// TODO:
+
 			String messageContent = createVisualizerMessage();
 			
 			SNVisualizationInfo.addReceiver(graphVisualizerAgent);
@@ -125,29 +121,19 @@ public class StreetNetworkAgent extends BaseAgent {
 			SNVisualizationInfo.setConversationId("graph-visualization");
 			
 			baseAgent.sendMessage(SNVisualizationInfo);
-			
-			//JSONObject o = new JSONObject(messageContent);
-//			System.out.println("[" + getAID().getLocalName() + "]: Sent details to GraphVisualizer agent !!!!!!!!!!!!!!!!!!!!!!!!!!!!"+ o);
-		}
+			}
 	}
 	
 	private class TimeToDeliveryServer extends CyclicBehaviour {
 		private MessageTemplate mt;
 
 		public void action() {
-			
-//			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-//			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("TimeQuery"),
-//					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("TimeQuery"),
 					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
 			ACLMessage msg = baseAgent.receive(mt);
 								
 			
 			if (msg != null) {
-				// +++
-				//System.out.println("["+getAID().getLocalName()+"]: Received time request from "+msg.getSender().getLocalName());
-				
 				String truckMessageContent = msg.getContent();
 				ACLMessage reply = msg.createReply();
 				
@@ -157,14 +143,12 @@ public class StreetNetworkAgent extends BaseAgent {
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(time));
 				baseAgent.sendMessage(reply);
-				
-				// +++
+
 				System.out.println("["+getAID().getLocalName()+"]: Returned journey time for "+msg.getSender().getLocalName()+" is "+time);
 				
 			}
 
 			else {
-//				System.out.println("["+getAID().getLocalName()+"]: Waiting for time request messages.");
 				block();
 			}
 		}
@@ -175,21 +159,12 @@ public class StreetNetworkAgent extends BaseAgent {
 		private MessageTemplate mt;
 
 		public void action() {
-			
-//			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-//			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
-//					MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
-//			msg = baseAgent.receive(mt);
-			
 			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("PathQuery"),
 					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
 			ACLMessage msg = baseAgent.receive(mt);
 			
 					
 			if (msg != null) {
-				// +++
-				//System.out.println("["+getAID().getLocalName()+"]: Received path request from "+msg.getSender().getLocalName());
-				
 				String truckMessageContent = msg.getContent();
 				ACLMessage reply = msg.createReply();
 				
@@ -200,14 +175,10 @@ public class StreetNetworkAgent extends BaseAgent {
 				reply.setContent(String.valueOf(JSONPath));
 				baseAgent.sendMessage(reply);
 				
-				// +++
 				System.out.println("["+getAID().getLocalName()+"]: Returned journey path for "+msg.getSender().getLocalName());
-				
 			}
 
 			else {
-				// +++
-//				System.out.println("["+getAID().getLocalName()+"]: Waiting for path requests.");
 				block();
 			}
 		}
@@ -223,9 +194,6 @@ public class StreetNetworkAgent extends BaseAgent {
 								
 			
 			if (msg != null) {
-				// DEBUG:
-				//System.out.println("["+getAID().getLocalName()+"]: Received node location request from "+msg.getSender().getLocalName());
-				
 				String truckNodeQuery = msg.getContent();
 				ACLMessage reply = msg.createReply();
 				
@@ -235,9 +203,6 @@ public class StreetNetworkAgent extends BaseAgent {
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setContent(String.valueOf(JSONNodeLocation));
 				baseAgent.sendMessage(reply);
-				
-				// DEBUG:
-//				System.out.println("["+getAID().getLocalName()+"]: Returned queried node location coordinates for "+msg.getSender().getLocalName());
 			}
 			else {
 				block();
@@ -320,7 +285,6 @@ public class StreetNetworkAgent extends BaseAgent {
 		
 		for (int i = 0; i < numNodes; i++) {
 			JSONObject nodeInfo = nodesJSONArray.getJSONObject(i);
-//			String nodeName = nodeInfo.getString("name");
 			String nodeID = nodeInfo.getString("guid");
             Vertex location = new Vertex(nodeID, nodeID);
             nodes.add(location);
@@ -370,7 +334,6 @@ public class StreetNetworkAgent extends BaseAgent {
 				}
 			}
 			
-			// ++++
 			if (sourceNode == null) {
 				System.out.println("["+getAID().getLocalName()+"]: Source location invalid (not found in graph network) ");
 			}
@@ -378,31 +341,23 @@ public class StreetNetworkAgent extends BaseAgent {
 				System.out.println("["+getAID().getLocalName()+"]: target location invalid (not found in graph network) ");
 			}
 			
-//			graph = new Graph(nodes, edges);
-//	        dijkstra = new DijkstraAlgorithm(graph);
-			
 			dijkstra.execute(sourceNode);
-	        LinkedList<Vertex> path = dijkstra.getPath(targetNode);
-	        
-	     // ++++
-	     if (path == null || path.size() == 0) {
+	    LinkedList<Vertex> path = dijkstra.getPath(targetNode);
+	    
+	    if (path == null || path.size() == 0) {
 	     	System.out.println("["+getAID().getLocalName()+"]: No valid path found!! ");
-	     }
-	     else {
-		        for (int k = 0; k < path.size(); k++) {
-		        	fullPath.add(path.get(k));
-		        } 
-	     }
-	        
+	    }
+	    else {
+		    for (int k = 0; k < path.size(); k++) {
+		    	fullPath.add(path.get(k));
+		    } 
+	    } 
 		}
 		return fullPath;		
-    }
+  }
 	
 
 	protected String findNodeFromLocation(int x, int y) {
-//		protected String findNodeFromLocation(double x, double y) {
-//			String roundedX = Double.toString(Math.round(x*100.0) / 100.0);
-//			String roundedY = Double.toString(Math.round(y*100.0) / 100.0);
 		String roundedX = Integer.toString(x);
 		String roundedY = Integer.toString(y);
 		String nodeID = null;
@@ -418,7 +373,6 @@ public class StreetNetworkAgent extends BaseAgent {
 				nodeID = nodeInfo.getString("guid");
 			}
 		}
-		
 		return nodeID;
 	}
 	
@@ -459,11 +413,9 @@ public class StreetNetworkAgent extends BaseAgent {
 				
 				if (edgeSourceID.equals(graphSourceID) && edgeTargetID.equals(graphTargetID)) {
 					totalDistance = totalDistance + linksJSONArray.getJSONObject(j).getDouble("dist");
-					
 				}
 			}
 		}
-		
 		time = totalDistance / speedFactor;
 		
 		return time;
@@ -477,21 +429,6 @@ public class StreetNetworkAgent extends BaseAgent {
 		double y = 0.0;
 		
 		JSONArray pathInfoArray = new JSONArray();
-		
-//		String graphSourceID = fullPath.get(0).getId();
-//		String graphTargetID = fullPath.get(1).getId();
-//		
-//		for (int k = 0; k < nodesJSONArray.length(); k++) {
-//			String nodeID = nodesJSONArray.getJSONObject(k).getString("guid");
-//			if (nodeID.equals(graphSourceID)) {
-//				x = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("x");
-//				y = nodesJSONArray.getJSONObject(k).getJSONObject("location").getDouble("y");
-//			}
-//		}
-//		
-//		JSONObject nodeInfo = new JSONObject();
-//		nodeInfo.put("X", x);
-//		nodeInfo.put("Y", y);
 		
 		for (int i = 0; i < fullPath.size(); i++) {
 			JSONObject nodeInfo = new JSONObject();
@@ -509,7 +446,6 @@ public class StreetNetworkAgent extends BaseAgent {
 				
 				nodeInfo.put("X", x);
 				nodeInfo.put("Y", y);
-				
 				nodeInfo.put("time", time);
 			}
 			
@@ -525,7 +461,6 @@ public class StreetNetworkAgent extends BaseAgent {
 					}
 				}
 				
-//				JSONObject nodeInfo = new JSONObject();
 				nodeInfo.put("X", x);
 				nodeInfo.put("Y", y);
 				
@@ -544,5 +479,5 @@ public class StreetNetworkAgent extends BaseAgent {
 			pathInfoArray.put(nodeInfo);
 		}
 		return pathInfoArray.toString();    	
-    }
+  }
 }

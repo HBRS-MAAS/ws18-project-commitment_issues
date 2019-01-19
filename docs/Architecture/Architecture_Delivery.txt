@@ -21,10 +21,4 @@ Truck --> Mailbox : OrderSuccessfullyDelivered (INFORM)
 
 Mailbox --> : OrderDelivered (INFORM)
 
-== At Startup ==
-StreetNetwork --> GraphVisualizationAgent : StreetNetworkInfo (INFORM)
-
-== At Truck Position Update ==
-Truck --> GraphVisualizationAgent : TruckStatus (INFORM)
-
 @enduml

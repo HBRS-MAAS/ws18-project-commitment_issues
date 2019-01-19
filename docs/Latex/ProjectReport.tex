@@ -10,6 +10,7 @@
 \usepackage{listings}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{gensymb}
+\usepackage{wrapfig}
 \hypersetup{
     bookmarks=true,         % show bookmarks bar?
     unicode=false,          % non-Latin characters in Acrobat’s bookmarks
@@ -52,7 +53,7 @@ As per the specifications of the project, the packaging stage was developed so a
 All agents were defined in each stage to be responsible for a certain task, and the design decisions were agreed upon among the group members. Each member was then responsible for developing certain agents, while adhering to the defined architecture and agent communication constraints. In addition, certain data structures were encapsulated in objects. These were needed for certain functionalities, but did not justify implementation as agents, since no communication or decision-making was made on their part.
 
 \paragraph{}
-Throughout the project, developed agents had to be appropriately maintained and updated to keep up with changes to the upstream repository of the project. This was particularly necessary for the interface agents (loading bay and mailbox agents), since they were standardized and used by multiple groups. During the project, git issues, pull requests, reviews, and other tools were utilized to enable seamless integration with the other groups.
+Throughout the project, developed agents had to be appropriately maintained and updated to keep up with changes to the upstream repository of the project. This was particularly necessary for the interface agents (loading bay and mailbox agents), since they were standardized and used by multiple groups. During the project git issues, pull requests, reviews, and other tools were utilized to enable seamless integration with the other groups.
 
 \paragraph{}
 This report is structured as follows. Section 2 and 3 elaborate on the packaging and delivery stages, respectively, including descriptions of the architectures, the developed agents, and message specifications for the interface agents. Section 3.2 explains the graph visualization of the delivery phase's street network. Finally, section 4 contains instructions for running both stages, and running separate stages on separate machines.
@@ -102,7 +103,7 @@ The agent receives two types of messages, one from the preceding packaging agent
 \textbf{Message Descriptions}:
 
 \hfill\break
-(Incoming) Packaged Boxes Message:
+\textbf{(Incoming) Packaged Boxes Message:}
 
 \hfill\break
 \textbf{Description}:	
@@ -186,8 +187,16 @@ The agent sends a message which contains all the relevant details of a confirmed
 \hfill\break
 \textbf{Message Descriptions}:
 
+	\begin{wrapfigure}[]{r}{0.4\textwidth}
+		\begin{center}
+			\includegraphics[width=0.4\textwidth]{../images/mailboxmsgexample.png}
+		\end{center}
+		\caption{Mailbox Example Message}
+		\label{mailboxmsgexample}
+	\end{wrapfigure}
 \hfill\break
-(Incoming) Truck Message:
+\textbf{(Incoming) Truck Message:}
+
 \hfill\break
 \textbf{Description}:
 The TruckAgent informs the mailbox about a delivered order using the following message:
@@ -204,29 +213,35 @@ The TruckAgent informs the mailbox about a delivered order using the following m
 
 \hfill\break
 Figure \ref{mailboxmsgexample} shows an example of the contents of the message
-	
-(Outgoing) Fulfilled Order Boxes Message:
-	
+
+\hfill\break	
+\textbf{(Outgoing) Fulfilled Order Boxes Message:}
+
+\hfill\break
+\textbf{Description}:
 The mail box relays the delivery status message to the concerned customer and other agents who are interested in knowing the delivery status of the order using the following message:
-	
+\hfill\break
 \textbf{Performative}: INFORM
-	
+\hfill\break
 \textbf{Sender}: AID of the MailboxAgent
-	
+\hfill\break
 \textbf{Receiver}: AID of the Concerned CutomerAgent. If more agents are interested in receiving this message, their AID's will also be added to the receiver list.
-	
+\hfill\break
 \textbf{PostTimeStamp}: Current system time
-	
+\hfill\break
 \textbf{Conversation ID}: \textit{orderID}
-	
+
+\hfill\break
 The message is of the same format as the incoming message, and an example can be seen on Figure \ref{mailboxmsgexample}.
 
-	\begin{figure}[h!]
-		\centering
-		\includegraphics[width=0.5\textwidth]{../images/mailboxmsgexample.png}
-		\caption{Mailbox Example Message}
-		\label{mailboxmsgexample}
-	\end{figure}
+%	\begin{figure}[h!]
+%		\centering
+%		\includegraphics[width=0.5\textwidth]{../images/mailboxmsgexample.png}
+%		\caption{Mailbox Example Message}
+%		\label{mailboxmsgexample}
+%	\end{figure}
+	
+
 
 \newpage
 \subsection{Graph Visualization Agent (Developer: All)}\label{GraphVisualizationAgent}

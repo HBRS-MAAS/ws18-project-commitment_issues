@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[9pt]{beamer}
 \title{MAAS Project WS-18/19 \\ Team Commitment\_Issues}
 \author{Sushant Vijay Chavan\\Ahmed Faisal Abdelrahman\\Abanoub Abdelmalak}
 \date{\today}
@@ -16,8 +16,21 @@
 
 \begin{frame}{Introduction}
 	\begin{itemize}
-		\item 
+		\item `Commitment\_Issues' group responsibilities
+		\begin{itemize}
+			\item Packaging Stage
+			\item Delivery Stage
+			\item Two interface agents: the LoadingBay and Mailbox
+			\item Street Network Visualization
+		\end{itemize}
 	\end{itemize}
+	
+	\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.6\textwidth]{Architecture_Stages.png}
+	\caption{Commitment\_Issues' area of focus}
+%	\label{PackagingArchitecture}
+\end{figure}
 \end{frame}
 
 \begin{frame}{Packaging Stage}
@@ -40,7 +53,7 @@
 \end{figure}
 \end{frame}
 
-\begin{frame}{Delivery Stage Visualization}
+\begin{frame}{Street Network Visualization}
 \framesubtitle{Architecture}
 \begin{figure}[h!]
 	\centering
@@ -50,14 +63,41 @@
 \end{figure}
 \end{frame}
 
-\begin{frame}{Delivery Stage Visualization}
-\framesubtitle{Example}
-\begin{figure}[h!]
+\begin{frame}{Street Network Visualization}
+%\framesubtitle{Example}
+\begin{minipage}[0.3\textheight]{\textwidth}
+    \begin{columns}[T]
+        \begin{column}{0.53\textwidth}
+        \begin{itemize}
+        	\item Regular nodes as circles
+        	\item Edges connecting the nodes
+			\item Important nodes as squares
+			\begin{itemize}
+				\item Green - Customer
+				\item Blue - Bakery
+				\item Red - Delivery Company
+			\end{itemize}
+			\item Trucks as triangles
+			\begin{itemize}
+				\item Gray - Idle
+				\item Yellow - Moving to bakery
+				\item Purple - Moving to customer
+			\end{itemize}
+			\item IDs of special nodes displayed on top
+			\item ETA of trucks displayed adjacent to the ID
+			\item Live update of truck positions
+		\end{itemize}
+    \end{column}
+    \begin{column}{0.7\textwidth}
+    \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.7\textwidth]{Visualization.png}
+	\includegraphics[width=0.9\textwidth]{Visualization.png}
 %	\caption{Screenshot of Delivery Stage Visualization}
 %	\label{VisualizationScreenshot}
 \end{figure}
+        \end{column}
+    \end{columns}
+\end{minipage}
 \end{frame}
 
 \end{document}

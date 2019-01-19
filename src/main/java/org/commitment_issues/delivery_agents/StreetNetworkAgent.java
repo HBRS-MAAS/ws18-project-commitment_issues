@@ -23,15 +23,13 @@ import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
 public class StreetNetworkAgent extends BaseAgent {
-	public JSONArray nodesJSONArray = new JSONArray();
-	public JSONArray linksJSONArray = new JSONArray();
-			
-	public List<Vertex> nodes = new ArrayList<Vertex>();
-	public List<Edge> edges = new ArrayList<Edge>();
-	public Graph graph;
-    public DijkstraAlgorithm dijkstra;
-    
-    protected String scenarioDirectory_;
+	private JSONArray nodesJSONArray = new JSONArray();
+	private JSONArray linksJSONArray = new JSONArray();
+	private List<Vertex> nodes = new ArrayList<Vertex>();
+	private List<Edge> edges = new ArrayList<Edge>();
+	private Graph graph;
+  private DijkstraAlgorithm dijkstra;
+  protected String scenarioDirectory_;
 
 	protected void setup() {
 		super.setup();
@@ -64,7 +62,6 @@ public class StreetNetworkAgent extends BaseAgent {
 	    try {
 			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 		
@@ -214,9 +211,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		JSONObject JSONVisData = new JSONObject();
 		JSONArray JSONVisNodes = new JSONArray();
 		JSONArray JSONVisLinks = new JSONArray();
-		
-		boolean repeated = false;
-		
+		boolean repeated = false;		
 		String nodeType = "";
 		String companyName = "";
 		
@@ -301,7 +296,7 @@ public class StreetNetworkAgent extends BaseAgent {
 		}
 		
 		graph = new Graph(nodes, edges);
-        dijkstra = new DijkstraAlgorithm(graph);
+    dijkstra = new DijkstraAlgorithm(graph);
 				
 	}
 	

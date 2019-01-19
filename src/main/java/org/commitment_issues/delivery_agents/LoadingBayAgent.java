@@ -1,14 +1,8 @@
 package org.commitment_issues.delivery_agents;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.maas.agents.BaseAgent;
+import org.json.*;
 
 import jade.core.AID;
 import jade.core.behaviours.*;
@@ -21,298 +15,91 @@ import jade.lang.acl.MessageTemplate;
 
 @SuppressWarnings("serial")
 public class LoadingBayAgent extends BaseAgent {
-//	private JSONArray orderDetailsArray = new JSONArray();
-	private JSONArray orderDetailsArray = null;
-	private String readyOrderID = null;
-	
-	private HashMap<String, HashMap<String, Integer>> productDatabase = 
-			new HashMap<>();
+	private JSONArray orderDetailsArray = new JSONArray();
+	private String bakeryGuid = "bakery-001";
+
+	private HashMap<String, HashMap<String, Integer>> productDatabase = new HashMap<>();
 	private HashMap<String, JSONArray> boxDatabase = new HashMap<>();
-	
+
 	protected void setup() {
-		
 		super.setup();
-		System.out.println("Hello! LoadingBay-agent "+getAID().getName()+" is ready.");
-		
-		register(getBakeryName() + "-loading-bay", getBakeryName() + "-loading-bay");	
-		
-//		addBehaviour(new OrderDetailsReceiver());
-		orderDetailsArray = getDummyOrderData();
+		System.out.println("Hello! LoadingBay-agent " + getAID().getName() + " is ready.");
+
+		register(getBakeryName() + "-loading-bay", getBakeryName() + "-loading-bay");
+
+		addBehaviour(new OrderDetailsReceiver());
 		addBehaviour(new ProductDetailsReceiver());
 		addBehaviour(new TimeUpdater());
 	}
 	
-	  public String getBakeryName() {
-		  return getLocalName().split("_")[0];
-	  }
-	
+	public String getBakeryName() {
+    return getLocalName().split("_")[0];
+  }
+
 	protected void takeDown() {
 		deRegister();
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
-	
-	protected void addCustomerOrder (String orderID, String product, int quantity) {
-		HashMap <String, Integer> temp = new HashMap<String, Integer>();
+
+	protected void addCustomerOrder(String orderID, String product, int quantity) {
+		HashMap<String, Integer> temp = new HashMap<String, Integer>();
 		temp.put(product, quantity);
-		productDatabase.put(orderID, temp);
+		this.productDatabase.put(orderID, temp);
 	}
-	
-	protected void addCustomerProduct (String orderID, String product, int quantity) {
-		HashMap <String, Integer> temp = new HashMap<String, Integer>();
+
+	protected void addCustomerProduct(String orderID, String product, int quantity) {
+		HashMap<String, Integer> temp = new HashMap<String, Integer>();
 		temp.put(product, quantity);
-//		productDatabase.put(orderID, temp);
-		productDatabase.get(orderID).put(product, quantity);
+		this.productDatabase.get(orderID).put(product, quantity);
 	}
-	
-	protected void UpdateCustomerProductQuantity (String orderID, String product, int addedQuantity) {
-		int oldQuantity = productDatabase.get(orderID).get(product);
+
+	protected void UpdateCustomerProductQuantity(String orderID, String product, int addedQuantity) {
+		int oldQuantity = this.productDatabase.get(orderID).get(product);
 		int newQuantity = oldQuantity + addedQuantity;
-		productDatabase.get(orderID).replace(product, newQuantity);
-	}
-	
-	protected String getMessageData(String fileName) {
-		File fileRelative = new File("src/main/resources/config/"+fileName);
-		String data = ""; 
-	    try {
-			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	    
-	    return data;
-	}
-	
-	private class TimeUpdater extends CyclicBehaviour {
-		public void action() {
-		      if (getAllowAction()) {
-		        finished();
-		      } 
-		    }
-	}
-	
-	private class PackagingPhaseMessageSender extends OneShotBehaviour {
-		private AID receivingAgent = null;
-		
-		protected void findReceiver() {
-            DFAgentDescription template = new DFAgentDescription();
-            ServiceDescription sd = new ServiceDescription();
-            // SERVICE TYPE FOR RECEIVING ORDER CONFIRMATIONS:
-            sd.setType(getBakeryName() + "-order-aggregator");
-            template.addServices(sd);
-            try {
-                DFAgentDescription[] result = DFService.search(myAgent, template);
-                if (result.length > 0) {
-                	receivingAgent = result[0].getName();
-                }
-                
-                if (receivingAgent == null) {
-                	System.out.println("["+getAID().getLocalName()+"]: No OrderAggregator agent found.");
-                }
-//                else {
-//                	receivingAgent = result[0].getName();
-//                }
-            } catch (FIPAException fe) {
-                fe.printStackTrace();
-            }
-        }
-		
-		public void action() {
-			findReceiver();			
-			
-			if (receivingAgent != null) {
-				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-				
-				msg.addReceiver(receivingAgent); 
-				msg.setContent(createOrderBoxesJSONMessage(readyOrderID));
-				msg.setConversationId("packaged-orders");
-				msg.setPostTimeStamp(System.currentTimeMillis());
-				
-				myAgent.send(msg);
-				
-				System.out.println("["+getAID().getLocalName()+"]: Order details sent to OrderAggregator");	
-			}
-		}
+		this.productDatabase.get(orderID).replace(product, newQuantity);
 	}
 
-//	private class OrderDetailsReceiver extends CyclicBehaviour {
-//		private MessageTemplate mt;
-//		
-//		public void action() {
-//			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("..........."),
-//					MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-//			ACLMessage msg = myAgent.receive(mt);
-//			
-//			if (msg != null) {
-//				orderDetailsArray = new JSONArray(msg.getContent());
-//			} else {
-//				block();
-//			}
-//		}
-//	}
-	
-	// Later change to generic behavior with a limiting condition, to avoid having to keep it being
-	// called indefinitely (for this test case).
-	private class OrderDetailsReceiver extends Behaviour {
-		private AID orderProcessor;
-		private MessageTemplate mt;
-		private int step = 0;
-		
-		protected void findOrderProcessor() {
-            DFAgentDescription template = new DFAgentDescription();
-            ServiceDescription sd = new ServiceDescription();
-            // SERVICE TYPE FOR RECEIVING ORDER CONFIRMATIONS:
-            sd.setType("order-processor");
-            template.addServices(sd);
-            try {
-                DFAgentDescription[] result = DFService.search(myAgent, template);
-                orderProcessor = result[0].getName();
-                
-                if (orderProcessor == null) {
-                	System.out.println("["+getAID().getLocalName()+"]: No OrderProcessor agent found.");
-                }
-//                else {
-//                	orderProcessor = result[0].getName();
-//                }
-            } catch (FIPAException fe) {
-                fe.printStackTrace();
-            }
-        }
-
-		public void action() {
-			findOrderProcessor();
-			
-			switch (step) {
-			case 0:
-				ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
-
-				cfp.addReceiver(orderProcessor);
-				String convID = "loading-bay";
-				cfp.setContent(convID);
-				cfp.setConversationId(convID);
-				cfp.setPostTimeStamp(System.currentTimeMillis());
-				
-				myAgent.send(cfp);
-				
-				mt = MessageTemplate.MatchConversationId(convID);
-				
-				step = 1;
-				break;
-				
-			case 1:
-				ACLMessage reply = myAgent.receive(mt);
-				
-				if (reply != null) {
-					orderDetailsArray = new JSONArray(reply.getContent());					
-				}
-				else {
-					block();
-				}
-				
-				step = 2;
-				break;
-				
-			default:
-				break;
-			}
-		}
-		
-		public boolean done() {
-			return (step == 2);
-		}
-	}
-	
-	protected JSONArray getDummyOrderData() {
-		File fileRelative = new File("src/main/resources/config/small/orderprocessor.json");
-		String data = ""; 
-	    try {
-			data = new String(Files.readAllBytes(Paths.get(fileRelative.getAbsolutePath())));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		
-	    JSONArray orderArray = new JSONArray(data);
-	    
-		return orderArray;
-	}
-	
-	private class ProductDetailsReceiver extends CyclicBehaviour {
-		private MessageTemplate mt;
-		
-		public void action() {
-			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("boxes-ready"),
-					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-			ACLMessage msg = myAgent.receive(mt);
-			
-			if (msg != null) {
-				System.out.println("["+getAID().getLocalName()+"]: Received product boxes from "+msg.getSender().getLocalName());
-
-				// Assumes a json object is sent
-				String boxesMessageContent = msg.getContent();
-				JSONObject JSONData = new JSONObject(boxesMessageContent);
-				String orderID = JSONData.getString("OrderID");
-				
-				updateBoxDatabase(boxesMessageContent);
-				updateProductDatabase(boxesMessageContent);
-				
-				if (orderProductsReady(orderID)) {
-					readyOrderID = orderID;
-					addBehaviour(new PackagingPhaseMessageSender());
-				}
-			} else {
-				block();
-			}
-		}
-	}
-	
-	protected String createOrderBoxesJSONMessage (String orderID) {
+	protected String createOrderBoxesJSONMessage(String orderID) {
 		JSONObject message = new JSONObject();
-		message.put("OrderID", orderID);		
-		message.put("Boxes", boxDatabase.get(orderID));
-		
+		message.put("OrderID", orderID);
+		message.put("Boxes", this.boxDatabase.get(orderID));
+
 		return message.toString();
 	}
-	
-	protected void updateBoxDatabase (String orderBoxesDetails) {
+
+	protected void updateBoxDatabase(String orderBoxesDetails) {
 		JSONObject JSONData = new JSONObject(orderBoxesDetails);
-		
+
 		String orderID = JSONData.getString("OrderID");
 		JSONArray boxes = JSONData.getJSONArray("Boxes");
-		
+
 		if (boxDatabase.get(orderID) != null) {
 			for (int i = 0; i < boxDatabase.get(orderID).length(); i++) {
 				boxes.put(boxDatabase.get(orderID).getJSONObject(i));
 			}
 		}
-		
-		boxDatabase.put(orderID, boxes);
+
+		this.boxDatabase.put(orderID, boxes);
 	}
-	
-	protected void updateProductDatabase (String orderBoxesDetails) {
+
+	protected void updateProductDatabase(String orderBoxesDetails) {
 		JSONObject JSONData = new JSONObject(orderBoxesDetails);
-		
+
 		String orderID = JSONData.getString("OrderID");
 		JSONArray boxes = JSONData.getJSONArray("Boxes");
-		
+
 		// Check if the database does not contain this order's details
-		if (!productDatabase.containsKey(orderID)) {
-			for (int i = 0 ; i < boxes.length(); i++) {
+		if (!this.productDatabase.containsKey(orderID)) {
+			for (int i = 0; i < boxes.length(); i++) {
 				JSONObject boxDetails = boxes.getJSONObject(i);
-				if (!productDatabase.containsKey(orderID))
-				{
+				if (!productDatabase.containsKey(orderID)) {
 					addCustomerOrder(orderID, boxDetails.getString("ProductType"), boxDetails.getInt("Quantity"));
-				}
-				else 
-				{
+				} else {
 					String productType = boxDetails.getString("ProductType");
-					if (productDatabase.get(orderID).containsKey(productType))
-					{
+					if (productDatabase.get(orderID).containsKey(productType)) {
 						UpdateCustomerProductQuantity(orderID, productType, boxDetails.getInt("Quantity"));
-					}
-					else
-					{
-						addCustomerProduct(orderID, productType, boxDetails.getInt("Quantity"));	
+					} else {
+						addCustomerProduct(orderID, productType, boxDetails.getInt("Quantity"));
 					}
 				}
 			}
@@ -320,18 +107,17 @@ public class LoadingBayAgent extends BaseAgent {
 		// In the event that it does:
 		else {
 			// Get the product details currently associated with and stored for this orderID
-			HashMap<String, Integer> orderProductDetails = productDatabase.get(orderID);
-//			System.out.println("********************["+getAID().getLocalName()+"]: orderProductDetails"+orderProductDetails.toString());
+			HashMap<String, Integer> orderProductDetails = this.productDatabase.get(orderID);
 
-			
-			for (int i = 0 ; i < boxes.length(); i++) {
+			for (int i = 0; i < boxes.length(); i++) {
 				JSONObject boxDetails = boxes.getJSONObject(i);
 				String productType = boxDetails.getString("ProductType");
-				
-				// If the order entry in the database already has this product in a certain quantity:
+
+				// If the order entry in the database already has this product in a certain
+				// quantity:
 				if (orderProductDetails.containsKey(productType)) {
 					// Update that entry with the additional quantity of that product
-					UpdateCustomerProductQuantity (orderID, productType, boxDetails.getInt("Quantity"));
+					UpdateCustomerProductQuantity(orderID, productType, boxDetails.getInt("Quantity"));
 				}
 				// if it doesn't, simply add it to that order entry's product list:
 				else {
@@ -340,60 +126,178 @@ public class LoadingBayAgent extends BaseAgent {
 			}
 		}
 	}
-	
-	protected boolean orderProductsReady (String orderID) {
+
+	protected boolean orderProductsReady(String orderID) {
 		/*
 		 * Returns true if the order details (products and their quantities) are
 		 * fulfilled in the database for that particular customer order.
 		 */
 		int productQuantity = 0;
-		HashMap<String, Integer> orderProductDetails = productDatabase.get(orderID);
-		
-		JSONArray productArray = new JSONArray();
+		HashMap<String, Integer> orderProductDetails = this.productDatabase.get(orderID);
+
+		JSONObject productsObject = new JSONObject();
 		String IDCheckString = null;
-		
-		for (int i = 0 ; i < orderDetailsArray.length(); i++) {
-			JSONObject orderData = orderDetailsArray.getJSONObject(i);
-			
-			if (orderID.equals(orderData.getString("OrderID"))) {
-				IDCheckString = orderData.getString("OrderID");
-				productArray = orderData.getJSONArray("Products");
+
+		for (int i = 0; i < this.orderDetailsArray.length(); i++) {
+			JSONObject orderData = this.orderDetailsArray.getJSONObject(i);
+
+			if (orderID.equals(orderData.getString("guid"))) {
+				IDCheckString = orderData.getString("guid");
+				productsObject = orderData.getJSONObject("products");
 				break;
 			}
 		}
-		
-		// Check if order product array was retrieved
-//		System.out.println("["+getAID().getLocalName()+"]: Product array found: "+productArray.toString());
+
 		if (IDCheckString.equals(null)) {
-			System.out.println("["+getAID().getLocalName()+"]: ERROR: OrderID not found in orderDetailsArray ");
+			System.out
+					.println("[" + getAID().getLocalName() + "]: ERROR: OrderID not found in this.orderDetailsArray ");
 		}
-		
-		for (int j = 0 ; j < productArray.length() ; j++) {
-			String productName = null;;
-			JSONObject product = productArray.getJSONObject(j);
-			
-			// Get product name from key
-			for (String key : product.keySet()) {
-			    productName = key;
-			}
-			
-			int orderQuantity = product.getInt(productName);
-			
+
+		for (String productName : productsObject.keySet()) {
+			int orderQuantity = productsObject.getInt(productName);
+            if (orderQuantity == 0) {
+                continue;
+            }
+
 			try {
 				productQuantity = orderProductDetails.get(productName);
 			} catch (NullPointerException e) {
 				return false;
 			}
-//			if (orderProductDetails.get(productName).equals(null)) {
-//				return false;
-//			}
-//			else {
+
 			if (productQuantity != orderQuantity) {
 				return false;
 			}
-//			}
 		}
 		return true;
 	}
 
+	private class TimeUpdater extends CyclicBehaviour {
+		public void action() {
+			if (getAllowAction()) {
+				finished();
+			}
+		}
+	}
+
+	private class PackagingPhaseMessageSender extends OneShotBehaviour {
+		private AID receivingAgent = null;
+		protected String orderID = null;
+		
+		public PackagingPhaseMessageSender(String id) {
+			this.orderID = id;
+		}
+
+		protected void findReceiver() {
+			DFAgentDescription template = new DFAgentDescription();
+			ServiceDescription sd = new ServiceDescription();
+			sd.setType(bakeryGuid+"-order-aggregator");
+			template.addServices(sd);
+			
+			try {
+				DFAgentDescription[] result = DFService.search(baseAgent, template);
+				if (result.length > 0) {
+                	receivingAgent = result[0].getName();
+                }
+				if (receivingAgent == null) {
+                	System.out.println("["+getAID().getLocalName()+"]: No OrderAggregator agent found.");
+                }
+
+			} catch (FIPAException fe) {
+				System.out.println("[" + getAID().getLocalName() + "]: No OrderAggregator agent found.");
+				fe.printStackTrace();
+			}
+		}
+
+		public void action() {
+			findReceiver();
+
+			if (receivingAgent != null) {
+				ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+	
+				msg.addReceiver(receivingAgent);
+				msg.setContent(createOrderBoxesJSONMessage(this.orderID));
+				msg.setConversationId("packaged-orders");
+				msg.setPostTimeStamp(System.currentTimeMillis());
+	
+				baseAgent.sendMessage(msg);
+	
+				System.out.println("[" + getAID().getLocalName() + "]: Order details sent to OrderAggregator");
+			}
+		}
+	}
+
+	private class OrderDetailsReceiver extends CyclicBehaviour {
+		private AID orderProcessor = null;
+		private MessageTemplate mt;
+
+		protected void findOrderProcessor() {
+			DFAgentDescription template = new DFAgentDescription();
+			ServiceDescription sd = new ServiceDescription();
+			sd.setType("OrderProcessing");
+			template.addServices(sd);
+			
+			try {
+				DFAgentDescription[] result = DFService.search(baseAgent, template);
+				if (result.length > 0) {
+					orderProcessor = result[0].getName();
+				}
+			} catch (FIPAException fe) {
+				System.out.println("[" + getAID().getLocalName() + "]: No OrderProcessor agent found.");
+				fe.printStackTrace();
+			}
+		}
+
+		public void action() {
+			findOrderProcessor();
+
+			mt = MessageTemplate.and(MessageTemplate.MatchSender(orderProcessor),
+					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			ACLMessage msg = baseAgent.receive(mt);
+
+			if (msg != null) {
+				// If a single order is provided, in a message:
+				((LoadingBayAgent) baseAgent).orderDetailsArray.put(new JSONObject(msg.getContent()));
+
+				// Enable this instead, if a list of orders is provided:
+				/*
+				 * JSONArray messagethis.orderDetailsArray = new JSONArray(msg.getContent());
+				 * for (int i = 0 ; i < messagethis.orderDetailsArray.length() ; i++) {
+				 * this.orderDetailsArray.put(messagethis.orderDetailsArray.get(i)); }
+				 */
+			} else {
+				block();
+			}
+		}
+	}
+
+	private class ProductDetailsReceiver extends CyclicBehaviour {
+		private MessageTemplate mt;
+
+		public void action() {
+			mt = MessageTemplate.and(MessageTemplate.MatchConversationId("boxes-ready"),
+					MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+			ACLMessage msg = baseAgent.receive(mt);
+
+			if (msg != null) {
+				System.out.println("[" + getAID().getLocalName() + "]: Received product boxes from "
+						+ msg.getSender().getLocalName());
+
+				// This assumes a JSON object is sent by the preceding agent
+				String boxesMessageContent = msg.getContent();
+				JSONObject JSONData = new JSONObject(boxesMessageContent);
+				String orderIDKey = "OrderID";
+				String orderID = JSONData.getString(orderIDKey);
+
+				updateBoxDatabase(boxesMessageContent);
+				updateProductDatabase(boxesMessageContent);
+
+				if (orderProductsReady(orderID)) {
+					addBehaviour(new PackagingPhaseMessageSender(orderID));
+				}
+			} else {
+				block();
+			}
+		}
+	}
 }

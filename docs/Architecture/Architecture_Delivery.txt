@@ -19,7 +19,6 @@ StreetNetwork --> Truck : ReturnPath (INFORM)
 
 Truck --> Mailbox : OrderSuccessfullyDelivered (INFORM)
 
-
-Mailbox
+Mailbox --> : OrderDelivered (INFORM)
 
 @enduml

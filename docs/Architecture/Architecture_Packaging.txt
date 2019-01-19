@@ -3,18 +3,13 @@ skinparam classAttributeIconSize 0
 
 
 == Packaging ==
-CoolingRacks --> PackingScheduler : ProductsReadyToPack (INFORM)
+CoolingRacks --> GenericItemProcessor : CoolingRackOutMessage (INFORM)
 
-PackingScheduler --> DecoratorAgent : FreeToDecorate? (QUERY_IF)
-DecoratorAgent --> PackingScheduler : readyToDecorate (CONFIRM)
-PackingScheduler --> DecoratorAgent : ProductsToDecorate (INFORM)
+GenericItemProcessor --> PackingAgent : ItemsToPack (INFORM)
 
-DecoratorAgent --> PackingAgent : FreeToPack? (QUERY_IF)
-PackingAgent --> DecoratorAgent : readyToPack (CONFIRM)
-DecoratorAgent --> PackingAgent : PackProducts (INFORM)
+PackingAgent --> LoadingBay : BoxesReady (INFORM)
 
-PackingAgent --> LoadingBay : BoxesToDeliver (INFORM)
-
+LoadingBay --> : BoxesReadyToDeliver (INFORM)
 
 
 @enduml

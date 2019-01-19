@@ -42,9 +42,20 @@
 \newpage
 
 \section{Introduction}
-This project was completed as a part of the project work for the Multi-Agent and Agent Systems course. In this project we implemented two stages (Packaging and Delivery) of the Flying Saucers Bakery project. In addition we implemented visualization of the delivery stage as a street network with moving trucks to show the delivery in action. 
+\paragraph{}
+In this project, we implemented two stages and a visualization component of the Flying Saucers Bakery, an inter-group cooperative project for the Multi-Agent and Agent Systems course. The stages this group was responsible for were the final two: packaging and delivery. Initially, the group was tasked with formulating an architecture for the entire project, including specifying the agents, their communication mechanisms, and the flow of a bakery's processes. Subsequently, the group assumed responsibility for the afore-mentioned stages, implementing them end-to-end, and working to integrate them with the agents developed by other teams.
 
-\textbf{TODO}
+\paragraph{}
+As per the specifications of the project, the packaging stage was developed so as to receive baked bakery products, perform certain post-baking steps, and packaging them into separate boxes to be passed on to the next stage. The delivery stage was designed to receive these, aggregate them based on customer orders, and facilitate delivering them to the right customers most efficiently. This involved distributing them among trucks, which travel around the street network to deliver orders from bakeries to customers. A graph visualizer application of the street network was developed to enable visualization of this stage.
+
+\paragraph{}
+All agents were defined in each stage to be responsible for a certain task, and the design decisions were agreed upon among the group members. Each member was then responsible for developing certain agents, while adhering to the defined architecture and agent communication constraints. In addition, certain data structures were encapsulated in objects. These were needed for certain functionalities, but did not justify implementation as agents, since no communication or decision-making was made on their part.
+
+\paragraph{}
+Throughout the project, developed agents had to be appropriately maintained and updated to keep up with changes to the upstream repository of the project. This was particularly necessary for the interface agents (loading bay and mailbox agents), since they were standardized and used by multiple groups. During the project, git issues, pull requests, reviews, and other tools were utilized to enable seamless integration with the other groups.
+
+\paragraph{}
+This report is structured as follows. Section 2 and 3 elaborate on the packaging and delivery stages, respectively, including descriptions of the architectures, the developed agents, and message specifications for the interface agents. Section 3.2 explains the graph visualization of the delivery phase's street network. Finally, section 4 contains instructions for running both stages, and running separate stages on separate machines.
 
 \section{Packaging Stage}\label{PackagingStage}
 \paragraph{}

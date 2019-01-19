@@ -1,11 +1,25 @@
 \BOOKMARK [1][-]{section.1}{Introduction}{}% 1
 \BOOKMARK [1][-]{section.2}{Packaging Stage}{}% 2
 \BOOKMARK [2][-]{subsection.2.1}{Agents}{section.2}% 3
-\BOOKMARK [1][-]{section.3}{Delivery Stage}{}% 4
-\BOOKMARK [2][-]{subsection.3.1}{Agents}{section.3}% 5
-\BOOKMARK [2][-]{subsection.3.2}{Graph Visualization Agent}{section.3}% 6
-\BOOKMARK [1][-]{section.4}{Entry Agent}{}% 7
-\BOOKMARK [1][-]{section.5}{Usage Instructions}{}% 8
-\BOOKMARK [2][-]{subsection.5.1}{Running the two stages}{section.5}% 9
-\BOOKMARK [2][-]{subsection.5.2}{Running on distributed systems}{section.5}% 10
-\BOOKMARK [1][-]{section.6}{Conclusion}{}% 11
+\BOOKMARK [3][-]{subsubsection.2.1.1}{Entry Agent \(Developer: Sushant\)}{subsection.2.1}% 4
+\BOOKMARK [3][-]{subsubsection.2.1.2}{Generic Item Processor \(Developer: Abanoub\)}{subsection.2.1}% 5
+\BOOKMARK [3][-]{subsubsection.2.1.3}{Packaging Agent \(Developer: Sushant\)}{subsection.2.1}% 6
+\BOOKMARK [3][-]{subsubsection.2.1.4}{Loading Bay Agent \(Developer: Ahmed\)}{subsection.2.1}% 7
+\BOOKMARK [1][-]{section.3}{Delivery Stage}{}% 8
+\BOOKMARK [2][-]{subsection.3.1}{Agents}{section.3}% 9
+\BOOKMARK [3][-]{subsubsection.3.1.1}{Order Aggregator \(Developer: Abanoub\)}{subsection.3.1}% 10
+\BOOKMARK [3][-]{subsubsection.3.1.2}{Transport Agent \(Developer: Abanoub\)}{subsection.3.1}% 11
+\BOOKMARK [3][-]{subsubsection.3.1.3}{Truck Agent \(Developer: Sushant\)}{subsection.3.1}% 12
+\BOOKMARK [3][-]{subsubsection.3.1.4}{Street Network Agent \(Developer: Ahmed\)}{subsection.3.1}% 13
+\BOOKMARK [3][-]{subsubsection.3.1.5}{Mailbox Agent \(Developer: Ahmed\)}{subsection.3.1}% 14
+\BOOKMARK [2][-]{subsection.3.2}{Objects}{section.3}% 15
+\BOOKMARK [3][-]{subsubsection.3.2.1}{Graph}{subsection.3.2}% 16
+\BOOKMARK [3][-]{subsubsection.3.2.2}{Vertex}{subsection.3.2}% 17
+\BOOKMARK [3][-]{subsubsection.3.2.3}{Edge}{subsection.3.2}% 18
+\BOOKMARK [3][-]{subsubsection.3.2.4}{DijkstraAlgorithm}{subsection.3.2}% 19
+\BOOKMARK [3][-]{subsubsection.3.2.5}{Box}{subsection.3.2}% 20
+\BOOKMARK [3][-]{subsubsection.3.2.6}{Order}{subsection.3.2}% 21
+\BOOKMARK [2][-]{subsection.3.3}{Graph Visualization Agent \(Developer: All\)}{section.3}% 22
+\BOOKMARK [1][-]{section.4}{Usage Instructions}{}% 23
+\BOOKMARK [2][-]{subsection.4.1}{Running the two stages}{section.4}% 24
+\BOOKMARK [2][-]{subsection.4.2}{Running on distributed systems}{section.4}% 25

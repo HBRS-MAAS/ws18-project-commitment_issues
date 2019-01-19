@@ -69,8 +69,62 @@ This agent communicates with two agents in the delivery stage. The street networ
 \paragraph{}
 The graph visualization agent uses the following message formats to communicate with the other two agents.
 
+\hfill\break
+\textbf{Message Descriptions}:
+
+\hfill\break
+\textbf{(Incoming) Street Network Message:}
+
+\hfill\break
+\textbf{Description}:
+The Graph Visualization Agent receives the street network information from the Street Network Agent in a message of the following format:
+\hfill\break
+\textbf{Performative}: INFORM
+\hfill\break
+\textbf{Sender}: AID of the StreetNetworkAgent
+\hfill\break
+\textbf{Receiver}:  AID of the GraphVisualizationAgent
+\hfill\break
+\textbf{Conversation ID}: "graph-visualization"
+
+\hfill\break
+Figure \ref{graphVisSNmsgexample} shows an example of the contents of the message.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\textwidth]{../images/graphVisSNmsgexample.png}
+	\caption{Incoming Street Network Message Example}
+	\label{graphVisSNmsgexample}
+\end{figure}
+
+
+\hfill\break	
+\textbf{(Incoming) Truck Message:}
+
+\hfill\break
+\textbf{Description}:
+The Graph Visualization Agent receives the truck status information from the Truck Agent in a message of the following format:
+\hfill\break
+\textbf{Performative}: INFORM
+\hfill\break
+\textbf{Sender}: AID of the TruckAgent
+\hfill\break
+\textbf{Receiver}: AID of the GraphVisualizationAgent
+\hfill\break
+\textbf{Conversation ID}: "TruckPosUpdate"
+
+\hfill\break
+Figure \ref{graphVisTruckmsgexample} shows an example of the contents of the message.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\textwidth]{../images/graphVisTruckmsgexample.png}
+	\caption{Incoming Truck Message Example}
+	\label{graphVisTruckmsgexample}
+\end{figure}
 
 \pagebreak
+\newpage
 
 \section{Running the Visualization}
 \paragraph{}

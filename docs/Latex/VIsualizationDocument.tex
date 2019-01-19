@@ -32,7 +32,7 @@
     urlcolor=red           % color of external links
 }
 
-\title{MAAS - Street Network Visualization \\Commitment Issues}
+\title{MAAS - Street Network Visualization \\Group: Commitment\_Issues}
 \author{Sushant Vijay Chavan\\Ahmed Faisal Abdelrahman\\Abanoub Abdelmalak}
 \date{\today}
 
@@ -44,10 +44,10 @@
 
 \section{Introduction}
 \paragraph{}
+This document contains a brief overview of the street network graph visualization agent developed by this group. The agent facilitates displaying the street network map and the activity of truck agent in it in a JavaFX GUI. The agent was developed collectively by all team members, and its development involved several stages of additions and adjustments to the code.
 
-
-\newpage
-\subsection{Graph Visualization Agent (Developer: All)}\label{GraphVisualizationAgent}
+%\newpage
+\section{The Graph Visualization Agent}\label{GraphVisualizationAgent}
 \paragraph{}
 The graph visualization agent facilitates observing the delivery process of the orders in a graphical way. This agent is capable of displaying the entire street network (consisting of its nodes and edges) and all the trucks present at any given time as shown in figure \ref{VisualizationScreenshot}. JavaFX was used to generate the nice display and we used and modified the implementation of \href{https://stackoverflow.com/a/30696075}{Roland} to generate the graph representation.
 
@@ -58,5 +58,35 @@ The graph visualization agent facilitates observing the delivery process of the 
 	\label{VisualizationScreenshot}
 \end{figure}
 
+\paragraph{}
+The nodes of the graph are displayed as either squares (for important nodes such as bakery or customer locations) or small circles. The nodes are then connected by the edges. The squares are further color coded in order to distinguish the type of node. Green represents customers, red delivery companies and cyan bakery locations. The trucks are represented using triangles on the graph and it is possible to update their location based on their actual position in the graph at any time step. Similar to the nodes, the trucks are also color coded to identify their states. Gray represents idle state, yellow moving towards bakery for collecting boxes and purple delivering boxes to a customer. Additionally, the trucks also display the expected time of arrival along their current route.
+
+\paragraph{}
+This agent communicates with two agents in the delivery stage. The street network agent sends the street network information (consisting of the nodes and the edges) at startup to the graph visualization agent. Similarly, the trucks inform the graph visualization agent about their start positions. Whenever the position of a truck is updated, a new message is sent to the graph visualization agent informing it about the new position, expected time of arrival and state of the truck.
+
+
+\section{Incoming Message Specifications}\label{MessageSpecifications}
+\paragraph{}
+The graph visualization agent uses the following message formats to communicate with the other two agents.
+
+
+\pagebreak
+
+\section{Running the Visualization}
+\paragraph{}
+The visualization of the delivery phase can be run by simply providing the `\textit{-visualization}' argument to the common \textit{gradle run} command. This automatically sets up the graph visualization agent which then communicates with the street network and the truck agents. In addition, the GUI window appears.
+
+\paragraph{}
+The same commands described in the team's report must be followed:
+\begin{enumerate} 
+	\item Start the program using the command
+	\begin{verbatim}
+	gradle run --args='-packaging -delivery -visualization'
+	\end{verbatim}
+	\item If you get an error saying gradle does not support '\textit{args}'. Then use the below command instead to start the program
+	\begin{verbatim}
+	./gradlew run --args='-packaging -delivery -visualization'
+	\end{verbatim}
+\end{enumerate}
 
 \end{document}\grid

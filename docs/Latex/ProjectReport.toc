@@ -1,19 +1,56 @@
 \contentsline {section}{\numberline {1}Introduction}{3}{section.1}
-\contentsline {section}{\numberline {2}Packaging Stage}{3}{section.2}
 \contentsline {paragraph}{}{3}{section*.2}
 \contentsline {paragraph}{}{3}{section*.3}
+\contentsline {paragraph}{}{3}{section*.4}
 \contentsline {paragraph}{}{3}{section*.5}
-\contentsline {subsection}{\numberline {2.1}Agents}{3}{subsection.2.1}
-\contentsline {section}{\numberline {3}Delivery Stage}{5}{section.3}
-\contentsline {paragraph}{}{5}{section*.6}
-\contentsline {paragraph}{}{5}{section*.7}
-\contentsline {paragraph}{}{5}{section*.9}
-\contentsline {subsection}{\numberline {3.1}Agents}{5}{subsection.3.1}
-\contentsline {subsection}{\numberline {3.2}Graph Visualization Agent}{7}{subsection.3.2}
-\contentsline {section}{\numberline {4}Entry Agent}{8}{section.4}
-\contentsline {paragraph}{}{8}{section*.11}
-\contentsline {paragraph}{}{8}{section*.12}
-\contentsline {section}{\numberline {5}Usage Instructions}{8}{section.5}
-\contentsline {subsection}{\numberline {5.1}Running the two stages}{8}{subsection.5.1}
-\contentsline {subsection}{\numberline {5.2}Running on distributed systems}{8}{subsection.5.2}
-\contentsline {section}{\numberline {6}Conclusion}{8}{section.6}
+\contentsline {paragraph}{}{3}{section*.6}
+\contentsline {section}{\numberline {2}Packaging Stage}{3}{section.2}
+\contentsline {paragraph}{}{3}{section*.7}
+\contentsline {paragraph}{}{3}{section*.8}
+\contentsline {paragraph}{}{4}{section*.10}
+\contentsline {subsection}{\numberline {2.1}Agents}{4}{subsection.2.1}
+\contentsline {subsubsection}{\numberline {2.1.1}Entry Agent (Developer: Sushant)}{4}{subsubsection.2.1.1}
+\contentsline {paragraph}{}{4}{section*.11}
+\contentsline {paragraph}{}{4}{section*.12}
+\contentsline {subsubsection}{\numberline {2.1.2}Generic Item Processor (Developer: Abanoub)}{5}{subsubsection.2.1.2}
+\contentsline {subsubsection}{\numberline {2.1.3}Packaging Agent (Developer: Sushant)}{5}{subsubsection.2.1.3}
+\contentsline {paragraph}{}{5}{section*.13}
+\contentsline {paragraph}{}{5}{section*.14}
+\contentsline {subsubsection}{\numberline {2.1.4}Loading Bay Agent (Developer: Ahmed)}{5}{subsubsection.2.1.4}
+\contentsline {paragraph}{}{5}{section*.15}
+\contentsline {paragraph}{}{5}{section*.16}
+\contentsline {section}{\numberline {3}Delivery Stage}{7}{section.3}
+\contentsline {paragraph}{}{7}{section*.18}
+\contentsline {paragraph}{}{7}{section*.19}
+\contentsline {paragraph}{}{7}{section*.21}
+\contentsline {subsection}{\numberline {3.1}Agents}{7}{subsection.3.1}
+\contentsline {subsubsection}{\numberline {3.1.1}Order Aggregator (Developer: Abanoub)}{7}{subsubsection.3.1.1}
+\contentsline {subsubsection}{\numberline {3.1.2}Transport Agent (Developer: Abanoub)}{8}{subsubsection.3.1.2}
+\contentsline {subsubsection}{\numberline {3.1.3}Truck Agent (Developer: Sushant)}{8}{subsubsection.3.1.3}
+\contentsline {subsubsection}{\numberline {3.1.4}Street Network Agent (Developer: Ahmed)}{8}{subsubsection.3.1.4}
+\contentsline {paragraph}{}{8}{section*.22}
+\contentsline {paragraph}{}{8}{section*.23}
+\contentsline {paragraph}{}{9}{section*.24}
+\contentsline {subsubsection}{\numberline {3.1.5}Mailbox Agent (Developer: Ahmed)}{9}{subsubsection.3.1.5}
+\contentsline {paragraph}{}{9}{section*.25}
+\contentsline {paragraph}{}{9}{section*.26}
+\contentsline {subsection}{\numberline {3.2}Objects}{10}{subsection.3.2}
+\contentsline {subsubsection}{\numberline {3.2.1}Graph}{10}{subsubsection.3.2.1}
+\contentsline {paragraph}{}{10}{section*.28}
+\contentsline {subsubsection}{\numberline {3.2.2}Vertex}{10}{subsubsection.3.2.2}
+\contentsline {paragraph}{}{10}{section*.29}
+\contentsline {subsubsection}{\numberline {3.2.3}Edge}{10}{subsubsection.3.2.3}
+\contentsline {paragraph}{}{10}{section*.30}
+\contentsline {subsubsection}{\numberline {3.2.4}DijkstraAlgorithm}{10}{subsubsection.3.2.4}
+\contentsline {paragraph}{}{10}{section*.31}
+\contentsline {subsubsection}{\numberline {3.2.5}Box}{10}{subsubsection.3.2.5}
+\contentsline {paragraph}{}{10}{section*.32}
+\contentsline {subsubsection}{\numberline {3.2.6}Order}{10}{subsubsection.3.2.6}
+\contentsline {paragraph}{}{10}{section*.33}
+\contentsline {subsection}{\numberline {3.3}Graph Visualization Agent (Developer: All)}{11}{subsection.3.3}
+\contentsline {paragraph}{}{11}{section*.34}
+\contentsline {paragraph}{}{11}{section*.36}
+\contentsline {paragraph}{}{12}{section*.37}
+\contentsline {section}{\numberline {4}Usage Instructions}{12}{section.4}
+\contentsline {subsection}{\numberline {4.1}Running the two stages}{12}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Running on distributed systems}{12}{subsection.4.2}

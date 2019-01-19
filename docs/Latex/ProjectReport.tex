@@ -241,8 +241,33 @@ The message is of the same format as the incoming message, and an example can be
 %		\label{mailboxmsgexample}
 %	\end{figure}
 	
+\pagebreak
+	
+\subsection{Objects}\label{DeliveryObjects}
+The \textit{Graph}, \textit{Vertex}, \textit{Edge}, and \textit{DijkstraAlgorithm} classes are taken from Lars Vogel's implementation of the Dijkstra algorithm. A link to the source code and an accompanying blog post can be found \href{http://www.vogella.com/tutorials/JavaAlgorithmsDijkstra/article.html}{here}.
+\subsubsection{Graph}
+\paragraph{}
+The Graph object implements a directed graph of nodes and edges to be used in the Dijkstra algorithm. It maintains two lists: one consisting of \textit{Vertex} objects, and another of \textit{Edge} objects.
+
+\subsubsection{Vertex}
+\paragraph{}
+The Vertex object represents a vertex in a directed graph to be used in the Dijkstra algorithm. The class maintains a vertex's, or node's, ID and name as strings, and a few helper functions. For example, an equality helper function that checks whether two vertex objects are equivalent.
+
+\subsubsection{Edge}
+\paragraph{}
+The Edge object represents an edge in a directed graph to be used in the Dijkstra algorithm. Each edge stores a source vertex/node, a destination node, a unique ID, and a weight value. 
+
+\subsubsection{DijkstraAlgorithm}
+\paragraph{}
+The DijsktraAlgorithm class implements the Dijkstra algorithm for finding the shortest path between two nodes in a directed graph. This is used in the street network agent to enable returning of paths between two locations, as well as the time needed for the journey, to truck agents which as for this information.
 
 
+\subsubsection{Box}
+\paragraph{}
+The box class characterizes the requirements of a box object that has been described in the project description. This class holds a fixed amount of products of a single product type. Box objects can be uniquely identified using the box id. This class also provides helper functions such as adding products to a box, querying its ID and printing the details of the box.
+\subsubsection{Order}
+\paragraph{}
+The order class was implemented to help organize the work with the delivery stage to be used within the transport agent and the order aggregator. This class contains the necessary data to define an order like: order id, customer id, bakery id. Some other features like changing the location of the bakery and the location of the customer associated with each of the orders.
 \newpage
 \subsection{Graph Visualization Agent (Developer: All)}\label{GraphVisualizationAgent}
 \paragraph{}

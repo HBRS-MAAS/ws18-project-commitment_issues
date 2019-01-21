@@ -16,7 +16,11 @@ Add a brief description of your project. Make sure to keep this README updated, 
 ## How to run
 Just install gradle and run:
 
-    gradle run
+    gradle run --args='-packaging -delivery -visualization'
+
+If you get an error saying --args is not supprted, use the below command:
+
+    ./gradlew run --args='-packaging -delivery -visualization'
 
 It will automatically get the dependencies and start JADE with the configured agents.
 In case you want to clean you workspace run
@@ -41,11 +45,11 @@ Follow these steps to run multiple stages on different systems.
 ```
 * Start the host using the command:
 ```
-    gradle run --args='-localPort [PORT] -[STAGE]'
+    gradle run --args='-isHost [host ip address] -localPort [PORT] -[STAGE] -noTK'
 ```
 Example:
 ```
-    gradle run --args='-localPort 5353 -delivery'
+    gradle run --args='-isHost 192.168.43.113 -localPort 5353 -packaging -noTK'
 ```
 
 * Start a client using the command:
@@ -54,7 +58,7 @@ Example:
 ```
 Example:
 ```
-    gradle run --args='-host 192.168.25.153 -port 5353 -packaging'
+    gradle run --args='-host 192.168.43.113 -port 5353 -packaging'
 ```
 
 ## Eclipse

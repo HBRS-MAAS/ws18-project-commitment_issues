@@ -1,0 +1,10 @@
+@startuml Architecture_Visualization
+skinparam classAttributeIconSize 0
+
+== At Startup ==
+StreetNetwork --> GraphVisualizationAgent : StreetNetworkInfo (INFORM)
+
+== At every truck position update ==
+Truck --> GraphVisualizationAgent : TruckStatus (INFORM)
+
+@enduml

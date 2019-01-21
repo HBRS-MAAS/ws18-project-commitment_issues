@@ -242,14 +242,11 @@ public class LoadingBayAgent extends BaseAgent {
 		protected void findOrderProcessor() {
 			DFAgentDescription template = new DFAgentDescription();
 			ServiceDescription sd = new ServiceDescription();
-<<<<<<< HEAD
 
 			orderProcessorServiceType = "OrderProcessing";
 
 			sd.setType(orderProcessorServiceType);
-=======
-			sd.setType(bakeryGuid+"-OrderProcessing");
->>>>>>> cfad8139d40bdcb1e934f6d7356eb30159e2ed32
+
 			template.addServices(sd);
 			
 			try {

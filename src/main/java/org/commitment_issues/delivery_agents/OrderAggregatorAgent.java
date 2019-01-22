@@ -90,7 +90,8 @@ public class OrderAggregatorAgent extends BaseAgent {
 
 				Order order = null;
 				for (int k = 0; k < ((OrderAggregatorAgent) baseAgent).orders.size(); k++) {
-					if ((((OrderAggregatorAgent) baseAgent).orders.get(k).getOrderID()).equals(orderID)) {
+					String currentOrderId = ((OrderAggregatorAgent) baseAgent).orders.get(k).getOrderID();
+				  if (currentOrderId.equals(orderID)) {
 						order = orders.get(k);
 						orders.remove(order);
 						break;

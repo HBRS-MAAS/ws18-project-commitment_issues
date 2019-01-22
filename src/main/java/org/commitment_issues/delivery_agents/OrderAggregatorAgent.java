@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import org.maas.agents.BaseAgent;
 
 import jade.core.AID;
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
@@ -41,33 +40,13 @@ public class OrderAggregatorAgent extends BaseAgent {
 	  return getLocalName().split("_")[0];
   }
 
-  protected void register(String type, String name){
-    DFAgentDescription dfd = new DFAgentDescription();
-    dfd.setName(getAID());
-    ServiceDescription sd = new ServiceDescription();
-    sd.setType(type);
-    sd.setName(name);
-    dfd.addServices(sd);
-    try {
-        DFService.register(this, dfd);
-    }
-    catch (FIPAException fe) {
-        fe.printStackTrace();
-    }
-}
+  
   protected void takeDown() {
     deRegister();
     
     System.out.println(getAID().getLocalName() + ": Terminating.");
   }
-  protected void deRegister() {
-    try {
-          DFService.deregister(this);
-      }
-      catch (FIPAException fe) {
-          fe.printStackTrace();
-      }
-  }
+  
   private void findTransportAgent() {
     DFAgentDescription template = new DFAgentDescription();
     ServiceDescription sd = new ServiceDescription();
@@ -78,7 +57,7 @@ public class OrderAggregatorAgent extends BaseAgent {
       this.transportAgent = result[0].getName();
      
   } catch (Exception fe) {
-      //fe.printStackTrace();
+      fe.printStackTrace();
   }
     
     

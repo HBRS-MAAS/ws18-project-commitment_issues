@@ -12,7 +12,6 @@ import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
-import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
@@ -54,7 +53,9 @@ public class OrderAggregatorAgent extends BaseAgent {
     template.addServices(sd);
     try {
       DFAgentDescription[] result = DFService.search(this, template);
-      this.transportAgent = result[0].getName();
+      if (result.length > 0) {
+        this.transportAgent = result[0].getName();
+      }
      
   } catch (Exception fe) {
       fe.printStackTrace();
@@ -71,8 +72,8 @@ public class OrderAggregatorAgent extends BaseAgent {
   }
   
   private class OrderInfo {
-	public String custID;
-	public ArrayList<String> products;
+  	public String custID;
+  	public ArrayList<String> products;
   }
   
 	private class LoadingBayParser extends CyclicBehaviour {
@@ -165,11 +166,11 @@ public class OrderAggregatorAgent extends BaseAgent {
   }
   
 	private class OrderDetailsReceiver extends CyclicBehaviour {
-		private String orderProcessorServiceType;
-		private AID orderProcessor = null;
+		//private String orderProcessorServiceType;
+		//private AID orderProcessor = null;
 		private MessageTemplate mt;
 
-		protected void findOrderProcessor() {
+		/*protected void findOrderProcessor() {
 			DFAgentDescription template = new DFAgentDescription();
 			ServiceDescription sd = new ServiceDescription();
 			orderProcessorServiceType = "OrderProcessing";
@@ -185,7 +186,7 @@ public class OrderAggregatorAgent extends BaseAgent {
 				System.out.println("[" + getAID().getLocalName() + "]: No OrderProcessor agent found.");
 				fe.printStackTrace();
 			}
-		}
+		}*/
 
 		public void action() {
 //			findOrderProcessor();

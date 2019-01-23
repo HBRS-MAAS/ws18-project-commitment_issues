@@ -3,13 +3,13 @@ skinparam classAttributeIconSize 0
 
 
 == Packaging ==
-CoolingRacks --> GenericItemProcessor : CoolingRackOutMessage (INFORM)
+CoolingRacks --> GenericItemProcessorAgent : CoolingRackOutMessage (INFORM)
 
-GenericItemProcessor --> PackingAgent : ItemsToPack (INFORM)
+GenericItemProcessorAgent --> PackagingAgent : ItemsToPack (INFORM)
 
-PackingAgent --> LoadingBay : BoxesReady (INFORM)
+PackagingAgent --> LoadingBayAgent : BoxesReady (INFORM)
 
-LoadingBay --> : BoxesReadyToDeliver (INFORM)
+LoadingBayAgent --> : BoxesReadyToDeliver (INFORM)
 
 
 @enduml

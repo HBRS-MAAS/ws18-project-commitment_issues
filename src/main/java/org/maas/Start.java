@@ -80,7 +80,7 @@ public class Start {
 
             Initializer init = new PackagingStageInitializer();
             sb.append(init.initialize(scenarioDirectory));
-            endTime = "002.01.00";
+            endTime = "003.01.00";
         }
         if(deliveryStage) {
 			Initializer init = new DeliveryStageInitializer();
@@ -126,6 +126,10 @@ public class Start {
                 localPort = args[i+1];
                 ++i;
             }
+            if (args[i].equals("-scenarioDirectory")) {
+                scenarioDirectory = args[i+1];
+                ++i;
+            }
             if (args[i].equals("-customer")) {
                 customerStage = true;
                 noAgentStarting = false;
@@ -161,7 +165,6 @@ public class Start {
             if (args[i].equals("-noTK")) { // no TimeKeeper
                 runTimeKeeper = false;
             }
-
         }
         if (!isHost && (port == null || host == null)) {
             System.out.println("instance is not host and host and port have to be specified!");

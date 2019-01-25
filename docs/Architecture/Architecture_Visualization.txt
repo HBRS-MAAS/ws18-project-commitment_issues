@@ -2,9 +2,9 @@
 skinparam classAttributeIconSize 0
 
 == At Startup ==
-StreetNetwork --> GraphVisualizationAgent : StreetNetworkInfo (INFORM)
+StreetNetworkAgent --> GraphVisualizationAgent : StreetNetworkInfo (INFORM)
 
 == At every truck position update ==
-Truck --> GraphVisualizationAgent : TruckStatus (INFORM)
+TruckAgent --> GraphVisualizationAgent : TruckStatus (INFORM)
 
 @enduml

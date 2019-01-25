@@ -9,11 +9,9 @@ import org.json.JSONObject;
 import org.maas.agents.BaseAgent;
 
 import jade.core.AID;
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
-import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
@@ -41,33 +39,13 @@ public class OrderAggregatorAgent extends BaseAgent {
 	  return getLocalName().split("_")[0];
   }
 
-  protected void register(String type, String name){
-    DFAgentDescription dfd = new DFAgentDescription();
-    dfd.setName(getAID());
-    ServiceDescription sd = new ServiceDescription();
-    sd.setType(type);
-    sd.setName(name);
-    dfd.addServices(sd);
-    try {
-        DFService.register(this, dfd);
-    }
-    catch (FIPAException fe) {
-        fe.printStackTrace();
-    }
-}
+  
   protected void takeDown() {
     deRegister();
     
     System.out.println(getAID().getLocalName() + ": Terminating.");
   }
-  protected void deRegister() {
-    try {
-          DFService.deregister(this);
-      }
-      catch (FIPAException fe) {
-          fe.printStackTrace();
-      }
-  }
+  
   private void findTransportAgent() {
     DFAgentDescription template = new DFAgentDescription();
     ServiceDescription sd = new ServiceDescription();
@@ -75,10 +53,12 @@ public class OrderAggregatorAgent extends BaseAgent {
     template.addServices(sd);
     try {
       DFAgentDescription[] result = DFService.search(this, template);
-      this.transportAgent = result[0].getName();
+      if (result.length > 0) {
+        this.transportAgent = result[0].getName();
+      }
      
   } catch (Exception fe) {
-      //fe.printStackTrace();
+      fe.printStackTrace();
   }
     
     
@@ -92,8 +72,8 @@ public class OrderAggregatorAgent extends BaseAgent {
   }
   
   private class OrderInfo {
-	public String custID;
-	public ArrayList<String> products;
+  	public String custID;
+  	public ArrayList<String> products;
   }
   
 	private class LoadingBayParser extends CyclicBehaviour {
@@ -110,7 +90,8 @@ public class OrderAggregatorAgent extends BaseAgent {
 
 				Order order = null;
 				for (int k = 0; k < ((OrderAggregatorAgent) baseAgent).orders.size(); k++) {
-					if ((((OrderAggregatorAgent) baseAgent).orders.get(k).getOrderID()).equals(orderID)) {
+					String currentOrderId = ((OrderAggregatorAgent) baseAgent).orders.get(k).getOrderID();
+				  if (currentOrderId.equals(orderID)) {
 						order = orders.get(k);
 						orders.remove(order);
 						break;
@@ -186,11 +167,11 @@ public class OrderAggregatorAgent extends BaseAgent {
   }
   
 	private class OrderDetailsReceiver extends CyclicBehaviour {
-		private String orderProcessorServiceType;
-		private AID orderProcessor = null;
+		//private String orderProcessorServiceType;
+		//private AID orderProcessor = null;
 		private MessageTemplate mt;
 
-		protected void findOrderProcessor() {
+		/*protected void findOrderProcessor() {
 			DFAgentDescription template = new DFAgentDescription();
 			ServiceDescription sd = new ServiceDescription();
 			orderProcessorServiceType = "OrderProcessing";
@@ -206,7 +187,7 @@ public class OrderAggregatorAgent extends BaseAgent {
 				System.out.println("[" + getAID().getLocalName() + "]: No OrderProcessor agent found.");
 				fe.printStackTrace();
 			}
-		}
+		}*/
 
 		public void action() {
 //			findOrderProcessor();

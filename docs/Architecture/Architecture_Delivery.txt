@@ -2,23 +2,29 @@
 skinparam classAttributeIconSize 0
 
 == Delivery ==
-LoadingBay --> OrderAggregator : BoxesReadyToDeliver (INFORM)
+LoadingBayAgent --> OrderAggregatorAgent : BoxesReadyToDeliver (INFORM)
 
 
-OrderAggregator --> TransportAgent : RequestOrderTransport (REQUEST)
+OrderAggregatorAgent --> TransportAgent : RequestOrderTransport (REQUEST)
 
-TransportAgent --> Truck : RequestTimeToDelivery (CFP)
-Truck --> StreetNetwork : queryTimeToDelivery (REQUEST)
-StreetNetwork ---> Truck : TimeToDelivery (INFORM)
-Truck --> TransportAgent : ReplyToRequest (PROPOSE / REFUSE)
-TransportAgent --> Truck : AssignDelivery (ACCEPT_PROPOSAL)
-Truck --> TransportAgent : ConfirmAssignment (INFORM)
+TransportAgent --> TruckAgent : RequestTimeToDelivery (CFP)
+TruckAgent --> StreetNetworkAgent : queryTimeToDelivery (REQUEST)
+StreetNetworkAgent ---> TruckAgent : TimeToDelivery (INFORM)
+TruckAgent --> TransportAgent : ReplyToRequest (PROPOSE / REFUSE)
+TransportAgent --> TruckAgent : AssignDelivery (ACCEPT_PROPOSAL)
+TruckAgent --> TransportAgent : ConfirmAssignment (INFORM)
 
-Truck --> StreetNetwork : GetPath (REQUEST)
-StreetNetwork --> Truck : ReturnPath (INFORM)
+TruckAgent --> StreetNetworkAgent : GetPathToBakery (REQUEST)
+StreetNetworkAgent --> TruckAgent : ReturnPath (INFORM)
 
-Truck --> Mailbox : OrderSuccessfullyDelivered (INFORM)
+TruckAgent --> TransportAgent : RequestBoxes (REQUEST)
+TransportAgent --> TruckAgent : ReturnBoxes (INFORM)
 
-Mailbox --> : OrderDelivered (INFORM)
+TruckAgent --> StreetNetworkAgent : GetPathToCustomer (REQUEST)
+StreetNetworkAgent --> TruckAgent : ReturnPath (INFORM)
+
+TruckAgent --> MailboxAgent : OrderSuccessfullyDelivered (INFORM)
+
+MailboxAgent --> : OrderDelivered (INFORM)
 
 @enduml

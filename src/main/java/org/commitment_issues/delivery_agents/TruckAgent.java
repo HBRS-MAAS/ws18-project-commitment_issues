@@ -34,15 +34,21 @@ public class TruckAgent extends BaseAgent {
 	protected float pathStartTime_;
 	protected TruckState truckState_;
 	protected boolean autoFinish = true;
+	protected int capacity_;
 	
 	protected void setup() {
 		super.setup();
-		System.out.println("Hello! TruckAgent "+ getAID().getName() +" is ready.");
-		
+
 		currOrder_ = null;
 		nextOrder_ = null;
 		numOfBoxes_ = 0;
 		truckState_ = TruckState.IDLE;
+		capacity_ = 0;
+		
+		Object args[] = getArguments();
+		if (args != null && args.length > 0) {
+			capacity_ = Integer.parseInt(args[0].toString());
+		}
 		
 		//TODO: Load from json
 		currTruckLocation_ = new float[2];
@@ -54,6 +60,9 @@ public class TruckAgent extends BaseAgent {
 		addBehaviour(new TruckScheduleServer());
 		addBehaviour(new MoveTruck());
 		addBehaviour(new TimeUpdater());
+		
+		addBehaviour(new QueryNodePosition(getLocalName().split("_")[0]));
+		System.out.println("Hello! TruckAgent "+ getAID().getName() +" with capacity " + capacity_ + " is ready.");
 	}
 
 	protected void takeDown() {
@@ -585,6 +594,76 @@ public class TruckAgent extends BaseAgent {
                     	System.out.println(baseAgent.getAID().getLocalName() + ": Querying path from street network failed!!");
                     	state_ = StreetNetworkQueryStates.QUERY_FAILED;
                     	System.out.println(baseAgent.getAID().getLocalName() + " Query for path failed from SN");
+                    }
+                }
+				break;
+			default:
+				break;
+			}
+		}
+		
+		public boolean done() {
+			return state_ == StreetNetworkQueryStates.QUERY_COMPLETE ||
+					state_ == StreetNetworkQueryStates.QUERY_FAILED;
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private class QueryNodePosition extends Behaviour {
+		private AID streetNwAgent_;
+		private StreetNetworkQueryStates state_ = StreetNetworkQueryStates.FIND_STREET_NETWORK_AGENTS;
+		private MessageTemplate mt_;
+		private String nodeID_;
+		
+		public QueryNodePosition(String nodeID) {
+			nodeID_ = nodeID;
+		}
+		
+		private float[] parseNodePosition(String jsonString) {
+			float[] position = new float[2];
+			JSONObject jsonObj = new JSONObject(jsonString);
+			position[0] = jsonObj.getFloat("x");
+			position[1] = jsonObj.getFloat("y");
+			return position;
+		}
+		
+		public void action() {
+			switch(state_) {
+			case FIND_STREET_NETWORK_AGENTS:
+				streetNwAgent_ = discoverAgent("street-network");
+				if (streetNwAgent_ != null) {
+					state_ = StreetNetworkQueryStates.REQUEST_STREET_NETWORK;
+				}
+				break;
+			case REQUEST_STREET_NETWORK:
+				// Send the request to the street network
+				String conversationID = "LocationQuery";
+                ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+                request.addReceiver(streetNwAgent_);
+                request.setContent(nodeID_);
+                request.setConversationId(conversationID);
+                request.setReplyWith("cfp" + System.currentTimeMillis()); // Unique value
+                baseAgent.send(request);
+                // Prepare the template to get replies
+                mt_ = MessageTemplate.and(MessageTemplate.MatchConversationId(conversationID),
+                        MessageTemplate.MatchInReplyTo(request.getReplyWith()));
+                state_ = StreetNetworkQueryStates.WAIT_FOR_RESPONSE;
+                System.out.println(baseAgent.getAID().getLocalName() + " Query for node position placed with SN: " + request.getContent());
+				break;
+			case WAIT_FOR_RESPONSE:
+				// Receive response from StreetNetworkAgent
+                ACLMessage reply = baseAgent.receive(mt_);
+                if (reply != null) {
+                    // Reply received
+                    if (reply.getPerformative() == ACLMessage.INFORM) {
+                    	System.out.println(baseAgent.getAID().getLocalName() + " Response for node position received from SN: " + reply.getContent());
+                        currTruckLocation_ = parseNodePosition(reply.getContent());
+                        state_ = StreetNetworkQueryStates.QUERY_COMPLETE;
+                        
+                    }
+                    else {
+                    	System.out.println(baseAgent.getAID().getLocalName() + ": Querying node position from street network failed!!");
+                    	state_ = StreetNetworkQueryStates.QUERY_FAILED;
                     }
                 }
 				break;

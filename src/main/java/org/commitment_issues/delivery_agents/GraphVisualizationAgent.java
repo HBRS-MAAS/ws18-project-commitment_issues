@@ -60,7 +60,28 @@ public class GraphVisualizationAgent extends BaseAgent {
         }
   }
   
+<<<<<<< HEAD
   private void updateNodePosition(String cellID, double x, double y, double margin) {
+=======
+  private void setTruckColor(Cell cell, String state) {
+	  if (cell.getCellType() == CellType.TRIANGLE) {
+		  if (state.equals("MOVING_TO_BAKERY"))
+			  ((TriangleCell)cell).setColor(Color.YELLOW);
+		  else if (state.equals("MOVING_TO_CUSTOMER"))
+			  ((TriangleCell)cell).setColor(Color.PURPLE);
+		  else
+		  ((TriangleCell)cell).setColor(Color.GRAY);
+	  }
+  }
+  
+  private void updateNodePosition(String cellID, double x, double y, double margin, String state) {
+	  int overallXOffset = 50;
+	  int overallYOffset = 50;
+	  
+	  x += overallXOffset;
+	  y += overallYOffset;
+	  
+>>>>>>> 066cf8a... Change color of truck based on the truck state 
 	  List<Cell> allCells = model.getAllCells();
 	  int cellsUpdated = 0;
 	  
@@ -68,6 +89,8 @@ public class GraphVisualizationAgent extends BaseAgent {
 		  if (cell.getCellId().equals(cellID)) {
 		      cell.relocate(x, y); 
 			  cellsUpdated += 1;
+			  if (state != null && state.length() > 0)
+				  setTruckColor(cell, state);
 		  }
 		  else if (cell.getCellId().equals(cellID + "_label")) {
 			  cell.relocate(x, y - margin);
@@ -135,8 +158,7 @@ public class GraphVisualizationAgent extends BaseAgent {
 	    graph.endUpdate();		
 	    
 
-	    updateNodePosition(id, posX, posY, 25);
-	    
+	    updateNodePosition(id, posX, posY, 5, "");
 	    m.setGraph(graph);
 	}
 	
@@ -301,9 +323,10 @@ public class GraphVisualizationAgent extends BaseAgent {
 
 				float x = jsonObj.getFloat("x") * (float) 100.0;
 				float y = jsonObj.getFloat("y") * (float) 100.0;
+				String state = jsonObj.getString("state");
 
 				if (nodeAlreadyInGraph(truckID)) {
-					updateNodePosition(truckID, x, y, 25);
+					updateNodePosition(truckID, x, y, 25, state);
 				} else {
 					addNode(NodeType.TRUCK, truckID, x, y, truckID);
 				}

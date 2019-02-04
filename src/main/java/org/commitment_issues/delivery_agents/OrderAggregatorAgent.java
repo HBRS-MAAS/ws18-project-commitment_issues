@@ -96,87 +96,60 @@ public class OrderAggregatorAgent extends BaseAgent {
 	public ArrayList<String> products;
   }
   
-  private class LoadingBayParser extends CyclicBehaviour{
+	private class LoadingBayParser extends CyclicBehaviour {
 
-    @Override
-    public void action() {
-      MessageTemplate mt = MessageTemplate.MatchConversationId("packaged-orders");
-      ACLMessage msg = myAgent.receive(mt);
-      
-      if (msg != null) {
-        JSONObject recieved = new JSONObject(msg.getContent());
-        JSONArray boxesJSON = recieved.getJSONArray("Boxes");
-        String orderID = recieved.getString("OrderID");
-        
-//        Order order = new Order();
-//        
-//        if (((OrderAggregatorAgent)myAgent).orders.size()==0) {
-//          order.setOrderID(recieved.getString("OrderID"));
-//          //System.out.println(order.getOrderID());
-//          
-//        }
-//        
-//        for (int k = 0; k < ((OrderAggregatorAgent)myAgent).orders.size();k++) {
-//          if (((OrderAggregatorAgent)myAgent).orders.size()==0) {
-//            order.setOrderID(recieved.getString("OrderID"));
-//            //System.out.println(order.getOrderID());
-//            break;
-//          }
-//          else {
-//            //System.out.println((((OrderAggregatorAgent)myAgent).orders.get(k).getOrderID()));
-//          if ((((OrderAggregatorAgent)myAgent).orders.get(k).getOrderID()).equals(recieved.getString("OrderID"))) {
-//            order = orders.get(k);
-//            
-//            break;
-//          }
-//          else {
-//            order.setOrderID(recieved.getString("OrderID"));
-//            
-//          }}
-//        }
-        
-        Order order = null;
-        for(int k = 0; k < ((OrderAggregatorAgent)myAgent).orders.size();k++)
-        {
-          if ((((OrderAggregatorAgent)myAgent).orders.get(k).getOrderID()).equals(orderID)) {
-	          order = orders.get(k);
-	          orders.remove(order);
-	          break;
-          }
-        }
-        
-        if (order == null) {
-        	order = new Order();
-        	order.setOrderID(orderID);
-        	order.setBakID(getBakeryName());
-        	order.setCustID(pendingOrderInfo.get(orderID).custID);
-        }
-        
-        for (int i = 0; i < boxesJSON.length(); i++) {
-          JSONObject boxJSON = boxesJSON.getJSONObject(i);
-          Box box = new Box();
-          String productType = boxJSON.getString("ProductType");
-          box.setBoxID(boxJSON.getString("BoxID"));
-          box.setProductType(productType);
-          box.setQuantity(boxJSON.getInt("Quantity"));
-          order.addBoxes(box);
-          
-          pendingOrderInfo.get(orderID).products.remove(productType);
-        }
-        
-        if (pendingOrderInfo.get(orderID).products.size() <= 0) {
-      	  myAgent.addBehaviour(new SendOrderToTransport(order));
-      	  pendingOrderInfo.remove(orderID);
-        }
-        else {
-        	((OrderAggregatorAgent)myAgent).orders.add(order);
-        }
-        System.out.println(getAID().getName()+" recieved an order");
-      }
-      
-    }
-    
-  }
+		@Override
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchConversationId("packaged-orders");
+			ACLMessage msg = myAgent.receive(mt);
+
+			if (msg != null) {
+				JSONObject recieved = new JSONObject(msg.getContent());
+				JSONArray boxesJSON = recieved.getJSONArray("Boxes");
+				String orderID = recieved.getString("OrderID");
+
+				Order order = null;
+				for (int k = 0; k < ((OrderAggregatorAgent) myAgent).orders.size(); k++) {
+					if ((((OrderAggregatorAgent) myAgent).orders.get(k).getOrderID()).equals(orderID)) {
+						order = orders.get(k);
+						orders.remove(order);
+						break;
+					}
+				}
+
+				if (order == null) {
+					order = new Order();
+					order.setOrderID(orderID);
+					order.setBakID(getBakeryName());
+					order.setCustID(pendingOrderInfo.get(orderID).custID);
+				}
+
+				for (int i = 0; i < boxesJSON.length(); i++) {
+					JSONObject boxJSON = boxesJSON.getJSONObject(i);
+					Box box = new Box();
+					String productType = boxJSON.getString("ProductType");
+					box.setBoxID(boxJSON.getString("BoxID"));
+					box.setProductType(productType);
+					box.setQuantity(boxJSON.getInt("Quantity"));
+					order.addBoxes(box);
+
+					pendingOrderInfo.get(orderID).products.remove(productType);
+				}
+
+				if (pendingOrderInfo.get(orderID).products.size() <= 0) {
+					myAgent.addBehaviour(new SendOrderToTransport(order));
+					pendingOrderInfo.remove(orderID);
+				} else {
+					((OrderAggregatorAgent) myAgent).orders.add(order);
+				}
+				System.out.println(getAID().getName() + " recieved an order");
+			} else {
+				block();
+			}
+
+		}
+
+	}
   
   private class SendOrderToTransport extends OneShotBehaviour {
     private Order order;

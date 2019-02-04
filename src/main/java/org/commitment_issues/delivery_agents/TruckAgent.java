@@ -345,7 +345,6 @@ public class TruckAgent extends BaseAgent {
 					currTruckLocation_[0] = currPath_.get(i - 1)[0];
 					currTruckLocation_[1] = currPath_.get(i - 1)[1];
 					retval = true;
-					baseAgent.addBehaviour(new SendTruckPosForVisualiaztion());
 //					System.out.println(getLocalName() +  " moved at " + getCurrentHour() + " hrs from " + getPosAsString(oldPos) + " to " + getPosAsString(currTruckLocation_));
 				}
 			}
@@ -407,6 +406,9 @@ public class TruckAgent extends BaseAgent {
 	            			System.out.println(baseAgent.getAID().getLocalName() + " Reached customer. Truck is Idle as there is no next order");
 	            		}
 	            	}
+	            	
+
+					baseAgent.addBehaviour(new SendTruckPosForVisualiaztion());
 	            	
 //	                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 //	                msg.addReceiver(discoverAgent("transport-visualization"));

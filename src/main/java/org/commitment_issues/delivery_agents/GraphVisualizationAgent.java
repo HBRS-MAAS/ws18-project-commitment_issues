@@ -23,10 +23,8 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-<<<<<<< HEAD
-=======
+
 import javafx.scene.paint.Color;
->>>>>>> 7b66a30948ad50d7f01da63e21fc6c9e222996a7
 
 @SuppressWarnings("serial")
 public class GraphVisualizationAgent extends BaseAgent {
@@ -47,14 +45,10 @@ public class GraphVisualizationAgent extends BaseAgent {
 
     addBehaviour(new GraphConstructor());
     addBehaviour(new JFXStart());
-<<<<<<< HEAD
     
     
-    addBehaviour(new PositionUpdater());
     addBehaviour(new TruckPositionUpdater());
-=======
 
->>>>>>> 7b66a30948ad50d7f01da63e21fc6c9e222996a7
     addBehaviour(new TimeUpdater());
    }
   
@@ -304,19 +298,17 @@ public class GraphVisualizationAgent extends BaseAgent {
 				System.out.println("++++++++++ Visualization recived msg: \n" + msg.getContent() );
 				JSONObject jsonObj = new JSONObject(msg.getContent());
 				String truckID = jsonObj.getString("id");
-				float x = jsonObj.getFloat("x");
-				float y = jsonObj.getFloat("y");
-				
+
+				float x = jsonObj.getFloat("x") * (float) 100.0;
+				float y = jsonObj.getFloat("y") * (float) 100.0;
+
 				if (nodeAlreadyInGraph(truckID)) {
-					System.out.println("Truck node already exists. Updating its position");
-					updateNodePosition(truckID, x, y, 25);	
+					updateNodePosition(truckID, x, y, 25);
+				} else {
+					addNode(NodeType.TRUCK, truckID, x, y, truckID);
 				}
-				else {
-					System.out.println("Truck node does not exists. Creating a new node");
-					addNode(NodeType.TRUCK, truckID, x, y, truckID);	
-				}
-				
-				System.out.println("****************Action Complete..");
+			} else {
+				block();
 			}
 		}
 	}

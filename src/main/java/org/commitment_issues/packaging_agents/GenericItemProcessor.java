@@ -240,7 +240,7 @@ public class GenericItemProcessor extends BaseAgent {
 
         msg.setContent(x.toString());
         msg.setConversationId("bake");
-        myAgent.send(msg);
+        baseAgent.sendMessage(msg);
         complete = true;
       }
       
@@ -280,7 +280,7 @@ public class GenericItemProcessor extends BaseAgent {
           JSONObject y = new JSONObject();
           y.put(this.p.getName(),this.p.getAmount());
           msg.setContent(y.toString());
-          myAgent.send(msg);
+          baseAgent.sendMessage(msg);
           //System.out.println("[" + getLocalName() + "]: " + p.getProcesses().get(step).getName()+" of "+p.getName()+" is done and sent to the packaging"); 
           complete = true;
         }else {

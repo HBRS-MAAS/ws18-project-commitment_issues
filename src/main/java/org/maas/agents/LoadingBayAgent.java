@@ -17,6 +17,7 @@ import jade.lang.acl.MessageTemplate;
 public class LoadingBayAgent extends BaseAgent {
 	private JSONArray orderDetailsArray = new JSONArray();
 	private String readyOrderID = null;
+	private String bakeryGuid = "bakery-001";
 
 	private HashMap<String, HashMap<String, Integer>> productDatabase = new HashMap<>();
 	private HashMap<String, JSONArray> boxDatabase = new HashMap<>();
@@ -24,8 +25,13 @@ public class LoadingBayAgent extends BaseAgent {
 	protected void setup() {
 		super.setup();
 		System.out.println("Hello! LoadingBay-agent " + getAID().getName() + " is ready.");
+		Object[] args = getArguments();
+        if (args != null && args.length > 0) {
+            bakeryGuid = (String) args[0];
+        }
 
-		register(getBakeryName() + "-loading-bay", getBakeryName() + "-loading-bay"); 
+
+		register(bakeryGuid + "-loading-bay", bakeryGuid + "-loading-bay");
 
 		addBehaviour(new OrderDetailsReceiver());
 		addBehaviour(new ProductDetailsReceiver());
@@ -155,6 +161,9 @@ public class LoadingBayAgent extends BaseAgent {
 
 		for (String productName : productsObject.keySet()) {
 			int orderQuantity = productsObject.getInt(productName);
+            if (orderQuantity == 0) {
+                continue;
+            }
 
 			try {
 				productQuantity = orderProductDetails.get(productName);
@@ -183,7 +192,12 @@ public class LoadingBayAgent extends BaseAgent {
 		protected void findReceiver() {
 			DFAgentDescription template = new DFAgentDescription();
 			ServiceDescription sd = new ServiceDescription();
+<<<<<<< HEAD
 			sd.setType(getBakeryName() + "-order-aggregator");
+=======
+			sd.setType("order-aggregator");
+			sd.setName(bakeryGuid+"-order-aggregator");
+>>>>>>> 298926414bfbfeb7024e795c3e59e1eeaeaaa5f9
 			template.addServices(sd);
 			try {
 				DFAgentDescription[] result = DFService.search(myAgent, template);
@@ -226,7 +240,7 @@ public class LoadingBayAgent extends BaseAgent {
 		protected void findOrderProcessor() {
 			DFAgentDescription template = new DFAgentDescription();
 			ServiceDescription sd = new ServiceDescription();
-			orderProcessorServiceType = "OrderProcessing";
+			orderProcessorServiceType = bakeryGuid+"-OrderProcessor";
 
 			sd.setType(orderProcessorServiceType);
 			template.addServices(sd);

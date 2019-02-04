@@ -30,6 +30,7 @@ public class TransportAgent extends BaseAgent {
   private static AID[] trucks;//list of all the trucks
 
 	protected void setup() {
+		super.setup();
 		System.out.println("Hello! TransportAgent-agent " + getAID().getLocalName() + " is ready.");
 
 		register("transport-agent", "transport-agent");

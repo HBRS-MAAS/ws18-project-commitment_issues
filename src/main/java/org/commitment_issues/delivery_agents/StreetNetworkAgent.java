@@ -28,6 +28,7 @@ public class StreetNetworkAgent extends BaseAgent {
     public DijkstraAlgorithm dijkstra;
 
 	protected void setup() {
+		super.setup();
 		System.out.println("Hello! StreetNetwork-agent "+getAID().getName()+" is ready.");
 		
 		register("street-network", "street-network");

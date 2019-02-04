@@ -16,6 +16,7 @@ import jade.lang.acl.MessageTemplate;
 @SuppressWarnings("serial")
 public class DummyCustomer extends BaseAgent {
 	protected void setup() {
+		super.setup();
 	// Printout a welcome message
 		System.out.println("Hello! Dummy-agent "+ getAID().getName()+" is ready.");
 

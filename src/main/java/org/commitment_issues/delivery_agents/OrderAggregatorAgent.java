@@ -24,7 +24,7 @@ public class OrderAggregatorAgent extends BaseAgent {
 
   private AID transportAgent = null;
   protected void setup() {
-    
+	super.setup();
     this.register("order-aggregator","order-aggregator");
     while(this.transportAgent == null) {
       findTransportAgent();

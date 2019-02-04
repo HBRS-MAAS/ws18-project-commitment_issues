@@ -10,6 +10,7 @@ import javafx.scene.layout.Pane;
 public class Cell extends Pane {
 
     private String cellId;
+    protected CellType cellType;
 
     private List<Cell> children = new ArrayList<>();
     private List<Cell> parents = new ArrayList<>();
@@ -61,5 +62,9 @@ public class Cell extends Pane {
 
     public void setB(Button b) {
       this.b = b;
+    }
+    
+    public CellType getCellType() {
+      return cellType;
     }
 }

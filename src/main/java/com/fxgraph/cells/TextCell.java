@@ -19,6 +19,8 @@ public class TextCell extends Cell {
       v.setFont(new Font(20));
       
       setView(v);
+      
+      cellType = CellType.TEXT;
     }
     public String getParentID() {
       return parentID;

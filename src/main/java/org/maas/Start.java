@@ -84,7 +84,11 @@ public class Start {
             endTime = "005.24.00";
         }
         if(visualizationStage) {
+<<<<<<< HEAD
             Initializer init = new VisualizationInitializer();
+=======
+			Initializer init = new VisualizationInitializer();
+>>>>>>> b2b49e9768e03647a2daac108c79292bfaae920d
             sb.append(init.initialize(scenarioDirectory));
         }
 		if(isHost) {

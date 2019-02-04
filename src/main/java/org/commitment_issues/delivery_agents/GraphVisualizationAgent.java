@@ -41,7 +41,7 @@ public class GraphVisualizationAgent extends BaseAgent {
     
     // Dummy node needed for correct visualization behavior
     addNode(NodeType.SIMPLE, "dummy", 400, 200, "");
-    
+
     addBehaviour(new GraphConstructor());
     addBehaviour(new JFXStart());
 
@@ -62,7 +62,7 @@ public class GraphVisualizationAgent extends BaseAgent {
 	  
 	  for (Cell cell: allCells) {
 		  if (cell.getCellId().equals(cellID)) {
-			  cell.relocate(x, y);
+		      cell.relocate(x, y); 
 			  cellsUpdated += 1;
 		  }
 		  else if (cell.getCellId().equals(cellID + "_label")) {
@@ -166,86 +166,18 @@ public class GraphVisualizationAgent extends BaseAgent {
     
     @Override
 
-    public void action() {
-      ACLMessage recieve = myAgent.receive();
-      CellType shape;
-      ((GraphVisualizationAgent)myAgent).graph.beginUpdate();
-      ((GraphVisualizationAgent)myAgent).model.addCell("bakery-001", CellType.RECTANGLE);
-      ((GraphVisualizationAgent)myAgent).model.addCell("customer-001", CellType.TRIANGLE);
-      TextCell name = new TextCell("Name: bakery-001", "bakery-001", "bakery-001");
-      TextCell name2 = new TextCell("Name: customer-001", "customer-001", "customer-001");
 
-      ((GraphVisualizationAgent)myAgent).model.addCell(name);
-      ((GraphVisualizationAgent)myAgent).model.addCell(name2);
-      //((GraphVisualizationAgent)myAgent).model.addCell("bakery-002", CellType.RECTANGLE);
-      ((GraphVisualizationAgent)myAgent).graph.endUpdate();
-      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(0).relocate( 10.0 ,100);
-      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(1).relocate(400 ,200);
-
-      graph.beginUpdate();
-      model.addEdge("bakery-001", "customer-001");
-      graph.endUpdate();
-      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(2).relocate(10.0 ,100-25);
-      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(3).relocate(400.0 ,200-25);
-      ((GraphVisualizationAgent)myAgent).m.setGraph(((GraphVisualizationAgent)myAgent).graph);
+    public void action() {      
+      addNode(NodeType.BAKERY, "bakery-001", 10, 100, "bakery-001");
+      addNode(NodeType.CUSTOMER, "customer-001", 400, 200, "customer-001");
+      addNode(NodeType.SIMPLE, "simple-1", 600, 200, null);
+      addNode(NodeType.TRUCK, "Truck-001", 800, 200, "Truck-001");
+      addNode(NodeType.TRANSPORT_COMPANY, "Transport-Company-001", 1000, 200, "Transport-Company-001");
+      addEdge("bakery-001", "customer-001");
+      addEdge("Transport-Company-001", "Truck-001");
       
-      if (recieve != null && recieve.getConversationId().equals("graph-visualization")) {
-        
-        JSONObject wholeMsg = new JSONObject(recieve);
-        
-        JSONArray nodes = wholeMsg.getJSONArray("Nodes");
-        JSONArray edges = wholeMsg.getJSONArray("Edges");
-        
-
-        for (int i = 0; i < nodes.length(); i++) {
-          
-          JSONObject node = nodes.getJSONObject(i);
-          
-          int type = node.getInt("Type");
-          // i for bakeries and 0 for customers
-          JSONObject location = node.getJSONObject("Location");
-          float nodeX = location.getFloat("X")*(float)100.0;
-          float nodeY = location.getFloat("Y")*(float)100.0;
-          
-          String nodeID = node.getString("NodeID");
-          
-          if (type == 0) {
-            shape = CellType.RECTANGLE;
-          }
-          else{
-            shape = CellType.TRIANGLE;
-          }
-          
-          graph.beginUpdate();
-          model.addCell(nodeID, shape);
-          graph.endUpdate();
-          
-          model.getAllCells().get(i).relocate(nodeX, nodeY);
-        }
-        
-        for (int k = 0;k < edges.length(); k++) {
-          
-          JSONObject edge = edges.getJSONObject(k);
-          
-          String startNode = edge.getString("startNodeID");
-          String endNode = edge.getString("endNodeID");
-          
-          graph.beginUpdate();
-          model.addEdge(startNode, endNode);
-          graph.endUpdate();
-        
-        }
-        
       m.setGraph(graph);
-      }
-      else {
-        
-        //block();
-      
-      }
-
     }
-    
   }
   
   
@@ -273,33 +205,21 @@ public class GraphVisualizationAgent extends BaseAgent {
             float nodeY = location.getFloat("y")*(float)100.0;
             
             String nodeID = node.getString("guid");
-            
-            graph.beginUpdate();
-            
             if (type.equals("client")) {
-              RectangleCell rectangle = new RectangleCell(nodeID);
-              model.addCell(rectangle);
+              addNode(NodeType.CUSTOMER, nodeID, nodeX, nodeY, nodeID);
             }
             else if (type.equals("delivery")) {
-              RectangleCell rectangle = new RectangleCell(nodeID);
-              model.addCell(rectangle);
+              addNode(NodeType.TRANSPORT_COMPANY, nodeID, nodeX, nodeY, nodeID);
             }
             else if (type.equals("bakery")) {
-              RectangleCell rectangle = new RectangleCell(nodeID);
-              model.addCell(rectangle);
+              addNode(NodeType.BAKERY, nodeID, nodeX, nodeY, nodeID);
             }
             else {
-              Ball ball = new Ball(nodeID);
-              model.addCell(ball);
+              addNode(NodeType.SIMPLE, nodeID, nodeX, nodeY, "");
             }
-            
-            graph.endUpdate();
-            model.getAllCells().get(i).relocate(nodeX, nodeY);
-            
           }
           
           for (int k = 0;k < edges.length(); k++) {
-            
             JSONObject edge = edges.getJSONObject(k);
             
             String startNode = edge.getString("source");
@@ -308,7 +228,6 @@ public class GraphVisualizationAgent extends BaseAgent {
             graph.beginUpdate();
             model.addEdge(startNode, endNode);
             graph.endUpdate();
-          
           }
           
           m.setGraph(graph);

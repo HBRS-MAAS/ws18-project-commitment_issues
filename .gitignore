@@ -20,7 +20,6 @@ MTPs-Main-Container.txt
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.ear
 *.zip

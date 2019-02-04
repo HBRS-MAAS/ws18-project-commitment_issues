@@ -1,7 +1,7 @@
 //package org.commitment_issues.deliveryAgents;
 package org.commitment_issues.delivery_agents;
 
-import org.yourteamname.agents.BaseAgent;
+import org.maas.agents.BaseAgent;
 
 import java.io.File;
 import java.io.IOException;

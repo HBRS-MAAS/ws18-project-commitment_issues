@@ -2,6 +2,7 @@ package org.maas;
 
 import java.util.List;
 import java.util.Vector;
+import org.maas.DeliveryStageInitializer;
 
 public class Start {
     private static boolean isHost = true;
@@ -67,7 +68,8 @@ public class Start {
 
         }
         if(deliveryStage) {
-
+			Initializer init = new DeliveryStageInitializer();
+            sb.append(init.initialize());
         }
         if(visualizationStage) {
 

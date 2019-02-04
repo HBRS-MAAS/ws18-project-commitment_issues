@@ -5,7 +5,7 @@ import java.io.File;
 
 import org.commitment_issues.agents.CustomerAgent;
 import org.json.JSONArray;
-import org.yourteamname.agents.BaseAgent;
+import org.maas.agents.BaseAgent;
 
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;

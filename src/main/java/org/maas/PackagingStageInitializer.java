@@ -8,18 +8,17 @@ import java.util.Vector;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.maas.Initializer;
 
 public class PackagingStageInitializer extends Initializer {
     @Override
     public String initialize() {
         Vector<String> agents = new Vector<>();
-        
-        agents.add("OrderProcessor:org.commitment_issues.delivery_agents.DummyOrderProcessor");
-        agents.add("BakingAgent:org.commitment_issues.delivery_agents.DummyBakeAgent");
-        agents.add("CoolingRack:org.commitment_issues.packaging_agents.GenericItemProcessor(cooling)");
-        agents.add("ItemsProcessor:org.commitment_issues.packaging_agents.GenericItemProcessor");
-        agents.add("PackagingAgent:org.commitment_issues.packaging_agents.PackagingAgent(bakery-001)");
-		agents.add("LoadingBayAgent:org.commitment_issues.delivery_agents.LoadingBayAgent");
+
+
+        agents.add("dummy:org.right_brothers.agents.PackagingStageTester");
+        agents.add("postBakingProcessor:org.right_brothers.agents.PreLoadingProcessor");
+        agents.add("packaging-agent:org.right_brothers.agents.LoadingBayAgent");
 
         String agentInitString = String.join(";", agents);
         agentInitString += ";";

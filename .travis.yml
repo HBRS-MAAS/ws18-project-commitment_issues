@@ -7,8 +7,15 @@ before_script:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
 os: linux
+<<<<<<< HEAD
 script: 
 
     - ./gradlew run
     - ./gradlew run --args="-packaging -delivery"
 
+=======
+script:
+  - ./gradlew run
+  - ./gradlew run --args="-orderProcessing"
+  - ./gradlew run --args="-customer"
+>>>>>>> d7383b426c38b3cc8a9b59a47786d945639c7fa7

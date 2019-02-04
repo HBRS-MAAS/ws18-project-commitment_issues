@@ -24,7 +24,6 @@ public class DeliveryStageInitializer extends Initializer {
         for (String bakeryName : bakeryNames) {
             agents.add(bakeryName + "_TransportAgent:org.commitment_issues.delivery_agents.TransportAgent(" + scenarioDirectory + ")");
     		agents.add(bakeryName + "_OrderAggregatorAgent:org.commitment_issues.delivery_agents.OrderAggregatorAgent");
-    		break;
         }
         agents.add("StreetNetworkAgent:org.commitment_issues.delivery_agents.StreetNetworkAgent(" + scenarioDirectory + ")");
         agents.add("MailboxAgent:org.maas.agents.MailboxAgent");

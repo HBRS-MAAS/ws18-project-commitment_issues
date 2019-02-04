@@ -12,6 +12,9 @@ import org.json.JSONObject;
 import org.maas.agents.BaseAgent;
 
 import com.fxgraph.cells.*;
+
+import jade.core.AID;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
@@ -19,6 +22,8 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import javafx.scene.paint.Color;
 
 @SuppressWarnings("serial")
 public class GraphVisualizationAgent extends BaseAgent {
@@ -35,12 +40,13 @@ public class GraphVisualizationAgent extends BaseAgent {
 //    yellowPageRegister();
     register("transport-visualization","transport-visualization");
     
-    addBehaviour(new GraphBuilder());
+//    addBehaviour(new GraphBuilder());
 //    addBehaviour(new TruckTracker());
     addBehaviour(new JFXStart());
     
     
-    addBehaviour(new PositionUpdater());
+//    addBehaviour(new PositionUpdater());
+    addBehaviour(new GraphConstructor());
     addBehaviour(new TimeUpdater());
    }
   
@@ -153,28 +159,41 @@ public class GraphVisualizationAgent extends BaseAgent {
     }
     
   }
-  private class GraphBuilder extends OneShotBehaviour{
+  private class GraphBuilder extends OneShotBehaviour {
     
     @Override
-    public void action() {      
-      addNode(NodeType.BAKERY, "bakery-001", 10, 100, "bakery-001");
-      addNode(NodeType.CUSTOMER, "customer-001", 400, 200, "customer-001");
-      addNode(NodeType.SIMPLE, "simple-1", 600, 200, null);
-      addNode(NodeType.TRUCK, "Truck-001", 800, 200, "Truck-001");
-      addNode(NodeType.TRANSPORT_COMPANY, "Transport-Company-001", 1000, 200, "Transport-Company-001");
-      addEdge("bakery-001", "customer-001");
-      addEdge("Transport-Company-001", "Truck-001");
-      
-      m.setGraph(graph);
-      
+
+    public void action() {
       ACLMessage recieve = myAgent.receive();
-      if (recieve != null && recieve.getConversationId().equals("initial-state")) {
+      CellType shape;
+      ((GraphVisualizationAgent)myAgent).graph.beginUpdate();
+      ((GraphVisualizationAgent)myAgent).model.addCell("bakery-001", CellType.RECTANGLE);
+      ((GraphVisualizationAgent)myAgent).model.addCell("customer-001", CellType.TRIANGLE);
+      TextCell name = new TextCell("Name: bakery-001", "bakery-001", "bakery-001");
+      TextCell name2 = new TextCell("Name: customer-001", "customer-001", "customer-001");
+
+      ((GraphVisualizationAgent)myAgent).model.addCell(name);
+      ((GraphVisualizationAgent)myAgent).model.addCell(name2);
+      //((GraphVisualizationAgent)myAgent).model.addCell("bakery-002", CellType.RECTANGLE);
+      ((GraphVisualizationAgent)myAgent).graph.endUpdate();
+      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(0).relocate( 10.0 ,100);
+      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(1).relocate(400 ,200);
+
+      graph.beginUpdate();
+      model.addEdge("bakery-001", "customer-001");
+      graph.endUpdate();
+      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(2).relocate(10.0 ,100-25);
+      ((GraphVisualizationAgent)myAgent).model.getAllCells().get(3).relocate(400.0 ,200-25);
+      ((GraphVisualizationAgent)myAgent).m.setGraph(((GraphVisualizationAgent)myAgent).graph);
+      
+      if (recieve != null && recieve.getConversationId().equals("graph-visualization")) {
         
         JSONObject wholeMsg = new JSONObject(recieve);
         
         JSONArray nodes = wholeMsg.getJSONArray("Nodes");
         JSONArray edges = wholeMsg.getJSONArray("Edges");
         
+
         for (int i = 0; i < nodes.length(); i++) {
           
           JSONObject node = nodes.getJSONObject(i);
@@ -224,6 +243,81 @@ public class GraphVisualizationAgent extends BaseAgent {
 
     }
     
+  }
+  
+  
+  private class GraphConstructor extends Behaviour {
+
+    private MessageTemplate mt; 
+    private boolean receivedDetails = false;
+    
+    public void action() {
+        mt = MessageTemplate.MatchConversationId("graph-visualization");
+        ACLMessage msg = myAgent.receive(mt);
+        
+        if (msg != null) {
+          JSONObject wholeMsg = new JSONObject(msg.getContent());
+          JSONArray nodes = wholeMsg.getJSONArray("nodes");
+          JSONArray edges = wholeMsg.getJSONArray("edges");
+          
+          
+          for (int i = 0; i < nodes.length(); i++) {
+            JSONObject node = nodes.getJSONObject(i);
+            
+            String type = node.getString("type");
+            JSONObject location = node.getJSONObject("location");
+            float nodeX = location.getFloat("x")*(float)100.0;
+            float nodeY = location.getFloat("y")*(float)100.0;
+            
+            String nodeID = node.getString("guid");
+            
+            graph.beginUpdate();
+            
+            if (type.equals("client")) {
+              RectangleCell rectangle = new RectangleCell(nodeID);
+              model.addCell(rectangle);
+            }
+            else if (type.equals("delivery")) {
+              RectangleCell rectangle = new RectangleCell(nodeID);
+              model.addCell(rectangle);
+            }
+            else if (type.equals("bakery")) {
+              RectangleCell rectangle = new RectangleCell(nodeID);
+              model.addCell(rectangle);
+            }
+            else {
+              Ball ball = new Ball(nodeID);
+              model.addCell(ball);
+            }
+            
+            graph.endUpdate();
+            model.getAllCells().get(i).relocate(nodeX, nodeY);
+            
+          }
+          
+          for (int k = 0;k < edges.length(); k++) {
+            
+            JSONObject edge = edges.getJSONObject(k);
+            
+            String startNode = edge.getString("source");
+            String endNode = edge.getString("target");
+            
+            graph.beginUpdate();
+            model.addEdge(startNode, endNode);
+            graph.endUpdate();
+          
+          }
+          
+          m.setGraph(graph);
+          receivedDetails = true;
+        }
+        else {
+            block();
+        }
+    }
+    public boolean done() {
+        return receivedDetails;
+    }
   }
   
   

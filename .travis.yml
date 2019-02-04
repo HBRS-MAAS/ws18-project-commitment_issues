@@ -8,8 +8,6 @@ before_script:
 - sh -e /etc/init.d/xvfb start
 os: linux
 script:
-<<<<<<< HEAD
   - gradle run
-=======
-  - gradle run
->>>>>>> 1bdd678f15b3076817002394928e4cc4514ccc3d
+  - gradle run --args='-packaging -delivery'
+
